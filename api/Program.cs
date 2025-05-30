@@ -1,4 +1,5 @@
 using api.Data;
+using api.Repository;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -23,6 +24,9 @@ builder.Services.AddDbContext<ApplicationDBContext>(options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
     }
     );
+builder.Services.AddScoped<JokeRepository>();
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -36,5 +40,5 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.MapGet("/", () => "Welcome to Anekdotify API!");
+app.MapControllers();
 app.Run();
