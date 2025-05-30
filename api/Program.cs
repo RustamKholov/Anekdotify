@@ -1,4 +1,5 @@
 using api.Data;
+using api.Interfaces;
 using api.Repository;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +25,7 @@ builder.Services.AddDbContext<ApplicationDBContext>(options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
     }
     );
-builder.Services.AddScoped<JokeRepository>();
+builder.Services.AddScoped<IJokeRepository, JokeRepository>();
 
 
 var app = builder.Build();

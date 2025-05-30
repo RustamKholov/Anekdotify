@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using api.Data;
-using api.DTOs;
+using api.DTOs.Jokes;
+using api.Interfaces;
+using api.Mappers;
 using api.Models;
 using api.Repository;
 using Microsoft.AspNetCore.Mvc;
@@ -14,9 +16,9 @@ namespace api.Controllers
     [ApiController]
     public class JokeController : ControllerBase
     {
-        private readonly JokeRepository _jokeRepo;
+        private readonly IJokeRepository _jokeRepo;
         // Constructor to inject the ApplicationDBContext
-        public JokeController(JokeRepository jokeRepo)
+        public JokeController(IJokeRepository jokeRepo)
         {
             _jokeRepo = jokeRepo;
         }
@@ -25,11 +27,12 @@ namespace api.Controllers
         public async Task<IActionResult> GetJokesAsync()
         {
             var jokes = await _jokeRepo.GetAllJokesAsync();
+            var jokesDto = jokes.Select(j => j.ToJokeDTO()).ToList();
             if (jokes == null)
             {
                 return NotFound("No jokes found.");
             }
-            return Ok(jokes);
+            return Ok(jokesDto);
         }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetJokeById([FromRoute] int id)
@@ -43,21 +46,21 @@ namespace api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateJokeAsync([FromBody] JokeDTO jokeDTO)
+        public async Task<IActionResult> CreateJokeAsync([FromBody] JokeCreateDTO jokeCreateDTO)
         {
-            if (jokeDTO == null || string.IsNullOrWhiteSpace(jokeDTO.Content))
+            if (jokeCreateDTO == null || string.IsNullOrWhiteSpace(jokeCreateDTO.Content))
             {
                 return BadRequest("Joke content cannot be empty.");
             }
-            var joke = await _jokeRepo.CreateJokeAsync(jokeDTO);
+            var joke = await _jokeRepo.CreateJokeAsync(jokeCreateDTO);
 
             return CreatedAtAction(nameof(GetJokeById), new { id = joke.Id }, joke);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateJokeAsynv([FromRoute] int id, [FromBody] JokeDTO jokeDTO)
+        public async Task<IActionResult> UpdateJokeAsynv([FromRoute] int id, [FromBody] JokeUpdateDTO jokeUpdateDTO)
         {
-            if (jokeDTO == null || string.IsNullOrWhiteSpace(jokeDTO.Content))
+            if (jokeUpdateDTO == null || string.IsNullOrWhiteSpace(jokeUpdateDTO.Content))
             {
                 return BadRequest("Joke content cannot be empty.");
             }
@@ -66,7 +69,7 @@ namespace api.Controllers
             {
                 return NotFound($"Joke with ID {id} not found.");
             }
-            joke = await _jokeRepo.UpdateJokeAsync(id, jokeDTO);
+            joke = await _jokeRepo.UpdateJokeAsync(id, jokeUpdateDTO);
             return Ok(joke);
         }
 
