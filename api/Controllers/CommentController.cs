@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using api.DTOs.Comments;
+using api.Helpers;
 using api.Interfaces;
 using api.Mappers;
 using api.Models;
@@ -24,15 +25,23 @@ namespace api.Controllers
             _jokeRepo = jokeRepo;
         }
         [HttpGet]
-        public async Task<IActionResult> GetAllCommnets()
+        public async Task<IActionResult> GetAllComments([FromQuery] CommentsQueryObject query)
         {
-            var comments = await _commentRepo.GetAllCommentsAsync();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var comments = await _commentRepo.GetAllCommentsAsync(query);
             var commentsDTO = comments.Select(c => c.ToCommentDTO());
             return Ok(commentsDTO);
         }
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetCommentById([FromRoute] int id)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             var comment = await _commentRepo.GetCommentByIdAsync(id);
             if (comment == null)
             {
@@ -40,21 +49,15 @@ namespace api.Controllers
             }
             return Ok(comment.ToCommentDTO());
         }
-        [HttpGet("byJoke/{jokeId}")]
-        public async Task<IActionResult> GetCommentsByJokeId([FromRoute] int jokeId)
-        {
-            var comments = await _commentRepo.GetCommentsByJokeIdAsync(jokeId);
-            if (comments == null)
-            {
-                return NotFound("Comments not found");
-            }
-            return Ok(comments.Select(c => c.ToCommentDTO()));
-        }
 
         [HttpPost]
-        [Route("{jokeId}")]
+        [Route("{jokeId:int}")]
         public async Task<IActionResult> CreateComment([FromRoute] int jokeId, [FromBody] CommentCreateDTO commentCreateDTO)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             if (!await _jokeRepo.JokeExists(jokeId))
             {
                 return BadRequest($"Joke with id {jokeId} not exist");
@@ -71,10 +74,14 @@ namespace api.Controllers
         }
 
         [HttpPut]
-        [Route("{id}")]
+        [Route("{id:int}")]
 
         public async Task<IActionResult> UpdateComment([FromRoute] int id, [FromBody] CommentUpdateDTO commentUpdateDTO)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             var comment = await _commentRepo.UpdateCommentAsync(id, commentUpdateDTO.ToCommentFromUpdateDTO());
             if (comment == null)
             {
@@ -84,9 +91,13 @@ namespace api.Controllers
         }
 
         [HttpDelete]
-        [Route("{id}")]
+        [Route("{id:int}")]
         public async Task<IActionResult> DeleteComment([FromRoute] int id)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             var comment = await _commentRepo.DeleteCommentAsync(id);
             if (comment == null)
             {

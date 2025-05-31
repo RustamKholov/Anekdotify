@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using api.DTOs.Jokes;
+using api.Helpers;
 using api.Models;
 
 namespace api.Interfaces
 {
     public interface IJokeRepository
     {
-        Task<List<Joke>> GetAllJokesAsync();
+        Task<List<Joke>> GetAllJokesAsync(JokesQueryObject query);
         Task<Joke?> GetJokeByIdAsync(int id);
         Task<Joke> CreateJokeAsync(JokeCreateDTO jokeCreateDTO);
         Task<Joke> UpdateJokeAsync(int id, JokeUpdateDTO jokeUpdateDTO);

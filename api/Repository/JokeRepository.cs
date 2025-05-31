@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using api.Data;
 using api.DTOs.Jokes;
+using api.Helpers;
 using api.Interfaces;
 using api.Mappers;
 using api.Models;
@@ -20,11 +21,18 @@ namespace api.Repository
         {
             _context = context;
         }
-        public async Task<List<Joke>> GetAllJokesAsync()
+        public async Task<List<Joke>> GetAllJokesAsync(JokesQueryObject query)
         {
-            return await _context.Jokes
+            var jokes = _context.Jokes
                 .Include(j => j.Comments)
-                .ToListAsync();
+                .AsQueryable();
+            if (query.CreatingDay.HasValue)
+            {
+                var day = query.CreatingDay.Value.Date;
+                var nextDay = day.AddDays(1);
+                jokes = jokes.Where(j => j.AddedAt >= day && j.AddedAt < nextDay);
+            }
+            return await jokes.ToListAsync();
         }
         public async Task<Joke?> GetJokeByIdAsync(int id)
         {

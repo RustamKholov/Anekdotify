@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using api.Data;
 using api.DTOs.Comments;
+using api.Helpers;
 using api.Interfaces;
 using api.Mappers;
 using api.Models;
@@ -38,19 +39,19 @@ namespace api.Repository
             return comment;
         }
 
-        public Task<List<Comment>> GetAllCommentsAsync()
+        public async Task<List<Comment>> GetAllCommentsAsync(CommentsQueryObject query)
         {
-            return _context.Comments.ToListAsync();
+            var comments = _context.Comments.AsQueryable();
+            if (query.JokeId != null)
+            {
+                comments = comments.Where(c => c.JokeId == query.JokeId);
+            }
+            return await comments.ToListAsync();
         }
 
         public async Task<Comment?> GetCommentByIdAsync(int id)
         {
             return await _context.Comments.FirstOrDefaultAsync(c => c.Id == id);
-        }
-
-        public async Task<List<Comment>> GetCommentsByJokeIdAsync(int jokeId)
-        {
-            return await _context.Comments.Where(j => j.JokeId == jokeId).ToListAsync();
         }
 
         public async Task<Comment?> UpdateCommentAsync(int id, Comment comment)

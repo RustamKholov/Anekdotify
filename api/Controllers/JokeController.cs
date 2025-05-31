@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using api.Data;
 using api.DTOs.Jokes;
+using api.Helpers;
 using api.Interfaces;
 using api.Mappers;
 using api.Models;
@@ -24,9 +25,13 @@ namespace api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetJokesAsync()
+        public async Task<IActionResult> GetJokesAsync([FromQuery] JokesQueryObject query)
         {
-            var jokes = await _jokeRepo.GetAllJokesAsync();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var jokes = await _jokeRepo.GetAllJokesAsync(query);
             var jokesDto = jokes.Select(j => j.ToJokeDTO()).ToList();
             if (jokes == null)
             {
@@ -34,9 +39,13 @@ namespace api.Controllers
             }
             return Ok(jokesDto);
         }
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetJokeById([FromRoute] int id)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             var joke = await _jokeRepo.GetJokeByIdAsync(id);
             if (joke == null)
             {
@@ -48,6 +57,10 @@ namespace api.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateJokeAsync([FromBody] JokeCreateDTO jokeCreateDTO)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             if (jokeCreateDTO == null || string.IsNullOrWhiteSpace(jokeCreateDTO.Content))
             {
                 return BadRequest("Joke content cannot be empty.");
@@ -57,9 +70,13 @@ namespace api.Controllers
             return CreatedAtAction(nameof(GetJokeById), new { id = joke.Id }, joke);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateJokeAsynv([FromRoute] int id, [FromBody] JokeUpdateDTO jokeUpdateDTO)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             if (jokeUpdateDTO == null || string.IsNullOrWhiteSpace(jokeUpdateDTO.Content))
             {
                 return BadRequest("Joke content cannot be empty.");
@@ -73,9 +90,13 @@ namespace api.Controllers
             return Ok(joke);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteJoke([FromRoute] int id)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             var joke = await _jokeRepo.GetJokeByIdAsync(id);
             if (joke == null)
             {
