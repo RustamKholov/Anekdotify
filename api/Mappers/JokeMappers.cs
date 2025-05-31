@@ -19,7 +19,8 @@ namespace api.Mappers
             return new JokeDTO
             {
                 Id = joke.Id,
-                Content = joke.Content
+                Content = joke.Content,
+                Comments = joke.Comments.Select(c => c.ToCommentDTO()).ToList()
             };
         }
         public static Joke ToJokeFromCreateDTO(this JokeCreateDTO jokeCreateDTO)

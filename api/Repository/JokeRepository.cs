@@ -75,8 +75,13 @@ namespace api.Repository
         public async Task<List<Comment>> GetCommentsByJokeIdAsync(int jokeId)
         {
             return await _context.Comments
-                .Where(c => c.JokeID == jokeId)
+                .Where(c => c.JokeId == jokeId)
                 .ToListAsync();
+        }
+
+        public Task<bool> JokeExists(int id)
+        {
+            return _context.Jokes.AnyAsync(j => j.Id == id);
         }
     }
 }

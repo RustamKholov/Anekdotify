@@ -1,14 +1,17 @@
+using System.Security.Cryptography.Xml;
 using api.Data;
 using api.Interfaces;
 using api.Repository;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -20,13 +23,19 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+builder.Services.AddControllers().
+    AddNewtonsoftJson(options =>
+    {
+        options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+    });
+
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
     {
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
     }
     );
 builder.Services.AddScoped<IJokeRepository, JokeRepository>();
-
+builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 
 var app = builder.Build();
 
