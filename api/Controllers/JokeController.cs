@@ -77,7 +77,7 @@ namespace api.Controllers
             {
                 return BadRequest(ModelState);
             }
-            if (jokeUpdateDTO == null || string.IsNullOrWhiteSpace(jokeUpdateDTO.Content))
+            if (jokeUpdateDTO == null)
             {
                 return BadRequest("Joke content cannot be empty.");
             }

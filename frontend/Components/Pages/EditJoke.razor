@@ -1,0 +1,23 @@
+﻿@page "/editJoke"
+
+<PageTitle>Edit Joke</PageTitle>
+<h3>Edit Joke</h3>
+
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm Model="@jokeEditDTO" FormName="editJoke">
+            <div class="mb-3">
+                <label for="title" class="form-label">Title:</label>
+                <InputText type="name" @bind-Value="jokeEditDTO.Title" class="form-control" id="title" />
+            </div>
+            <div class="mb-3">
+                <label for="content" class="form-label">Content:</label>
+                <InputTextArea  type="text" @bind-Value="jokeEditDTO.Content" class="form-control" id="content" />
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+            </EditForm>
+        </div>
+    </div>
+@code {
+    private JokeEditDTO jokeEditDTO {get; set;} = new();
+}

@@ -2,15 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml;
 
-namespace api.Models
+namespace frontend.Models
 {
     public class Joke
     {
         public int Id { get; set; }
-        public string Title { get; set; } = string.Empty;
-        public string Content { get; set; } = string.Empty;
-        public DateTime AddedAt { get; set; } = DateTime.UtcNow;
+        public required string Title { get; set; }
+        public required string Content { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public List<Comment> Comments { get; set; } = new List<Comment>();
     }
 }

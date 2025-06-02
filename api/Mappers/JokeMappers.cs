@@ -19,6 +19,7 @@ namespace api.Mappers
             return new JokeDTO
             {
                 Id = joke.Id,
+                Title = joke.Title,
                 Content = joke.Content,
                 Comments = joke.Comments.Select(c => c.ToCommentDTO()).ToList()
             };
@@ -32,9 +33,21 @@ namespace api.Mappers
 
             return new Joke
             {
+                Title = jokeCreateDTO.Title,
                 Content = jokeCreateDTO.Content
             };
         }
-      
+        public static Joke UpdateJokeFromJokeDTO(this Joke jokeModel, JokeUpdateDTO jokeUpdateDTO)
+        {
+            if (!string.IsNullOrWhiteSpace(jokeUpdateDTO.Title))
+            {
+                jokeModel.Title = jokeUpdateDTO.Title;
+            }
+            if (!string.IsNullOrWhiteSpace(jokeUpdateDTO.Content))
+            {
+                jokeModel.Content = jokeUpdateDTO.Content;
+            }
+            return jokeModel;
+        }
     }
 }

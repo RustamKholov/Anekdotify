@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -26,11 +27,18 @@ namespace api.Repository
             var jokes = _context.Jokes
                 .Include(j => j.Comments)
                 .AsQueryable();
-            if (query.CreatingDay.HasValue)
+            if (query.AddingDay.HasValue)
             {
-                var day = query.CreatingDay.Value.Date;
+                var day = query.AddingDay.Value.Date;
                 var nextDay = day.AddDays(1);
                 jokes = jokes.Where(j => j.AddedAt >= day && j.AddedAt < nextDay);
+            }
+            if (!string.IsNullOrWhiteSpace(query.SortBy))
+            {
+                if (string.Equals(query.SortBy, "AddingDay", StringComparison.OrdinalIgnoreCase))
+                {
+                    jokes = query.ByDescending ? jokes.OrderByDescending(j => j.AddedAt) : jokes.OrderBy(j => j.AddedAt);
+                }
             }
             return await jokes.ToListAsync();
         }
@@ -61,16 +69,16 @@ namespace api.Repository
             {
                 throw new KeyNotFoundException($"Joke with ID {id} not found.");
             }
-            if (jokeUpdateDTO == null || string.IsNullOrWhiteSpace(jokeUpdateDTO.Content))
+            if (jokeUpdateDTO == null)
             {
-                throw new ArgumentException("Joke content cannot be empty.");
+                throw new ArgumentException("Joke update cannot be empty.");
             }
-            joke.Content = jokeUpdateDTO.Content;
+            joke = joke.UpdateJokeFromJokeDTO(jokeUpdateDTO);
             _context.Jokes.Update(joke);
             await _context.SaveChangesAsync();
             return joke;
         }
-        public async Task DeleteJokeAsync(int id)
+        public async Task<Joke> DeleteJokeAsync(int id)
         {
             var joke = await _context.Jokes.FindAsync(id);
             if (joke == null)
@@ -79,6 +87,7 @@ namespace api.Repository
             }
             _context.Jokes.Remove(joke);
             await _context.SaveChangesAsync();
+            return joke;
         }
         public async Task<List<Comment>> GetCommentsByJokeIdAsync(int jokeId)
         {

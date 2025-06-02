@@ -9,7 +9,8 @@ namespace api.Helpers
     public class JokesQueryObject
     {
 
-        public DateTime? CreatingDay { get; set; } = null;
-        
+        public DateTime? AddingDay { get; set; } = null;
+        public string SortBy { get; set; } = string.Empty;
+        public bool ByDescending { get; set; } = false;
     }
 }
