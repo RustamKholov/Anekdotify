@@ -64,10 +64,9 @@ public class CommentClient
     {
         _comments.Add(commentCreateDTO.ToCommentFromCreateDTO(id: _comments.Count + 1));
     }
-    public void UpdateComment(CommentEditDTO commentEditDTO)
+    public void UpdateComment(CommentEditDTO commentEditDTO, int id)
     {
-        if (commentEditDTO.Id is null) throw new Exception("no comment id");
-        var existingComment = FindComment(commentEditDTO.Id.Value) ?? throw new Exception("comment not found");
+        var existingComment = FindComment(id) ?? throw new Exception("comment not found");
         existingComment.UpdateCommentFromEditDTO(commentEditDTO);
     }
     public Comment? GetComment(int id)

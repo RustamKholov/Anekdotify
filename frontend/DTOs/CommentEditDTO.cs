@@ -5,7 +5,6 @@ namespace frontend.DTOs;
 
 public class CommentEditDTO
 {
-    public int? Id { get; set; }
 
     public string Title { get; set; } = string.Empty;
 

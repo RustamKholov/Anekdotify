@@ -53,7 +53,6 @@ public static class CommentMappers
     {
         return new CommentEditDTO()
         {
-            Id = id,
             Title = commentCreateDTO.Title,
             Content = commentCreateDTO.Content
         };
@@ -63,7 +62,6 @@ public static class CommentMappers
     {
         return new CommentEditDTO()
         {
-            Id = comment.ID,
             Title = comment.Title,
             Content = comment.Content
         };
