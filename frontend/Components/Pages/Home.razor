@@ -1,7 +1,13 @@
 ﻿@page "/"
-
+@inject JokesClient jokesClient
+@inject CommentClient commentClient
 
 <PageTitle>Home</PageTitle>
+
+<div class="m-4">
+    <a class="btn btn-primary" role="button" href="/editJoke">New Joke</a>
+</div>
+
 @if(jokes == null){
     <p><em>Loading....</em></p>
 }
@@ -43,14 +49,11 @@ else{
     </table>
 
     @code {
-        private JokesClient client = new JokesClient();
-        private CommentClient? commentClient;
         private Joke[]? jokes;
         private Comment[]? comments;
-
         protected override void OnInitialized(){
-            jokes = client.GetJokes();
-            commentClient = new CommentClient(jokes);
+
+            jokes = jokesClient.GetJokes();
             comments = commentClient.GetComments();
             foreach (var joke in jokes){
                 foreach(var comment in comments){

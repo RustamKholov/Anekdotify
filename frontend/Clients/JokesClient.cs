@@ -31,8 +31,23 @@ public class JokesClient
 
     public Joke[] GetJokes() => jokes.ToArray();
 
-    public void AddGame(JokeCreateDTO jokeCreateDTO)
+    public void AddJoke(JokeCreateDTO jokeCreateDTO)
     {
-        jokes.Add(jokeCreateDTO.ToJokeFromCreateDTO(id:jokes.Count + 1));
+        jokes.Add(jokeCreateDTO.ToJokeFromCreateDTO(id: jokes.Count + 1));
+    }
+
+    public Joke? GetJoke(int id)
+    {
+        return FindJoke(id);
+    }
+
+    private Joke? FindJoke(int id)
+    {
+        return jokes.Find(joke => joke.Id == id);
+    }
+    public void UpdateJoke(JokeEditDTO jokeEditDTO)
+    {
+        var existingJoke = FindJoke(jokeEditDTO.Id) ?? throw new Exception("Joke does not exist");
+        existingJoke.UpdateJokeFromEditDTO(jokeEditDTO);
     }
 }

@@ -8,11 +8,10 @@ namespace frontend.Clients;
 public class CommentClient
 {
     private readonly List<Comment> _comments = [];
-    private readonly Joke[] _jokes;
 
-    public CommentClient(Joke[] jokes)
+
+    public CommentClient()
     {
-        _jokes = jokes;
         _comments = new(){
             new Comment()
             {

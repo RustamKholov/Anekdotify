@@ -1,23 +1,79 @@
 ﻿@page "/editJoke"
+@page "/editJoke/{id:int}"
+@inject NavigationManager NavigationManager 
+@inject JokesClient jokesClient
 
-<PageTitle>Edit Joke</PageTitle>
-<h3>Edit Joke</h3>
+<PageTitle>@Title</PageTitle>
+<h3>@Title</h3>
 
+@if(jokeCreateDTO is null) 
+{
+    <p><em>Loading....</em></p>
+}
+else
+{
     <div class="row">
         <div class="col-md-4">
-            <EditForm Model="@jokeEditDTO" FormName="editJoke">
+            <EditForm Model="@jokeCreateDTO" FormName="editJoke" OnValidSubmit="HandleSubmit">
+            <DataAnnotationsValidator/>
             <div class="mb-3">
                 <label for="title" class="form-label">Title:</label>
-                <InputText type="name" @bind-Value="jokeEditDTO.Title" class="form-control" id="title" />
+                <InputText type="name" @bind-Value="jokeCreateDTO.Title" class="form-control" id="title" />
+                <ValidationMessage For="() => jokeCreateDTO.Title"/>
             </div>
             <div class="mb-3">
                 <label for="content" class="form-label">Content:</label>
-                <InputTextArea  type="text" @bind-Value="jokeEditDTO.Content" class="form-control" id="content" />
+                <InputTextArea  type="text" @bind-Value="jokeCreateDTO.Content" class="form-control" id="content" />
+                <ValidationMessage For="() => jokeCreateDTO.Content"/>
             </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="submit" class="btn btn-primary" >Submit</button>
+            <a role="button" class="btn btn-secondary" href="/">Cancel</a>
             </EditForm>
         </div>
     </div>
+}
+    
 @code {
-    private JokeEditDTO jokeEditDTO {get; set;} = new();
+    [Parameter]
+    public int? Id {get; set;}
+
+    protected override void OnParametersSet()
+    {
+        if(jokeCreateDTO is not null)
+        {
+            return;
+        }
+        if(Id != null)
+        {
+            var joke = jokesClient.GetJoke(Id.Value) ?? throw new Exception("Joke not found");
+            jokeCreateDTO = joke.ToJokeCreateDTOFromJoke();
+            Title = $"Editing: {jokeCreateDTO.Title}";
+        }
+        else
+        {
+            jokeCreateDTO = new()
+                {
+                    Title = string.Empty,
+                    Content = string.Empty
+                };
+            Title = "New Joke";
+        }
+    }
+    [SupplyParameterFromForm]
+    private JokeCreateDTO? jokeCreateDTO {get; set;}
+    private string Title {get; set;} = string.Empty;
+    private void HandleSubmit()
+    {
+        ArgumentNullException.ThrowIfNull(jokeCreateDTO);
+
+        if(Id is null)
+        {
+            jokesClient.AddJoke(jokeCreateDTO);
+        }
+        else
+        {
+            jokesClient.UpdateJoke(jokeCreateDTO.ToEditFromCreate(Id.Value));
+        }
+        NavigationManager.NavigateTo("/");
+    }
 }
