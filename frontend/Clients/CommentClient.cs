@@ -77,4 +77,12 @@ public class CommentClient
     {
         return _comments.Find(c => c.ID == id);
     }
+    public void DeleteComment(int id)
+    {
+        var comment = FindComment(id);
+        if (comment != null)
+        {
+            _comments.Remove(comment);
+        }
+    }
 }

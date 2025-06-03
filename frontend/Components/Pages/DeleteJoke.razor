@@ -1,0 +1,45 @@
+﻿@inject JokesClient jokesClient
+@inject NavigationManager NavigationManager 
+@rendermode InteractiveServer
+
+<div class="modal fade" id="@GetModalId(Joke)" tabindex="-1" aria-labelledby="jokeLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="jokeLabel">@Title</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete @Joke?.Title</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @onclick="@Confirm">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public Joke? Joke {get; set;}
+
+    private string Title = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        Title = $"Delete {Joke?.Title}";
+    }
+    public static string GetModalId(Joke? joke)
+    {
+        ArgumentNullException.ThrowIfNull(joke);
+        return $"deleteModalJoke_{joke.Id}";
+    }
+
+    private void Confirm()
+    {
+        jokesClient.DeleteJoke(Joke!.Id);
+        NavigationManager.Refresh(true);
+    }
+}

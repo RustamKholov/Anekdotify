@@ -1,0 +1,49 @@
+﻿@inject CommentClient commentClient
+@inject JokesClient jokesClient
+@inject NavigationManager NavigationManager 
+@rendermode InteractiveServer
+
+<div class="modal fade" id="@GetModalIdComment(Comment)" tabindex="-1" aria-labelledby="commentLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="commentLabel">@Title</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete @Comment?.Title ? </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @onclick="@Confirm">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public Comment? Comment { get; set; }
+
+    private string Title = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        Title = $"Delete {Comment?.Title}";
+    }
+
+    public static string GetModalIdComment(Comment? comment)
+    {
+        ArgumentNullException.ThrowIfNull(comment);
+        return $"deleteModalIdComment_{comment.ID}";
+    }
+
+    private void Confirm()
+    {
+        commentClient.DeleteComment(Comment!.ID);
+        jokesClient.PopulateComments(commentClient.GetComments());
+        NavigationManager.Refresh(true);
+    }
+
+}

@@ -4,7 +4,7 @@
 
 <PageTitle>Home</PageTitle>
 
-<div class="m-5">
+<div class="m-2">
     <a class="btn btn-primary m-2" role="button" href="/editJoke" >New Joke</a>
     <a class="btn btn-secondary" role="button" href="/newComment">New Comment</a>
 </div>
@@ -13,16 +13,14 @@
     <p><em>Loading....</em></p>
 }
 else{
-    <table class="table table-striped-columns table-bordered table-hover">
+    <table class="table table-striped-columns table-bordered table-hover me-2">
         <thead class="table-dark">
             <th>ID</th>
             <th>Title</th>
             <th>Content</th>
             <th>Created</th>
             <th>Comments</th>
-            <th>
-
-            </th>
+            <th>Operations</th>
         </thead>
         <tbody>
             @foreach (var joke in jokes){
@@ -36,25 +34,45 @@ else{
                            @joke.Comments.Count
                         </button>
                         <ul class="dropdown-menu">
-                            @foreach(var comment in joke.Comments){
-                                <li>
-                                    <a class="dropdown-item" type="button">
-                                    <a><span class="label label-default m-2">@comment.Title </span> </a>
-                                    <a class="btn btn-light " role="button" href="@CommentUrl(comment.ID) "><i class="bi bi-pencil"></i></a>
+                            @foreach (var comment in joke.Comments)
+                            {
+                                <li class="px-2 py-1">
+                                    
+                                    <span class="me-2">@comment.Title</span>
+
+                                    <a class="btn btn-light me-1" href="@CommentUrl(comment.ID)">
+                                        <i class="bi bi-pencil"></i>
                                     </a>
+                                    <button type="button"
+                                            class="btn btn-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#@GetDeleteModalIdComment(comment)">
+                                            <i class="bi bi-trash"></i>
+                                    </button>
                                 </li>
                             }
                         </ul>
                     </td>
                     <td>
-                        <div>
+                        <div class="div-flex">
                             <a class="btn btn-primary me-2" role="button" href="@JokeUrl(joke.Id)">
                                 <i class="bi bi-pencil"></i>
                             </a>
+                            <button class="btn btn-danger"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#@GetDeleteModalId(joke)">
+                                    <i class="bi bi-trash"></i>
+                            </button>
                         </div>
+                        <DeleteJoke Joke="@joke" />
                     </td>
                 </tr>
+            @foreach (var comment in joke.Comments)
+                {
+                    <DeleteComment Comment="@comment" />
+                }
             }
+            
         </tbody>
     </table>
 }
@@ -62,12 +80,19 @@ else{
     private Joke[]? jokes;
     private Comment[]? comments;
     protected override void OnInitialized(){
-
-        jokes = jokesClient.GetJokes();
         comments = commentClient.GetComments();
-        jokesClient.PopulateComments(comments);
+        jokesClient.PopulateComments(commentClient.GetComments());
+        jokes = jokesClient.GetJokes();
     }
     private static string JokeUrl(int id) => $"/editJoke/{id}";
 
     private static string CommentUrl(int id) => $"/editComment/{id}";
+
+    private string GetDeleteModalId(Joke joke)
+    {
+        return $"{DeleteJoke.GetModalId(joke)}";
+    }
+    private string GetDeleteModalIdComment(Comment comment){
+        return $"{DeleteComment.GetModalIdComment(comment)}";
+    }
 }    

@@ -2,6 +2,7 @@
 @inject NavigationManager NavigationManager 
 @inject JokesClient jokesClient
 @inject CommentClient commentClient
+@rendermode InteractiveServer
 
 
 
@@ -32,7 +33,7 @@ else
             <div class="mb-3">
                 <label for="jokeId" class="form-label">Joke:</label>
                 <InputSelect @bind-Value="commentCreateDTO.JokeID" class="form-control" id="jokeId">
-                    <option value="">Selec a joke to comment</option>
+                    <option value="">Select a joke to comment</option>
                     @foreach(var jokeId in jokesIDs)
                     {
                         <option value="@jokeId">@jokesClient.GetTitle(jokeId)</option>

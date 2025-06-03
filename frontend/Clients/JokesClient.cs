@@ -55,6 +55,7 @@ public class JokesClient
     {
         foreach (var joke in jokes)
         {
+            joke.Comments.Clear();
             foreach (var comment in comments)
             {
                 if (comment.JokeID == joke.Id)
@@ -80,5 +81,13 @@ public class JokesClient
     public string? GetTitle(int id)
     {
         return FindJoke(id)?.Title;
+    }
+    public void DeleteJoke(int id)
+    {
+        var joke = FindJoke(id);
+        if (joke != null)
+        {
+            jokes.Remove(joke);
+        }
     }
 }
