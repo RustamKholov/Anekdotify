@@ -1,0 +1,79 @@
+﻿@page "/editComment/{id:int}"
+@inject NavigationManager NavigationManager 
+@inject JokesClient jokesClient
+@inject CommentClient commentClient
+
+<PageTitle>@Title</PageTitle>
+<h3>@Title</h3>
+
+@if(commentEditDTO is null || commentDTO is null)
+{
+    <p><em>Loading....</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm Model="@commentEditDTO" FormName="editComment" OnValidSubmit="OnSubmit">
+            <DataAnnotationsValidator/>
+            <div class="mb-3">
+                <label for="title" class="form-label">Title:</label>
+                <InputText type="name" @bind-Value="commentDTO.Title" class="form-control" id="title" />
+                <ValidationMessage For="() => commentEditDTO.Title"/>
+            </div>
+            <div class="mb-3">
+                <label for="content" class="form-label">Content:</label>
+                <InputTextArea  type="text" @bind-Value="commentDTO.Content" class="form-control" id="content" />
+                <ValidationMessage For="() => commentEditDTO.Content"/>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+            <a role="button" class="btn btn-secondary" href="/">Cancel</a>
+            </EditForm>
+        </div>
+    </div>
+}
+
+
+@code 
+{
+    [Parameter]
+    public int? Id {get; set;}
+
+    [SupplyParameterFromForm]
+    private CommentEditDTO? commentEditDTO { get; set; }
+
+    private CommentDTO? commentDTO {get; set;}
+
+    private string Title {get; set;} = string.Empty;
+
+    protected override void OnInitialized(){
+
+        commentEditDTO = new CommentEditDTO(){
+                Id = Id
+            };
+    }
+
+    protected override void OnParametersSet(){
+
+        if(Id is not null)
+        {
+
+            var comment = commentClient.GetComment(Id.Value) ?? throw new Exception("Comment not found");
+            commentDTO = new CommentDTO(){
+                Title = comment.Title,
+                Content = comment.Content
+            };
+            Title = $"Editing: {commentDTO.Title}";  
+        }
+    }
+  
+
+    private void OnSubmit()
+    {
+        ArgumentNullException.ThrowIfNull(commentEditDTO);
+
+        commentClient.UpdateComment(commentEditDTO);
+
+        NavigationManager.NavigateTo("/");
+    }
+}

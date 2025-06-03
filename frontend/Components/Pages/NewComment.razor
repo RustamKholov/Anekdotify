@@ -1,0 +1,88 @@
+﻿@page "/newComment"
+@inject NavigationManager NavigationManager 
+@inject JokesClient jokesClient
+@inject CommentClient commentClient
+
+
+
+<h3>NewComment</h3>
+
+
+
+@if(jokesIDs.Count == 0 || commentCreateDTO is null)
+{
+    <p><em>Loading....</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm Model="@commentCreateDTO" FormName="createComment" OnValidSubmit="OnSubmit">
+            <DataAnnotationsValidator/>
+            <div class="mb-3">
+                <label for="title" class="form-label">Title:</label>
+                <InputText type="title" @bind-Value="commentCreateDTO.Title" class="form-control" id="title" />
+                <ValidationMessage For="() => commentCreateDTO.Title"/>
+            </div>
+            <div class="mb-3">
+                <label for="content" class="form-label">Content:</label>
+                <InputTextArea  type="text" @bind-Value="commentCreateDTO.Content" class="form-control" id="content" />
+                <ValidationMessage For="() => commentCreateDTO.Content"/>
+            </div>
+            <div class="mb-3">
+                <label for="jokeId" class="form-label">Joke:</label>
+                <InputSelect @bind-Value="commentCreateDTO.JokeID" class="form-control" id="jokeId">
+                    <option value="">Selec a joke to comment</option>
+                    @foreach(var jokeId in jokesIDs)
+                    {
+                        <option value="@jokeId">@jokesClient.GetTitle(jokeId)</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => commentCreateDTO.JokeID"/>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+            <a role="button" class="btn btn-secondary" href="/">Cancel</a>
+            </EditForm>
+        </div>
+    </div>
+}
+
+
+@code {
+    [Parameter]
+    public int? Id {get; set;}
+    private string Title {get; set;} = string.Empty;
+    private List<int> jokesIDs = new List<int>();
+
+    [SupplyParameterFromForm]
+    private CommentCreateDTO? commentCreateDTO {get; set;}
+
+    protected override void OnInitialized()
+    {
+        jokesIDs = jokesClient.GetIDs();
+    }
+    protected override void OnParametersSet()
+    {
+        if(commentCreateDTO is not null)
+        {
+            return;
+        }
+
+        commentCreateDTO = new()
+            {
+                Title = string.Empty,
+                Content = string.Empty,
+                JokeID = 0
+            };
+        Title = "New Comment";
+    }
+
+    private void OnSubmit()
+    {
+        ArgumentNullException.ThrowIfNull(commentCreateDTO);
+
+        commentClient.AddComment(commentCreateDTO);
+
+        NavigationManager.NavigateTo("/");
+    }
+}

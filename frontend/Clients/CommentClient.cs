@@ -22,35 +22,35 @@ public class CommentClient
             },
             new Comment()
             {
-                ID = 1,
+                ID = 2,
                 Title = "Second Title",
                 Content = "The Content",
                 JokeID = 1
             },
             new Comment()
             {
-                ID = 1,
+                ID = 3,
                 Title = "Third Title",
                 Content = "The Content",
                 JokeID = 2
             },
             new Comment()
             {
-                ID = 1,
+                ID = 4,
                 Title = "Fourth Title",
                 Content = "The Content",
                 JokeID = 2
             },
             new Comment()
             {
-                ID = 1,
+                ID = 5,
                 Title = "Fifth Title",
                 Content = "The Content",
                 JokeID = 3
             },
             new Comment()
             {
-                ID = 1,
+                ID = 6,
                 Title = "Sixth Title",
                 Content = "The Content",
                 JokeID = 3
@@ -60,8 +60,22 @@ public class CommentClient
 
     public Comment[] GetComments() => _comments.ToArray();
 
-    public void AddComment(CommentCreateDTO commentCreateDTO, int jokeId)
+    public void AddComment(CommentCreateDTO commentCreateDTO)
     {
-        _comments.Add(commentCreateDTO.ToCommentFromCreateDTO(jokeId, id: _comments.Count + 1));
+        _comments.Add(commentCreateDTO.ToCommentFromCreateDTO(id: _comments.Count + 1));
+    }
+    public void UpdateComment(CommentEditDTO commentEditDTO)
+    {
+        if (commentEditDTO.Id is null) throw new Exception("no comment id");
+        var existingComment = FindComment(commentEditDTO.Id.Value) ?? throw new Exception("comment not found");
+        existingComment.UpdateCommentFromEditDTO(commentEditDTO);
+    }
+    public Comment? GetComment(int id)
+    {
+        return FindComment(id);
+    }
+    private Comment? FindComment(int id)
+    {
+        return _comments.Find(c => c.ID == id);
     }
 }

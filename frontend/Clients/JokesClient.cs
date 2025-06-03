@@ -50,4 +50,35 @@ public class JokesClient
         var existingJoke = FindJoke(jokeEditDTO.Id) ?? throw new Exception("Joke does not exist");
         existingJoke.UpdateJokeFromEditDTO(jokeEditDTO);
     }
+
+    public void PopulateComments(Comment[] comments)
+    {
+        foreach (var joke in jokes)
+        {
+            foreach (var comment in comments)
+            {
+                if (comment.JokeID == joke.Id)
+                {
+                    if (!joke.Comments.Contains(comment))
+                    {
+                        joke.Comments.Add(comment);
+                    }
+                }
+            }
+        }
+    }
+
+    public List<int> GetIDs()
+    {
+        var list = new List<int>();
+        foreach (var joke in jokes)
+        {
+            list.Add(joke.Id);
+        }
+        return list;
+    }
+    public string? GetTitle(int id)
+    {
+        return FindJoke(id)?.Title;
+    }
 }

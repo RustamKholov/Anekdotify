@@ -4,8 +4,9 @@
 
 <PageTitle>Home</PageTitle>
 
-<div class="m-4">
-    <a class="btn btn-primary" role="button" href="/editJoke">New Joke</a>
+<div class="m-5">
+    <a class="btn btn-primary m-2" role="button" href="/editJoke" >New Joke</a>
+    <a class="btn btn-secondary" role="button" href="/newComment">New Comment</a>
 </div>
 
 @if(jokes == null){
@@ -36,32 +37,37 @@ else{
                         </button>
                         <ul class="dropdown-menu">
                             @foreach(var comment in joke.Comments){
-                                <li><a class="dropdown-item" href="#">@comment.Title</a></li>
+                                <li>
+                                    <a class="dropdown-item" type="button">
+                                    <a><span class="label label-default m-2">@comment.Title </span> </a>
+                                    <a class="btn btn-light " role="button" href="@CommentUrl(comment.ID) "><i class="bi bi-pencil"></i></a>
+                                    </a>
+                                </li>
                             }
                         </ul>
                     </td>
                     <td>
-
+                        <div>
+                            <a class="btn btn-primary me-2" role="button" href="@JokeUrl(joke.Id)">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </div>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
-
-    @code {
-        private Joke[]? jokes;
-        private Comment[]? comments;
-        protected override void OnInitialized(){
-
-            jokes = jokesClient.GetJokes();
-            comments = commentClient.GetComments();
-            foreach (var joke in jokes){
-                foreach(var comment in comments){
-                    if(comment.JokeID == joke.Id){
-                        joke.Comments.Add(comment);
-                    }
-                }
-            }
-        }
-    }    
 }
+@code {
+    private Joke[]? jokes;
+    private Comment[]? comments;
+    protected override void OnInitialized(){
+
+        jokes = jokesClient.GetJokes();
+        comments = commentClient.GetComments();
+        jokesClient.PopulateComments(comments);
+    }
+    private static string JokeUrl(int id) => $"/editJoke/{id}";
+
+    private static string CommentUrl(int id) => $"/editComment/{id}";
+}    

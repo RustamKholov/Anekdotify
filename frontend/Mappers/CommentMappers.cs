@@ -16,14 +16,56 @@ public static class CommentMappers
         };
     }
 
-    public static Comment ToCommentFromCreateDTO(this CommentCreateDTO createDTO, int jokeId, int id)
+    public static Comment ToCommentFromCreateDTO(this CommentCreateDTO createDTO, int id)
     {
         return new Comment()
         {
             ID = id,
             Title = createDTO.Title,
             Content = createDTO.Content,
-            JokeID = jokeId
+            JokeID = createDTO.JokeID
+        };
+    }
+    public static Comment UpdateCommentFromEditDTO(this Comment comment, CommentEditDTO commnetEditDTO)
+    {
+        if (!string.IsNullOrEmpty(commnetEditDTO.Title))
+        {
+            comment.Title = commnetEditDTO.Title;
+        }
+        if (!string.IsNullOrEmpty(commnetEditDTO.Content))
+        {
+            comment.Content = commnetEditDTO.Content;
+        }
+        return comment;
+    }
+
+    public static CommentCreateDTO ToCommentCreateDTOFromComment(this Comment comment)
+    {
+        return new CommentCreateDTO()
+        {
+            Title = comment.Title,
+            Content = comment.Content,
+            JokeID = comment.JokeID
+        };
+    }
+
+    public static CommentEditDTO ToEditDTOFromCreateDTO(this CommentCreateDTO commentCreateDTO, int id)
+    {
+        return new CommentEditDTO()
+        {
+            Id = id,
+            Title = commentCreateDTO.Title,
+            Content = commentCreateDTO.Content
+        };
+    }
+
+    public static CommentEditDTO ToCommentEditDTO(this Comment comment)
+    {
+        return new CommentEditDTO()
+        {
+            Id = comment.ID,
+            Title = comment.Title,
+            Content = comment.Content
         };
     }
 }
