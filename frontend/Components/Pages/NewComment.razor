@@ -10,7 +10,7 @@
 
 
 
-@if(jokesIDs.Count == 0 || commentCreateDTO is null)
+@if(jokes.Length == 0 || commentCreateDTO is null)
 {
     <p><em>Loading....</em></p>
 }
@@ -18,7 +18,7 @@ else
 {
     <div class="row">
         <div class="col-md-4">
-            <EditForm Model="@commentCreateDTO" FormName="createComment" OnValidSubmit="OnSubmit">
+            <EditForm Model="@commentCreateDTO" FormName="createComment" OnValidSubmit="OnSubmitAsync">
             <DataAnnotationsValidator/>
             <div class="mb-3">
                 <label for="title" class="form-label">Title:</label>
@@ -34,9 +34,9 @@ else
                 <label for="jokeId" class="form-label">Joke:</label>
                 <InputSelect @bind-Value="commentCreateDTO.JokeID" class="form-control" id="jokeId">
                     <option value="">Select a joke to comment</option>
-                    @foreach(var jokeId in jokesIDs)
+                    @foreach(var joke in jokes)
                     {
-                        <option value="@jokeId">@jokesClient.GetTitle(jokeId)</option>
+                        <option value="@joke.Id">@joke.Title</option>
                     }
                 </InputSelect>
                 <ValidationMessage For="() => commentCreateDTO.JokeID"/>
@@ -53,14 +53,14 @@ else
     [Parameter]
     public int? Id {get; set;}
     private string Title {get; set;} = string.Empty;
-    private List<int> jokesIDs = new List<int>();
+    private Joke[] jokes = [];
 
     [SupplyParameterFromForm]
     private CommentCreateDTO? commentCreateDTO {get; set;}
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        jokesIDs = jokesClient.GetIDs();
+        jokes = await jokesClient.GetJokesAsync();
     }
     protected override void OnParametersSet()
     {
@@ -78,11 +78,11 @@ else
         Title = "New Comment";
     }
 
-    private void OnSubmit()
+    private async Task OnSubmitAsync()
     {
         ArgumentNullException.ThrowIfNull(commentCreateDTO);
 
-        commentClient.AddComment(commentCreateDTO);
+        await commentClient.AddCommentAsync(commentCreateDTO);
 
         NavigationManager.NavigateTo("/");
     }

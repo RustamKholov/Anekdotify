@@ -15,7 +15,7 @@ else
 {
     <div class="row">
         <div class="col-md-4">
-            <EditForm Model="@commentEditDTO" FormName="editComment" OnValidSubmit="OnSubmit">
+            <EditForm Model="@commentEditDTO" FormName="editComment" OnValidSubmit="OnSubmitAsync">
             <DataAnnotationsValidator/>
             <div class="mb-3">
                 <label for="title" class="form-label">Title:</label>
@@ -43,7 +43,7 @@ else
     private CommentEditDTO? commentEditDTO { get; set; }
     private string Title {get; set;} = string.Empty;
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         if (commentEditDTO is not null){
             return;
@@ -51,7 +51,7 @@ else
         if(Id is not null)
         {
 
-            var comment = commentClient.GetComment(Id.Value) ?? throw new Exception("Comment not found");
+            var comment = await commentClient.GetCommentAsync(Id.Value) ?? throw new Exception("Comment not found");
             commentEditDTO = new CommentEditDTO(){
                 Title = comment.Title,
                 Content = comment.Content
@@ -61,12 +61,12 @@ else
     }
     
 
-    private void OnSubmit()
+    private async Task OnSubmitAsync()
     {
         ArgumentNullException.ThrowIfNull(commentEditDTO);
         ArgumentNullException.ThrowIfNull(Id);
 
-        commentClient.UpdateComment(commentEditDTO, Id.Value);
+        await commentClient.UpdateCommentAsync(commentEditDTO, Id.Value);
 
         NavigationManager.NavigateTo("/");
     }

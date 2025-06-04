@@ -86,6 +86,8 @@ namespace api.Repository
                 throw new KeyNotFoundException($"Joke with ID {id} not found.");
             }
             _context.Jokes.Remove(joke);
+            var commentsToDelete = _context.Comments.Where(c => c.JokeId == joke.Id);
+            _context.Comments.RemoveRange(commentsToDelete);
             await _context.SaveChangesAsync();
             return joke;
         }

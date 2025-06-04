@@ -1,88 +1,26 @@
 using System;
+using System.Threading.Tasks;
 using frontend.DTOs;
 using frontend.Mappers;
 using frontend.Models;
 
 namespace frontend.Clients;
 
-public class CommentClient
+public class CommentClient(HttpClient httpClient)
 {
-    private readonly List<Comment> _comments = [];
+    
+    public async Task<Comment[]> GetCommentsAsync()
+    => await httpClient.GetFromJsonAsync<Comment[]>("api/comments") ?? [];
 
+    public async Task AddCommentAsync(CommentCreateDTO commentCreateDTO)
+        => await httpClient.PostAsJsonAsync($"api/comments/{commentCreateDTO.JokeID}", commentCreateDTO);
 
-    public CommentClient()
-    {
-        _comments = new(){
-            new Comment()
-            {
-                ID = 1,
-                Title = "First Title",
-                Content = "The Content",
-                JokeID = 1
-            },
-            new Comment()
-            {
-                ID = 2,
-                Title = "Second Title",
-                Content = "The Content",
-                JokeID = 1
-            },
-            new Comment()
-            {
-                ID = 3,
-                Title = "Third Title",
-                Content = "The Content",
-                JokeID = 2
-            },
-            new Comment()
-            {
-                ID = 4,
-                Title = "Fourth Title",
-                Content = "The Content",
-                JokeID = 2
-            },
-            new Comment()
-            {
-                ID = 5,
-                Title = "Fifth Title",
-                Content = "The Content",
-                JokeID = 3
-            },
-            new Comment()
-            {
-                ID = 6,
-                Title = "Sixth Title",
-                Content = "The Content",
-                JokeID = 3
-            },
-        };
-    }
+    public async Task UpdateCommentAsync(CommentEditDTO commentEditDTO, int id)
+        => await httpClient.PutAsJsonAsync($"api/comments/{id}", commentEditDTO);
 
-    public Comment[] GetComments() => _comments.ToArray();
+    public async Task<Comment> GetCommentAsync(int id)
+        => await httpClient.GetFromJsonAsync<Comment>($"api/comments/{id}") ?? throw new Exception("comment not found");
 
-    public void AddComment(CommentCreateDTO commentCreateDTO)
-    {
-        _comments.Add(commentCreateDTO.ToCommentFromCreateDTO(id: _comments.Count + 1));
-    }
-    public void UpdateComment(CommentEditDTO commentEditDTO, int id)
-    {
-        var existingComment = FindComment(id) ?? throw new Exception("comment not found");
-        existingComment.UpdateCommentFromEditDTO(commentEditDTO);
-    }
-    public Comment? GetComment(int id)
-    {
-        return FindComment(id);
-    }
-    private Comment? FindComment(int id)
-    {
-        return _comments.Find(c => c.ID == id);
-    }
-    public void DeleteComment(int id)
-    {
-        var comment = FindComment(id);
-        if (comment != null)
-        {
-            _comments.Remove(comment);
-        }
-    }
+    public async Task DeleteCommentAsync(int id)
+        => await httpClient.DeleteAsync($"api/comments/{id}");
 }

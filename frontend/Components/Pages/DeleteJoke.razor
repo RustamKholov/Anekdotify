@@ -1,6 +1,5 @@
 ﻿@inject JokesClient jokesClient
 @inject NavigationManager NavigationManager 
-@rendermode InteractiveServer
 
 <div class="modal fade" id="@GetModalId(Joke)" tabindex="-1" aria-labelledby="jokeLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -14,7 +13,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @onclick="@Confirm">Delete</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @onclick="@ConfirmAsync">Delete</button>
       </div>
     </div>
   </div>
@@ -37,9 +36,9 @@
         return $"deleteModalJoke_{joke.Id}";
     }
 
-    private void Confirm()
+    private async Task ConfirmAsync()
     {
-        jokesClient.DeleteJoke(Joke!.Id);
-        NavigationManager.Refresh(true);
+        await jokesClient.DeleteJoke(Joke!.Id);
+        NavigationManager.Refresh();
     }
 }

@@ -15,7 +15,7 @@ else
 {
     <div class="row">
         <div class="col-md-4">
-            <EditForm Model="@jokeCreateDTO" FormName="editJoke" OnValidSubmit="HandleSubmit">
+            <EditForm Model="@jokeCreateDTO" FormName="editJoke" OnValidSubmit="HandleSubmitAsync">
             <DataAnnotationsValidator/>
             <div class="mb-3">
                 <label for="title" class="form-label">Title:</label>
@@ -38,7 +38,7 @@ else
     [Parameter]
     public int? Id {get; set;}
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         if(jokeCreateDTO is not null)
         {
@@ -46,7 +46,7 @@ else
         }
         if(Id != null)
         {
-            var joke = jokesClient.GetJoke(Id.Value) ?? throw new Exception("Joke not found");
+            var joke = await jokesClient.GetJokeAsync(Id.Value) ?? throw new Exception("Joke not found");
             jokeCreateDTO = joke.ToJokeCreateDTOFromJoke();
             Title = $"Editing: {jokeCreateDTO.Title}";
         }
@@ -63,17 +63,17 @@ else
     [SupplyParameterFromForm]
     private JokeCreateDTO? jokeCreateDTO {get; set;}
     private string Title {get; set;} = string.Empty;
-    private void HandleSubmit()
+    private async Task HandleSubmitAsync()
     {
         ArgumentNullException.ThrowIfNull(jokeCreateDTO);
 
         if(Id is null)
         {
-            jokesClient.AddJoke(jokeCreateDTO);
+            await jokesClient.AddJokeAsync(jokeCreateDTO);
         }
         else
         {
-            jokesClient.UpdateJoke(jokeCreateDTO.ToEditFromCreate(Id.Value));
+            await jokesClient.UpdateJokeAsync(jokeCreateDTO.ToEditFromCreate(Id.Value));
         }
         NavigationManager.NavigateTo("/");
     }

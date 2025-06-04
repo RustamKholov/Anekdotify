@@ -1,6 +1,4 @@
 ﻿@page "/"
-@inject JokesClient jokesClient
-@inject CommentClient commentClient
 
 <PageTitle>Home</PageTitle>
 
@@ -9,90 +7,4 @@
     <a class="btn btn-secondary" role="button" href="/newComment">New Comment</a>
 </div>
 
-@if(jokes == null){
-    <p><em>Loading....</em></p>
-}
-else{
-    <table class="table table-striped-columns table-bordered table-hover me-2">
-        <thead class="table-dark">
-            <th>ID</th>
-            <th>Title</th>
-            <th>Content</th>
-            <th>Created</th>
-            <th>Comments</th>
-            <th>Operations</th>
-        </thead>
-        <tbody>
-            @foreach (var joke in jokes){
-                <tr>
-                    <td>@joke.Id</td>
-                    <td>@joke.Title</td>
-                    <td>@joke.Content</td>
-                    <td>@joke.CreatedAt.ToString("dd.MM.yyyy")</td>
-                    <td>
-                        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                           @joke.Comments.Count
-                        </button>
-                        <ul class="dropdown-menu">
-                            @foreach (var comment in joke.Comments)
-                            {
-                                <li class="px-2 py-1">
-                                    
-                                    <span class="me-2">@comment.Title</span>
-
-                                    <a class="btn btn-light me-1" href="@CommentUrl(comment.ID)">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <button type="button"
-                                            class="btn btn-danger"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#@GetDeleteModalIdComment(comment)">
-                                            <i class="bi bi-trash"></i>
-                                    </button>
-                                </li>
-                            }
-                        </ul>
-                    </td>
-                    <td>
-                        <div class="div-flex">
-                            <a class="btn btn-primary me-2" role="button" href="@JokeUrl(joke.Id)">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <button class="btn btn-danger"
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#@GetDeleteModalId(joke)">
-                                    <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                        <DeleteJoke Joke="@joke" />
-                    </td>
-                </tr>
-            @foreach (var comment in joke.Comments)
-                {
-                    <DeleteComment Comment="@comment" />
-                }
-            }
-            
-        </tbody>
-    </table>
-}
-@code {
-    private Joke[]? jokes;
-    private Comment[]? comments;
-    protected override void OnInitialized(){
-        comments = commentClient.GetComments();
-        jokesClient.PopulateComments(commentClient.GetComments());
-        jokes = jokesClient.GetJokes();
-    }
-    private static string JokeUrl(int id) => $"/editJoke/{id}";
-
-    private static string CommentUrl(int id) => $"/editComment/{id}";
-
-    private string GetDeleteModalId(Joke joke)
-    {
-        return $"{DeleteJoke.GetModalId(joke)}";
-    }
-    private string GetDeleteModalIdComment(Comment comment){
-        return $"{DeleteComment.GetModalIdComment(comment)}";
-    }
-}    
+<JokesTable @rendermode="RenderMode.InteractiveServer"></JokesTable>

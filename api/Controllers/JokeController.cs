@@ -18,10 +18,12 @@ namespace api.Controllers
     public class JokeController : ControllerBase
     {
         private readonly IJokeRepository _jokeRepo;
+        private readonly ICommentRepository _commentRepo;
         // Constructor to inject the ApplicationDBContext
-        public JokeController(IJokeRepository jokeRepo)
+        public JokeController(IJokeRepository jokeRepo, ICommentRepository commentRepo)
         {
             _jokeRepo = jokeRepo;
+            _commentRepo = commentRepo;
         }
 
         [HttpGet]
