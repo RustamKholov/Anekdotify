@@ -1,5 +1,6 @@
 ﻿@inject JokesClient jokesClient
 @inject NavigationManager NavigationManager 
+@rendermode RenderMode.InteractiveServer
 
 <div class="modal fade" id="@GetModalId(Joke)" tabindex="-1" aria-labelledby="jokeLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -33,7 +34,7 @@
     public static string GetModalId(Joke? joke)
     {
         ArgumentNullException.ThrowIfNull(joke);
-        return $"deleteModalJoke_{joke.Id}";
+        return $"modal_{joke.Id}";
     }
 
     private async Task ConfirmAsync()

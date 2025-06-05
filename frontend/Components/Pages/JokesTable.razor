@@ -2,78 +2,19 @@
 @inject CommentClient commentClient
 @inject NavigationManager NavigationManager
 
-
 @if(jokes == null){
     <p><em>Loading....</em></p>
 }
-else{
-    <table class="table table-striped-columns table-bordered table-hover me-2">
-        <thead class="table-dark">
-            <th>ID</th>
-            <th>Title</th>
-            <th>Content</th>
-            <th>Created</th>
-            <th>Comments</th>
-            <th>Operations</th>
-        </thead>
-        <tbody>
-            @foreach (var joke in jokes){
-                <tr>
-                    <td>@joke.Id</td>
-                    <td>@joke.Title</td>
-                    <td>@joke.Content</td>
-                    <td>@joke.CreatedAt.ToString("dd.MM.yyyy")</td>
-                    <td>
-                        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                           @joke.Comments.Count
-                        </button>
-                        <ul class="dropdown-menu">
-                            @foreach (var comment in joke.Comments)
-                            {
-                                <li class="px-2 py-1">
-                                    
-                                    <span class="me-2">@comment.Title</span>
-
-                                    <a class="btn btn-light me-1" href="@CommentUrl(comment.ID)">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <button type="button"
-                                            class="btn btn-danger"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#@GetDeleteModalIdComment(comment)">
-                                            <i class="bi bi-trash"></i>
-                                    </button>
-                                </li>
-                            }
-                        </ul>
-                    </td>
-                    <td>
-                        <div class="div-flex">
-                            <a class="btn btn-primary me-2" role="button" href="@JokeUrl(joke.Id)">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <button class="btn btn-danger"
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#@GetDeleteModalId(joke)">
-                                    <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                        <DeleteJoke Joke="@joke" @rendermode="RenderMode.InteractiveServer" />
-                    </td>
-                </tr>
-            @if (comments != null)
-            {
-                foreach (var comment in comments)
-                {
-                    <DeleteComment Comment="@comment"
-                                   OnDeleteConfirmed="@(async () => await commentClient.DeleteCommentAsync(comment.ID))"
-                                   @rendermode="RenderMode.InteractiveServer" />
-                }
-            }
-            }
-            
-        </tbody>
-    </table>
+else
+{
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        @foreach (var joke in jokes)
+        {
+            <div class="col">
+                <JokeCard Joke="@joke" />
+            </div>
+        }
+    </div>
 }
 @code {
     private Joke[]? jokes;
@@ -83,7 +24,6 @@ else{
         comments = await commentClient.GetCommentsAsync();
         jokes = await jokesClient.GetJokesAsync();
     }
-    private static string JokeUrl(int id) => $"/editJoke/{id}";
 
     private static string CommentUrl(int id) => $"/editComment/{id}";
 
@@ -91,7 +31,26 @@ else{
     {
         return $"{DeleteJoke.GetModalId(joke)}";
     }
-    private string GetDeleteModalIdComment(Comment comment){
-        return $"{DeleteComment.GetModalIdComment(comment)}";
+
+    private async Task CompleteDeletion(int commentId)
+    {
+        await commentClient.DeleteCommentAsync(commentId);
+        DeleteCommentLocal(commentId);
+        NavigationManager.Refresh();
+    }
+
+    private void DeleteCommentLocal(int commentId)
+    {
+        if (comments == null || jokes == null) return;
+        var comment = comments.FirstOrDefault(c => c.ID == commentId);
+        if (comment == null) return;
+        var comms = comments.ToList();
+        comms.Remove(comment);
+        comments = comms.ToArray();
+        var joke = jokes.FirstOrDefault(joke => joke.Id == comment.JokeID);
+        if (joke == null) return;
+        var commInJoke = joke.Comments.FirstOrDefault(c => c.ID == comment.ID);
+        if (commInJoke == null) return;
+        joke.Comments.Remove(commInJoke);
     }
 }    

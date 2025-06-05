@@ -1,0 +1,68 @@
+﻿@inject CommentClient CommentClient
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+@rendermode RenderMode.InteractiveServer
+
+<div class="collapse" id="addNewCommentToJoke_@JokeId"> 
+    <EditForm Model="@commentCreateDTO" FormName="createComment" OnValidSubmit="OnSubmitAsync">
+        <DataAnnotationsValidator/>
+    <div class="mb-3">
+        <label for="title" class="form-label">Title</label>
+        <InputText type="title" @bind-Value="commentCreateDTO!.Title" class="form-control" id="title" />
+                    <ValidationMessage For="() => commentCreateDTO.Title"/>
+    </div>
+    <div class="mb-3">
+        <label for="content" class="form-label">Content</label>
+        <InputTextArea  type="text" @bind-Value="commentCreateDTO.Content" class="form-control" id="content" />
+        <ValidationMessage For="() => commentCreateDTO.Content"/>
+    </div>
+    <button type="submit" class="btn btn-primary">Post</button>
+    </EditForm>
+</div>
+
+
+@code {
+
+    [Parameter]
+    public int JokeId {get; set;}
+
+    [SupplyParameterFromForm]
+    private CommentCreateDTO? commentCreateDTO {get; set;}
+
+    protected override void OnParametersSet()
+    {
+        if(commentCreateDTO is not null)
+        {
+            return;
+        }
+        commentCreateDTO = new()
+            {
+                Title = string.Empty,
+                Content = string.Empty,
+                JokeID = JokeId
+            };
+    }
+
+    private async Task OnSubmitAsync()
+    {
+        ArgumentNullException.ThrowIfNull(commentCreateDTO);
+
+        await CommentClient.AddCommentAsync(commentCreateDTO);
+
+        // Collapse the form using Bootstrap's JavaScript API
+
+        await JS.InvokeVoidAsync("bootstrap.Collapse.getOrCreateInstance", $"#addNewCommentToJoke_{JokeId}");
+        var collapseInstance = await JS.InvokeAsync<IJSObjectReference>("bootstrap.Collapse.getInstance", $"#addNewCommentToJoke_{JokeId}");
+        if (collapseInstance != null)
+        {
+            await collapseInstance.InvokeVoidAsync("hide");
+        }
+        commentCreateDTO = new CommentCreateDTO
+        {
+            Title = string.Empty,
+            Content = string.Empty,
+            JokeID = JokeId
+        };
+        NavigationManager.Refresh();
+    }
+}
