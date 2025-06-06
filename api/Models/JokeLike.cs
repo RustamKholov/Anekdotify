@@ -7,7 +7,7 @@ public partial class JokeLike
 {
     public int LikeId { get; set; }
 
-    public int UserId { get; set; }
+    public string UserId { get; set; } = null!;
 
     public int JokeId { get; set; }
 

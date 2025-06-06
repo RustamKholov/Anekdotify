@@ -13,7 +13,7 @@ namespace api.DTOs.Comments
         public DateTime CommentDate { get; set; }
         public int JokeId { get; set; }
 
-        public int UserId { get; set; }
+        public string UserId { get; set; } = null!;
 
         public string Username { get; set; } = string.Empty;
         public int? ParentCommentId { get; set; }

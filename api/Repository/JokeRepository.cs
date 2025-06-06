@@ -25,7 +25,11 @@ namespace api.Repository
         public async Task<List<JokeDTO>> GetAllJokesAsync(JokesQueryObject query)
         {
             var jokes = _context.Jokes
-                .Include(j => j.Comments)
+                .Include(j => j.Classification) // To get ClassificationName
+                .Include(j => j.JokeRatings)     // To calculate TotalLikes/Dislikes
+                .Include(j => j.Comments)        // To get comments
+                    .ThenInclude(c => c.User)    // To get Usernames for comments
+                    .ThenInclude(c => c.CommentRatings)
                 .AsQueryable();
             if (query.AddingDay.HasValue)
             {
@@ -40,7 +44,9 @@ namespace api.Repository
                     jokes = query.ByDescending ? jokes.OrderByDescending(j => j.SubbmissionDate) : jokes.OrderBy(j => j.SubbmissionDate);
                 }
             }
-            var allJokes = await jokes.ToListAsync();
+            var skipNumber = (query.PageNumber - 1) * query.PageSize;
+
+            var allJokes = await jokes.Skip(skipNumber).Take(query.PageSize).ToListAsync();
             var allJokesDTOS = allJokes.Select(j => j.ToJokeDTO()).ToList();
             return allJokesDTOS;
         }
@@ -61,14 +67,14 @@ namespace api.Repository
             var jokeDTO = joke.ToJokeDTO();
             return jokeDTO;
         }
-        public async Task<Joke> CreateJokeAsync(JokeCreateDTO jokeCreateDTO)
+        public async Task<Joke> CreateJokeAsync(JokeCreateDTO jokeCreateDTO, string userId)
         {
             if (jokeCreateDTO == null || string.IsNullOrWhiteSpace(jokeCreateDTO.Text))
             {
                 throw new ArgumentException("Joke content cannot be empty.");
             }
 
-            var joke = jokeCreateDTO.ToJokeFromCreateDTO();
+            var joke = jokeCreateDTO.ToJokeFromCreateDTO(userId);
 
             await _context.Jokes.AddAsync(joke);
             await _context.SaveChangesAsync();

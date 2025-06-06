@@ -15,11 +15,11 @@ public partial class Joke
 
     public bool IsApproved { get; set; }
 
-    public int? SubbmitedByUserId { get; set; }
+    public string SubbmitedByUserId { get; set; } = null!;
 
     public DateTime? ApprovalDate { get; set; }
 
-    public int? ApprovedByUserId { get; set; }
+    public string? ApprovedByUserId { get; set; } = null!;
 
     public int? ClassificationId { get; set; }
 

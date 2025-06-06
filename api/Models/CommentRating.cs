@@ -7,7 +7,7 @@ public partial class CommentRating
 {
     public int CommentRateId { get; set; }
 
-    public int UserId { get; set; }
+    public string UserId { get; set; } = null!;
 
     public int CommentId { get; set; }
 

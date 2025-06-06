@@ -30,7 +30,7 @@ namespace api.Mappers
                 Comments = joke.Comments.ToList().BuildHierarchicalComments()
             };
         }
-        public static Joke ToJokeFromCreateDTO(this JokeCreateDTO jokeCreateDTO)
+        public static Joke ToJokeFromCreateDTO(this JokeCreateDTO jokeCreateDTO, string userId)
         {
             if (jokeCreateDTO == null)
             {
@@ -41,7 +41,8 @@ namespace api.Mappers
             {
                 Text = jokeCreateDTO.Text,
                 ClassificationId = jokeCreateDTO.ClassificationId,
-                Source = jokeCreateDTO.Source
+                Source = jokeCreateDTO.Source,
+                SubbmitedByUserId = userId
             };
         }
         public static Joke UpdateJokeFromJokeDTO(this Joke jokeModel, JokeUpdateDTO jokeUpdateDTO)

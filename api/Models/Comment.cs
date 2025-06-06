@@ -13,7 +13,7 @@ public partial class Comment
 
     public int JokeId { get; set; }
 
-    public int UserId { get; set; }
+    public string UserId { get; set; } = null!;
 
     public int? ParentCommentId { get; set; }
 

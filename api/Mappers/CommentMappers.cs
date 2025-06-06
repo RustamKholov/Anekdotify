@@ -20,12 +20,12 @@ namespace api.Mappers
                 CommentDate = commentModel.CommentDate,
                 JokeId = commentModel.JokeId,
                 UserId = commentModel.UserId,
-                Username = commentModel.User?.Username ?? "Unknown Username",
+                Username = commentModel.User?.UserName ?? "Unknown Username",
                 TotalLikes = totalLikes,
                 TotalDislikes = totalDislikes
             };
         }
-        public static Comment ToCommentFromCreateDTO(this CommentCreateDTO commentCreateDTO, int jokeId, int userId)
+        public static Comment ToCommentFromCreateDTO(this CommentCreateDTO commentCreateDTO, int jokeId, string userId)
         {
             return new Comment
             {

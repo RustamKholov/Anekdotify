@@ -60,13 +60,12 @@ namespace api.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if (string.IsNullOrEmpty(userIdString))
+            if (string.IsNullOrEmpty(userId))
             {
-                return Unauthorized("User is not authenticated or user ID not found.");
+                return Unauthorized("User ID not found in token claims.");
             }
-            var userId = int.Parse(userIdString);
             if (!await _jokeRepo.JokeExists(jokeId))
             {
                 return BadRequest($"Joke with id {jokeId} not exist");
@@ -75,8 +74,8 @@ namespace api.Controllers
             {
                 return BadRequest("Comment content cannot be empty");
             }
-
-            var comment = commentCreateDTO.ToCommentFromCreateDTO(jokeId, userId);
+            ArgumentNullException.ThrowIfNull(userId);
+            var comment = commentCreateDTO.ToCommentFromCreateDTO(jokeId, userId); //TODO
             await _commentRepo.CreateCommentAsync(comment);
 
             return CreatedAtAction(nameof(GetCommentById), new { id = comment.CommentId }, comment.ToCommentDTO());

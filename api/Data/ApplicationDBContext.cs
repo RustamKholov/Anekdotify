@@ -2,15 +2,13 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using api.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace api.Data;
 
-public partial class ApplicationDBContext : DbContext
+public partial class ApplicationDBContext : IdentityDbContext<User>
 {
-    public ApplicationDBContext()
-    {
-    }
-
     public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options)
         : base(options)
     {
@@ -30,14 +28,35 @@ public partial class ApplicationDBContext : DbContext
 
     public virtual DbSet<Joke> Jokes { get; set; }
 
-    public virtual DbSet<User> Users { get; set; }
-
     public virtual DbSet<UserSavedJoke> UserSavedJokes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
+        List<IdentityRole> roles = new List<IdentityRole>
+        {
+            new IdentityRole
+            {
+                Name = "Admin",
+                NormalizedName = "ADMIN"
+            },
+            new IdentityRole
+            {
+                Name = "Moderator",
+                NormalizedName = "MODERATOR"
+            },
+            new IdentityRole
+            {
+                Name = "User",
+                NormalizedName = "USER"
+            }
+        };
+        modelBuilder.Entity<IdentityRole>().HasData(roles);
+
         modelBuilder.Entity<Classification>(entity =>
         {
+            entity.HasKey(e => e.ClassificationId);
             entity.Property(e => e.Name).HasMaxLength(50);
         });
 
@@ -145,10 +164,6 @@ public partial class ApplicationDBContext : DbContext
             entity.Property(e => e.LastJokeRetrievalDate).HasColumnType("datetime");
             entity.Property(e => e.LastLoginDate).HasColumnType("datetime");
             entity.Property(e => e.RegistrationDate).HasColumnType("datetime");
-            entity.Property(e => e.Role)
-                .HasMaxLength(20)
-                .IsFixedLength();
-            entity.Property(e => e.Username).HasMaxLength(50);
         });
 
         modelBuilder.Entity<UserSavedJoke>(entity =>

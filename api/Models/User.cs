@@ -1,25 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity;
 
 namespace api.Models;
 
-public partial class User
+public partial class User : IdentityUser
 {
-    public int UserId { get; set; }
-
-    public string Username { get; set; } = null!;
-
-    public string Email { get; set; } = null!;
-
-    public string PasswordHash { get; set; } = null!;
-
-    public string Salt { get; set; } = null!;
 
     public DateTime RegistrationDate { get; set; } = DateTime.UtcNow;
 
     public DateTime? LastLoginDate { get; set; }
-
-    public string Role { get; set; } = null!;
 
     public DateTime? LastJokeRetrievalDate { get; set; }
 
