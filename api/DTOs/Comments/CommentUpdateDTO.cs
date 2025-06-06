@@ -9,11 +9,7 @@ namespace api.DTOs.Comments
     public class CommentUpdateDTO
     {
 
-        [MaxLength(280, ErrorMessage = "Title cannot be over 280 characters")]
-        public string Title { get; set; } = string.Empty;
-
-
         [MaxLength(280, ErrorMessage = "Content cannot be over 280 characters")]
-        public string Content { get; set; } = string.Empty;
+        public string CommentText { get; set; } = string.Empty;
     }
 }

@@ -29,7 +29,7 @@ namespace api.Repository
 
         public async Task<Comment?> DeleteCommentAsync(int id)
         {
-            var comment = await _context.Comments.FirstOrDefaultAsync(j => j.Id == id);
+            var comment = await _context.Comments.FirstOrDefaultAsync(c => c.CommentId == id);
             if (comment == null)
             {
                 return null;
@@ -39,22 +39,26 @@ namespace api.Repository
             return comment;
         }
 
-        public async Task<List<Comment>> GetAllCommentsAsync(CommentsQueryObject query)
+        public async Task<List<CommentDTO>> GetAllCommentsAsync(CommentsQueryObject query)
         {
-            var comments = _context.Comments.AsQueryable();
+            var AllComments = _context.Comments.AsQueryable();
             if (query.JokeId != null)
             {
-                comments = comments.Where(c => c.JokeId == query.JokeId);
+                AllComments = AllComments.Where(c => c.JokeId == query.JokeId)
+                                        .Include(c => c.User)
+                                        .OrderBy(c => c.CommentDate);
             }
-            return await comments.ToListAsync();
+            var comments = await AllComments.ToListAsync();
+            var rootComments = comments.BuildHierarchicalComments();
+            return rootComments;
         }
 
         public async Task<Comment?> GetCommentByIdAsync(int id)
         {
-            return await _context.Comments.FirstOrDefaultAsync(c => c.Id == id);
+            return await _context.Comments.FirstOrDefaultAsync(c => c.CommentId == id);
         }
 
-        public async Task<Comment?> UpdateCommentAsync(int id, Comment comment)
+        public async Task<Comment?> UpdateCommentAsync(int id, CommentUpdateDTO commentUpdateDTO)
         {
             var existingComment = await _context.Comments.FindAsync(id);
             if (existingComment == null)
@@ -62,8 +66,7 @@ namespace api.Repository
                 return null;
             }
             //from update
-            existingComment.Title = comment.Title;
-            existingComment.Content = comment.Content;
+            existingComment.CommentText = commentUpdateDTO.CommentText;
             await _context.SaveChangesAsync();
             return existingComment;
         }

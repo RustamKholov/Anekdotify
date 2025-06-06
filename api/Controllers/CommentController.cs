@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using api.DTOs.Comments;
 using api.Helpers;
 using api.Interfaces;
 using api.Mappers;
 using api.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -31,8 +33,7 @@ namespace api.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var comments = await _commentRepo.GetAllCommentsAsync(query);
-            var commentsDTO = comments.Select(c => c.ToCommentDTO());
+            var commentsDTO = await _commentRepo.GetAllCommentsAsync(query);
             return Ok(commentsDTO);
         }
         [HttpGet("{id:int}")]
@@ -52,25 +53,33 @@ namespace api.Controllers
 
         [HttpPost]
         [Route("{jokeId:int}")]
+        [Authorize]
         public async Task<IActionResult> CreateComment([FromRoute] int jokeId, [FromBody] CommentCreateDTO commentCreateDTO)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return Unauthorized("User is not authenticated or user ID not found.");
+            }
+            var userId = int.Parse(userIdString);
             if (!await _jokeRepo.JokeExists(jokeId))
             {
                 return BadRequest($"Joke with id {jokeId} not exist");
             }
-            if (commentCreateDTO == null || string.IsNullOrWhiteSpace(commentCreateDTO.Content))
+            if (commentCreateDTO == null || string.IsNullOrWhiteSpace(commentCreateDTO.CommentText))
             {
                 return BadRequest("Comment content cannot be empty");
             }
 
-            var comment = commentCreateDTO.ToCommentFromCreateDTO(jokeId);
+            var comment = commentCreateDTO.ToCommentFromCreateDTO(jokeId, userId);
             await _commentRepo.CreateCommentAsync(comment);
 
-            return CreatedAtAction(nameof(GetCommentById), new { id = comment.Id }, comment.ToCommentDTO());
+            return CreatedAtAction(nameof(GetCommentById), new { id = comment.CommentId }, comment.ToCommentDTO());
         }
 
         [HttpPut]
@@ -82,7 +91,7 @@ namespace api.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var comment = await _commentRepo.UpdateCommentAsync(id, commentUpdateDTO.ToCommentFromUpdateDTO());
+            var comment = await _commentRepo.UpdateCommentAsync(id, commentUpdateDTO);
             if (comment == null)
             {
                 return NotFound($"Comment with id {id} not found");

@@ -1,16 +1,37 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace api.Models
+namespace api.Models;
+
+public partial class Joke
 {
-    public class Joke
-    {
-        public int Id { get; set; }
-        public string Title { get; set; } = string.Empty;
-        public string Content { get; set; } = string.Empty;
-        public DateTime AddedAt { get; set; } = DateTime.UtcNow;
-        public List<Comment> Comments { get; set; } = new List<Comment>();
-    }
+    public int JokeId { get; set; }
+
+    public string Text { get; set; } = null!;
+
+    public DateTime SubbmissionDate { get; set; } = DateTime.UtcNow;
+
+    public string Source { get; set; } = null!;
+
+    public bool IsApproved { get; set; }
+
+    public int? SubbmitedByUserId { get; set; }
+
+    public DateTime? ApprovalDate { get; set; }
+
+    public int? ApprovedByUserId { get; set; }
+
+    public int? ClassificationId { get; set; }
+
+    public virtual Classification? Classification { get; set; }
+
+    public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
+
+    public virtual ICollection<JokeLike> JokeLikes { get; set; } = new List<JokeLike>();
+
+    public virtual ICollection<JokePart> JokeParts { get; set; } = new List<JokePart>();
+
+    public virtual ICollection<JokeRating> JokeRatings { get; set; } = new List<JokeRating>();
+
+    public virtual ICollection<UserSavedJoke> UserSavedJokes { get; set; } = new List<UserSavedJoke>();
 }

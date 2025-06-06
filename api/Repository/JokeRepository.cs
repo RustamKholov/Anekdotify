@@ -22,7 +22,7 @@ namespace api.Repository
         {
             _context = context;
         }
-        public async Task<List<Joke>> GetAllJokesAsync(JokesQueryObject query)
+        public async Task<List<JokeDTO>> GetAllJokesAsync(JokesQueryObject query)
         {
             var jokes = _context.Jokes
                 .Include(j => j.Comments)
@@ -31,26 +31,39 @@ namespace api.Repository
             {
                 var day = query.AddingDay.Value.Date;
                 var nextDay = day.AddDays(1);
-                jokes = jokes.Where(j => j.AddedAt >= day && j.AddedAt < nextDay);
+                jokes = jokes.Where(j => j.SubbmissionDate >= day && j.SubbmissionDate < nextDay);
             }
             if (!string.IsNullOrWhiteSpace(query.SortBy))
             {
                 if (string.Equals(query.SortBy, "AddingDay", StringComparison.OrdinalIgnoreCase))
                 {
-                    jokes = query.ByDescending ? jokes.OrderByDescending(j => j.AddedAt) : jokes.OrderBy(j => j.AddedAt);
+                    jokes = query.ByDescending ? jokes.OrderByDescending(j => j.SubbmissionDate) : jokes.OrderBy(j => j.SubbmissionDate);
                 }
             }
-            return await jokes.ToListAsync();
+            var allJokes = await jokes.ToListAsync();
+            var allJokesDTOS = allJokes.Select(j => j.ToJokeDTO()).ToList();
+            return allJokesDTOS;
         }
-        public async Task<Joke?> GetJokeByIdAsync(int id)
+        public async Task<JokeDTO?> GetJokeByIdAsync(int jokeId)
         {
-            return await _context.Jokes
-                .Include(j => j.Comments)
-                .FirstOrDefaultAsync(j => j.Id == id);
+            var joke = await _context.Jokes
+            .Where(j => j.JokeId == jokeId) // Only approved jokes
+            .Include(j => j.Classification) // To get ClassificationName
+            .Include(j => j.JokeRatings)     // To calculate TotalLikes/Dislikes
+            .Include(j => j.Comments)        // To get comments
+                .ThenInclude(c => c.User)    // To get Usernames for comments
+                .ThenInclude(c => c.CommentRatings) // To get ratings for comments
+            .FirstOrDefaultAsync();
+            if (joke == null)
+            {
+                return null;
+            }
+            var jokeDTO = joke.ToJokeDTO();
+            return jokeDTO;
         }
         public async Task<Joke> CreateJokeAsync(JokeCreateDTO jokeCreateDTO)
         {
-            if (jokeCreateDTO == null || string.IsNullOrWhiteSpace(jokeCreateDTO.Content))
+            if (jokeCreateDTO == null || string.IsNullOrWhiteSpace(jokeCreateDTO.Text))
             {
                 throw new ArgumentException("Joke content cannot be empty.");
             }
@@ -86,7 +99,7 @@ namespace api.Repository
                 throw new KeyNotFoundException($"Joke with ID {id} not found.");
             }
             _context.Jokes.Remove(joke);
-            var commentsToDelete = _context.Comments.Where(c => c.JokeId == joke.Id);
+            var commentsToDelete = _context.Comments.Where(c => c.JokeId == joke.JokeId);
             _context.Comments.RemoveRange(commentsToDelete);
             await _context.SaveChangesAsync();
             return joke;
@@ -100,7 +113,7 @@ namespace api.Repository
 
         public Task<bool> JokeExists(int id)
         {
-            return _context.Jokes.AnyAsync(j => j.Id == id);
+            return _context.Jokes.AnyAsync(j => j.JokeId == id);
         }
     }
 }

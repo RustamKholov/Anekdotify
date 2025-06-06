@@ -8,10 +8,9 @@ namespace api.DTOs.Jokes
 {
     public class JokeUpdateDTO
     {
-        [MaxLength(280, ErrorMessage = "Title cannot be over 280 characters")]
-        public string Title { get; set; } = string.Empty;
+        public string Text { get; set; } = null!;
+        public string Source { get; set; } = null!;
+        public int? ClassificationId { get; set; }
 
-        [MaxLength(280, ErrorMessage = "Content cannot be over 280 characters")]
-        public string Content { get; set; } = string.Empty;
     }
 }

@@ -10,17 +10,18 @@ namespace api.DTOs.Jokes
 {
     public class JokeDTO
     {
-        public int Id { get; set; }
-        
-        [Required]
-        [MinLength(5, ErrorMessage = "Title must be 5> characters")]
-        [MaxLength(280, ErrorMessage = "Title cannot be over 280 characters")]
-        public string Title { get; set; } = string.Empty;
+        public int JokeId { get; set; }
 
-        [Required]
-        [MinLength(5, ErrorMessage = "Content must be 5> characters")]
-        [MaxLength(280, ErrorMessage = "Content cannot be over 280 characters")]
-        public required string Content { get; set; }
+        public string Text { get; set; } = null!;
+
+        public DateTime SubmissionDate { get; set; }
+        public string Source { get; set; } = null!;
+
+        public int TotalLikes { get; set; }
+        public int TotalDislikes { get; set; }
+
+        public int? ClassificationId { get; set; }
+        public string? ClassificationName { get; set; }
         public List<CommentDTO> Comments { get; set; } = new List<CommentDTO>();
     }
 }

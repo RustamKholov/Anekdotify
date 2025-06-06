@@ -19,7 +19,7 @@ namespace api.Controllers
     {
         private readonly IJokeRepository _jokeRepo;
         private readonly ICommentRepository _commentRepo;
-        // Constructor to inject the ApplicationDBContext
+
         public JokeController(IJokeRepository jokeRepo, ICommentRepository commentRepo)
         {
             _jokeRepo = jokeRepo;
@@ -33,13 +33,12 @@ namespace api.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var jokes = await _jokeRepo.GetAllJokesAsync(query);
-            var jokesDto = jokes.Select(j => j.ToJokeDTO()).ToList();
-            if (jokes == null)
+            var jokeDTOs = await _jokeRepo.GetAllJokesAsync(query);
+            if (jokeDTOs == null)
             {
                 return NotFound("No jokes found.");
             }
-            return Ok(jokesDto);
+            return Ok(jokeDTOs);
         }
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetJokeById([FromRoute] int id)
@@ -63,17 +62,17 @@ namespace api.Controllers
             {
                 return BadRequest(ModelState);
             }
-            if (jokeCreateDTO == null || string.IsNullOrWhiteSpace(jokeCreateDTO.Content))
+            if (jokeCreateDTO == null || string.IsNullOrWhiteSpace(jokeCreateDTO.Text))
             {
                 return BadRequest("Joke content cannot be empty.");
             }
             var joke = await _jokeRepo.CreateJokeAsync(jokeCreateDTO);
 
-            return CreatedAtAction(nameof(GetJokeById), new { id = joke.Id }, joke);
+            return CreatedAtAction(nameof(GetJokeById), new { id = joke.JokeId }, joke.ToJokeDTO());
         }
 
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateJokeAsynv([FromRoute] int id, [FromBody] JokeUpdateDTO jokeUpdateDTO)
+        public async Task<IActionResult> UpdateJokeAsync([FromRoute] int id, [FromBody] JokeUpdateDTO jokeUpdateDTO)
         {
             if (!ModelState.IsValid)
             {
@@ -88,8 +87,8 @@ namespace api.Controllers
             {
                 return NotFound($"Joke with ID {id} not found.");
             }
-            joke = await _jokeRepo.UpdateJokeAsync(id, jokeUpdateDTO);
-            return Ok(joke);
+            var jokeDTO = await _jokeRepo.UpdateJokeAsync(id, jokeUpdateDTO);
+            return Ok(jokeDTO);
         }
 
         [HttpDelete("{id:int}")]

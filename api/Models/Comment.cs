@@ -1,18 +1,25 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace api.Models
+namespace api.Models;
+
+public partial class Comment
 {
-    public class Comment
-    {
-        public int Id { get; set; }
-        public string Title { get; set; } = string.Empty;
-        public string Content { get; set; } = string.Empty;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public int? JokeId { get; set; }
-        public Joke? Joke { get; set; }
+    public int CommentId { get; set; }
 
-    }
+    public string CommentText { get; set; } = null!;
+
+    public DateTime CommentDate { get; set; } = DateTime.UtcNow;
+
+    public int JokeId { get; set; }
+
+    public int UserId { get; set; }
+
+    public int? ParentCommentId { get; set; }
+
+    public virtual ICollection<CommentRating> CommentRatings { get; set; } = new List<CommentRating>();
+
+    public virtual Joke Joke { get; set; } = null!;
+
+    public virtual User User { get; set; } = null!;
 }

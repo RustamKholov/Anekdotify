@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using api.DTOs.Comments;
 using api.DTOs.Jokes;
 using api.Models;
 
@@ -18,10 +19,15 @@ namespace api.Mappers
 
             return new JokeDTO
             {
-                Id = joke.Id,
-                Title = joke.Title,
-                Content = joke.Content,
-                Comments = joke.Comments.Select(c => c.ToCommentDTO()).ToList()
+                JokeId = joke.JokeId,
+                Text = joke.Text,
+                SubmissionDate = joke.SubbmissionDate,
+                Source = joke.Source,
+                ClassificationId = joke.ClassificationId,
+                ClassificationName = joke.Classification?.Name, 
+                TotalLikes = joke.JokeRatings.Count(jr => jr.Rating),
+                TotalDislikes = joke.JokeRatings.Count(jr => !jr.Rating ),
+                Comments = joke.Comments.ToList().BuildHierarchicalComments()
             };
         }
         public static Joke ToJokeFromCreateDTO(this JokeCreateDTO jokeCreateDTO)
@@ -33,21 +39,28 @@ namespace api.Mappers
 
             return new Joke
             {
-                Title = jokeCreateDTO.Title,
-                Content = jokeCreateDTO.Content
+                Text = jokeCreateDTO.Text,
+                ClassificationId = jokeCreateDTO.ClassificationId,
+                Source = jokeCreateDTO.Source
             };
         }
         public static Joke UpdateJokeFromJokeDTO(this Joke jokeModel, JokeUpdateDTO jokeUpdateDTO)
         {
-            if (!string.IsNullOrWhiteSpace(jokeUpdateDTO.Title))
+            if (!string.IsNullOrWhiteSpace(jokeUpdateDTO.Text))
             {
-                jokeModel.Title = jokeUpdateDTO.Title;
+                jokeModel.Text = jokeUpdateDTO.Text;
             }
-            if (!string.IsNullOrWhiteSpace(jokeUpdateDTO.Content))
+            if (!string.IsNullOrWhiteSpace(jokeUpdateDTO.Source))
             {
-                jokeModel.Content = jokeUpdateDTO.Content;
+                jokeModel.Source = jokeUpdateDTO.Source;
+            }
+            if (jokeUpdateDTO.ClassificationId != null)
+            {
+                jokeModel.ClassificationId = jokeUpdateDTO.ClassificationId;
             }
             return jokeModel;
         }
+
+        
     }
 }

@@ -1,4 +1,7 @@
-﻿<div class="collapse" id="commentCollapseToJoke_@Comment.JokeID">
+﻿@inject CommentClient CommentClient
+@inject NavigationManager NavigationManager
+
+<div class="collapse" id="commentCollapseToJoke_@Comment.JokeID">
   <div class="card card-body rounded-4 mb-4 p-3 position-relative" style="max-width: 22rem;">
     
     <!-- Action buttons in top-right corner -->
@@ -29,7 +32,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-danger" @onclick="() => OnDeleteComment(Comment.ID)">Delete</button>
+          <button type="button" class="btn btn-danger" @onclick="() => OnDeleteCommentAsync(Comment.ID)">Delete</button>
         </div>
       </div>
     </div>
@@ -42,8 +45,9 @@
 
     private static string CommentUrl(int id) => $"/editComment/{id}";
 
-    private void OnDeleteComment(int id)
+    private async Task OnDeleteCommentAsync(int id)
     {
-        // Handle deletion logic here or invoke callback
+        await CommentClient.DeleteCommentAsync(id);
+        NavigationManager.Refresh();
     }
 }
