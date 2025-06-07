@@ -16,7 +16,6 @@ namespace api.DTOs.Jokes
 
         public DateTime SubmissionDate { get; set; }
         public string Source { get; set; } = null!;
-
         public int TotalLikes { get; set; }
         public int TotalDislikes { get; set; }
 

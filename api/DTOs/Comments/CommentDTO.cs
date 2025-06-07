@@ -12,9 +12,6 @@ namespace api.DTOs.Comments
         public string CommentText { get; set; } = string.Empty;
         public DateTime CommentDate { get; set; }
         public int JokeId { get; set; }
-
-        public string UserId { get; set; } = null!;
-
         public string Username { get; set; } = string.Empty;
         public int? ParentCommentId { get; set; }
 

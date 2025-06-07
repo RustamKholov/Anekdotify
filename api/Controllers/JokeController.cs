@@ -72,6 +72,7 @@ namespace api.Controllers
             {
                 return BadRequest("Joke content cannot be empty.");
             }
+            
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrEmpty(userId))

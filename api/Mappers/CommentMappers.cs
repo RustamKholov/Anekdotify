@@ -19,8 +19,8 @@ namespace api.Mappers
                 CommentText = commentModel.CommentText,
                 CommentDate = commentModel.CommentDate,
                 JokeId = commentModel.JokeId,
-                UserId = commentModel.UserId,
                 Username = commentModel.User?.UserName ?? "Unknown Username",
+                ParentCommentId = commentModel.ParentCommentId,
                 TotalLikes = totalLikes,
                 TotalDislikes = totalDislikes
             };
