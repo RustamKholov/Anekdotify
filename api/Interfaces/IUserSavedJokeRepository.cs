@@ -10,9 +10,9 @@ namespace api.Interfaces
 {
     public interface IUserSavedJokeRepository
     {
-        Task<OperationResult> SaveJokeAsync(SaveJokeDTO saveJokeDTO);
-        Task<OperationResult> RemoveSavedJokeAsync(SaveJokeDTO saveJokeDTO);
+        Task<OperationResult> SaveJokeAsync(SaveJokeDTO saveJokeDTO, string userId);
+        Task<OperationResult> RemoveSavedJokeAsync(int jokeId, string userId);
         Task<List<JokeDTO>> GetSavedJokesForUserAsync(string userId);
-        Task<bool> IsJokeSavedByUserAsync(SaveJokeDTO saveJokeDTO);
+        Task<bool> IsJokeSavedByUserAsync(int jokeId, string userId);
     }
 }

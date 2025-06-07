@@ -117,9 +117,9 @@ namespace api.Repository
                 .ToListAsync();
         }
 
-        public Task<bool> JokeExists(int id)
+        public async Task<bool> JokeExistsAsync(int id)
         {
-            return _context.Jokes.AnyAsync(j => j.JokeId == id);
+            return await _context.Jokes.AnyAsync(j => j.JokeId == id);
         }
     }
 }

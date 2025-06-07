@@ -16,7 +16,7 @@ namespace api.Interfaces
         Task<Joke> UpdateJokeAsync(int id, JokeUpdateDTO jokeUpdateDTO);
         Task<Joke> DeleteJokeAsync(int id);
         Task<List<Comment>> GetCommentsByJokeIdAsync(int jokeId);
-        Task<bool> JokeExists(int id);
+        Task<bool> JokeExistsAsync(int id);
 
     }
 }

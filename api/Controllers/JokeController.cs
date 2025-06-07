@@ -23,11 +23,13 @@ namespace api.Controllers
         private readonly IJokeRepository _jokeRepo;
         private readonly ICommentRepository _commentRepo;
         private readonly UserManager<User> _userManager;
-        public JokeController(IJokeRepository jokeRepo, ICommentRepository commentRepo, UserManager<User> userManager)
+        private readonly IUserSavedJokeRepository _userSavedJokeRepo;
+        public JokeController(IJokeRepository jokeRepo, ICommentRepository commentRepo, UserManager<User> userManager, IUserSavedJokeRepository userSavedJokeRepo)
         {
             _jokeRepo = jokeRepo;
             _commentRepo = commentRepo;
             _userManager = userManager;
+            _userSavedJokeRepo = userSavedJokeRepo;
         }
 
         [HttpGet]
@@ -72,7 +74,7 @@ namespace api.Controllers
             {
                 return BadRequest("Joke content cannot be empty.");
             }
-            
+
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrEmpty(userId))
@@ -119,6 +121,27 @@ namespace api.Controllers
             await _jokeRepo.DeleteJokeAsync(id);
             return NoContent();
         }
+        [HttpGet]
+        [Route("{jokeId:int}/is-saved")]
+        [Authorize]
+        public async Task<IActionResult> IsJokeSaved([FromRoute] int jokeId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId)) return Unauthorized("User ID not found in token.");
 
+            var jokeExists = await _jokeRepo.JokeExistsAsync(jokeId); // Assuming a method like this
+            if (!jokeExists)
+            {
+                return NotFound($"Joke with ID {jokeId} not found.");
+            }
+
+            var isSaved = await _userSavedJokeRepo.IsJokeSavedByUserAsync(jokeId, userId);
+
+            return Ok(new { Jokeid = jokeId, IsSaved = isSaved });
+        }
     }
 }

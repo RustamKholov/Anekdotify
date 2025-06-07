@@ -67,7 +67,7 @@ namespace api.Controllers
             {
                 return Unauthorized("User ID not found in token claims.");
             }
-            if (!await _jokeRepo.JokeExists(jokeId))
+            if (!await _jokeRepo.JokeExistsAsync(jokeId))
             {
                 return BadRequest($"Joke with id {jokeId} not exist");
             }

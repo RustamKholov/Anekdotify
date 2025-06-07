@@ -10,7 +10,5 @@ namespace api.DTOs.SaveJoke
     {
         [Required]
         public int JokeId { get; set; }
-        [Required]
-        public string UserId { get; set; } = null!;
     }
 }
