@@ -66,6 +66,7 @@ builder.Services.AddDbContext<ApplicationDBContext>(options =>
 builder.Services.AddScoped<IJokeRepository, JokeRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IUserSavedJokeRepository, UserSavedJokeRepository>();
 
 builder.Services.AddIdentity<User, IdentityRole>(options =>
     {

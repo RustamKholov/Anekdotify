@@ -60,6 +60,7 @@ namespace api.Controllers
             {
                 return BadRequest(ModelState);
             }
+
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrEmpty(userId))

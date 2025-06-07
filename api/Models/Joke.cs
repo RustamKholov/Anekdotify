@@ -15,7 +15,7 @@ public partial class Joke
 
     public bool IsApproved { get; set; }
 
-    public string SubbmitedByUserId { get; set; } = null!;
+    public string? SubbmitedByUserId { get; set; }
 
     public DateTime? ApprovalDate { get; set; }
 
