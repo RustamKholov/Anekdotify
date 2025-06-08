@@ -35,7 +35,7 @@ namespace api.Repository
                             ClassificationName = usj.Joke.Classification != null ? usj.Joke.Classification.Name : "Unknown",
                             CommentCount = usj.Joke.Comments.Count(),
                             LikeCount = usj.Joke.JokeRatings.Count(),
-                            Source = usj.Joke.Source,
+                            Source = usj.Joke.Source != null ? usj.Joke.Source.SourceName : "Unknown",
                             SubmissionDate = usj.Joke.SubbmissionDate
                         })
                         .OrderByDescending(dto => dto.SubmissionDate)

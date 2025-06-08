@@ -16,6 +16,8 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
 
     public virtual DbSet<Classification> Classifications { get; set; }
 
+    public virtual DbSet<Source> Sources { get; set; }
+
     public virtual DbSet<CommentRating> CommentRatings { get; set; }
 
     public virtual DbSet<Comment> Comments { get; set; }
@@ -52,6 +54,32 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
                 NormalizedName = "USER"
             }
         };
+        List<Source> sources = new List<Source>
+        {
+            new Source
+            {
+                SourceId = -1,
+                SourceName = "From User"
+            },
+            new Source
+            {
+                SourceId = -2,
+                SourceName = "System"
+            },
+            new Source
+            {
+                SourceId = -3,
+                SourceName = "Generated"
+            }
+        };
+        modelBuilder.Entity<Source>(entity =>
+        {
+            entity.HasKey(e => e.SourceId);
+            entity.Property(e => e.SourceName).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<Source>().HasData(sources);
+
         modelBuilder.Entity<IdentityRole>().HasData(roles);
 
         modelBuilder.Entity<Classification>(entity =>
@@ -150,12 +178,15 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
             entity.HasKey(e => e.JokeId);
 
             entity.Property(e => e.ApprovalDate).HasColumnType("datetime");
-            entity.Property(e => e.Source).HasMaxLength(50);
             entity.Property(e => e.SubbmissionDate).HasColumnType("datetime");
 
             entity.HasOne(d => d.Classification).WithMany(p => p.Jokes)
                 .HasForeignKey(d => d.ClassificationId)
                 .HasConstraintName("FK_Jokes_Classification");
+                
+            entity.HasOne(d => d.Source).WithMany(p => p.Jokes)
+                .HasForeignKey(d => d.SourceId)
+                .HasConstraintName("FK_Jokes_Source");
         });
 
         modelBuilder.Entity<User>(entity =>

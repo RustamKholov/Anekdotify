@@ -22,7 +22,8 @@ namespace api.Mappers
                 JokeId = joke.JokeId,
                 Text = joke.Text,
                 SubmissionDate = joke.SubbmissionDate,
-                Source = joke.Source,
+                SourceId = joke.SourceId,
+                SourceName = joke.Source?.SourceName,
                 ClassificationId = joke.ClassificationId,
                 ClassificationName = joke.Classification?.Name, 
                 TotalLikes = joke.JokeRatings.Count(jr => jr.Rating),
@@ -41,7 +42,7 @@ namespace api.Mappers
             {
                 Text = jokeCreateDTO.Text,
                 ClassificationId = jokeCreateDTO.ClassificationId,
-                Source = jokeCreateDTO.Source,
+                SourceId = jokeCreateDTO.SourceId ?? 0,
                 SubbmitedByUserId = userId
             };
         }
@@ -50,10 +51,6 @@ namespace api.Mappers
             if (!string.IsNullOrWhiteSpace(jokeUpdateDTO.Text))
             {
                 jokeModel.Text = jokeUpdateDTO.Text;
-            }
-            if (!string.IsNullOrWhiteSpace(jokeUpdateDTO.Source))
-            {
-                jokeModel.Source = jokeUpdateDTO.Source;
             }
             if (jokeUpdateDTO.ClassificationId != null)
             {

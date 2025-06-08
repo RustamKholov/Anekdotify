@@ -11,7 +11,7 @@ public partial class Joke
 
     public DateTime SubbmissionDate { get; set; } = DateTime.UtcNow;
 
-    public string Source { get; set; } = null!;
+    public int SourceId { get; set; }
 
     public bool IsApproved { get; set; }
 
@@ -24,6 +24,8 @@ public partial class Joke
     public int? ClassificationId { get; set; }
 
     public virtual Classification? Classification { get; set; }
+
+    public virtual Source? Source { get; set; }
 
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 

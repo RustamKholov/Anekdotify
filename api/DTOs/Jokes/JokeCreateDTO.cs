@@ -12,7 +12,7 @@ namespace api.DTOs.Jokes
         [MinLength(5, ErrorMessage = "Content must be 5> characters")]
         [MaxLength(280, ErrorMessage = "Content cannot be over 280 characters")]
         public string Text { get; set; } = string.Empty;
-        public string Source { get; set; } = null!;
+        public int? SourceId { get; set; } = null!;
         public int? ClassificationId { get; set; }
     }
 }

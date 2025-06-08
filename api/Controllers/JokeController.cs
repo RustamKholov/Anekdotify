@@ -22,14 +22,11 @@ namespace api.Controllers
     public class JokeController : ControllerBase
     {
         private readonly IJokeRepository _jokeRepo;
-        private readonly ICommentRepository _commentRepo;
-        private readonly UserManager<User> _userManager;
         private readonly IUserSavedJokeRepository _userSavedJokeRepo;
-        public JokeController(IJokeRepository jokeRepo, ICommentRepository commentRepo, UserManager<User> userManager, IUserSavedJokeRepository userSavedJokeRepo)
+        public JokeController(IJokeRepository jokeRepo, IUserSavedJokeRepository userSavedJokeRepo)
         {
             _jokeRepo = jokeRepo;
-            _commentRepo = commentRepo;
-            _userManager = userManager;
+
             _userSavedJokeRepo = userSavedJokeRepo;
         }
 
