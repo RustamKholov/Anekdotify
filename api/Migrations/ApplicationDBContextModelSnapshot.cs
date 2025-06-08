@@ -51,19 +51,19 @@ namespace api.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "7780245e-8f08-4896-8aac-102a492a5d4d",
+                            Id = "52b00d65-b437-438d-a326-71a911b3e19e",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "2a8c54a7-56cb-4bbe-ae2f-ac211a9a2e53",
+                            Id = "e5744710-5b51-469e-aeed-dead3e59e674",
                             Name = "Moderator",
                             NormalizedName = "MODERATOR"
                         },
                         new
                         {
-                            Id = "3aac1cd7-f79b-4517-b243-09b455b37fc7",
+                            Id = "c1b55bc9-a526-41d0-b0ca-05bb35cb1dc1",
                             Name = "User",
                             NormalizedName = "USER"
                         });
@@ -278,7 +278,7 @@ namespace api.Migrations
                     b.Property<bool>("IsApproved")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("SourceId")
+                    b.Property<int>("SourceId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("SubbmissionDate")
@@ -584,6 +584,7 @@ namespace api.Migrations
                     b.HasOne("api.Models.Joke", "Joke")
                         .WithMany("Comments")
                         .HasForeignKey("JokeId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("api.Models.User", "User")
@@ -602,6 +603,7 @@ namespace api.Migrations
                     b.HasOne("api.Models.Comment", "Comment")
                         .WithMany("CommentRatings")
                         .HasForeignKey("CommentId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_CommentRatings_Comments");
 
@@ -626,6 +628,8 @@ namespace api.Migrations
                     b.HasOne("api.Models.Source", "Source")
                         .WithMany("Jokes")
                         .HasForeignKey("SourceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
                         .HasConstraintName("FK_Jokes_Source");
 
                     b.Navigation("Classification");
@@ -638,6 +642,7 @@ namespace api.Migrations
                     b.HasOne("api.Models.Joke", "Joke")
                         .WithMany("JokeLikes")
                         .HasForeignKey("JokeId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_JokeLikes_Jokes");
 
@@ -657,6 +662,7 @@ namespace api.Migrations
                     b.HasOne("api.Models.Joke", "AssociatedJoke")
                         .WithMany("JokeParts")
                         .HasForeignKey("AssociatedJokeId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("FK_JokeParts_Jokes");
 
                     b.Navigation("AssociatedJoke");
@@ -667,6 +673,7 @@ namespace api.Migrations
                     b.HasOne("api.Models.Joke", "Joke")
                         .WithMany("JokeRatings")
                         .HasForeignKey("JokeId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_JokeRatings_Jokes");
 
@@ -686,12 +693,14 @@ namespace api.Migrations
                     b.HasOne("api.Models.Joke", "Joke")
                         .WithMany("UserSavedJokes")
                         .HasForeignKey("JokeId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_UserSavedJokes_Jokes");
 
                     b.HasOne("api.Models.User", "User")
                         .WithMany("UserSavedJokes")
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_UserSavedJokes_User");
 

@@ -68,6 +68,7 @@ builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IUserSavedJokeRepository, UserSavedJokeRepository>();
 builder.Services.AddScoped<IJokeRatingsRepository, JokeRatingsRepository>();
+builder.Services.AddScoped<IClassificationRepository, ClassificationRepository>();
 
 builder.Services.AddIdentity<User, IdentityRole>(options =>
     {

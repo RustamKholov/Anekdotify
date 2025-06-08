@@ -98,7 +98,7 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
 
             entity.HasOne(d => d.Comment).WithMany(p => p.CommentRatings)
                 .HasForeignKey(d => d.CommentId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_CommentRatings_Comments");
 
             entity.HasOne(d => d.User).WithMany(p => p.CommentRatings)
@@ -117,7 +117,7 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
 
             entity.HasOne(d => d.Joke).WithMany(p => p.Comments)
                 .HasForeignKey(d => d.JokeId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(d => d.User).WithMany(p => p.Comments)
                 .HasForeignKey(d => d.UserId)
@@ -135,7 +135,7 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
 
             entity.HasOne(d => d.Joke).WithMany(p => p.JokeLikes)
                 .HasForeignKey(d => d.JokeId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_JokeLikes_Jokes");
 
             entity.HasOne(d => d.User).WithMany(p => p.JokeLikes)
@@ -153,6 +153,7 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
 
             entity.HasOne(d => d.AssociatedJoke).WithMany(p => p.JokeParts)
                 .HasForeignKey(d => d.AssociatedJokeId)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_JokeParts_Jokes");
         });
 
@@ -164,7 +165,7 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
 
             entity.HasOne(d => d.Joke).WithMany(p => p.JokeRatings)
                 .HasForeignKey(d => d.JokeId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_JokeRatings_Jokes");
 
             entity.HasOne(d => d.User).WithMany(p => p.JokeRatings)
@@ -207,12 +208,12 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
 
             entity.HasOne(d => d.Joke).WithMany(p => p.UserSavedJokes)
                 .HasForeignKey(d => d.JokeId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_UserSavedJokes_Jokes");
 
             entity.HasOne(d => d.User).WithMany(p => p.UserSavedJokes)
                 .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_UserSavedJokes_User");
         });
 
