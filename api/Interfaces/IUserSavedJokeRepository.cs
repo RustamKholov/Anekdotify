@@ -11,8 +11,8 @@ namespace api.Interfaces
     public interface IUserSavedJokeRepository
     {
         Task<OperationResult> SaveJokeAsync(SaveJokeDTO saveJokeDTO, string userId);
-        Task<OperationResult> RemoveSavedJokeAsync(int jokeId, string userId);
-        Task<List<JokeDTO>> GetSavedJokesForUserAsync(string userId);
-        Task<bool> IsJokeSavedByUserAsync(int jokeId, string userId);
+        Task<OperationResult> RemoveSavedJokeAsync(SaveJokeDTO saveJokeDTO, string userId);
+        Task<List<JokePreviewDTO>> GetSavedJokesForUserAsync(string userId);
+        Task<bool> IsJokeSavedByUserAsync(SaveJokeDTO saveJokeDTO, string userId);
     }
 }

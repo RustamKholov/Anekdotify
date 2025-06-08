@@ -24,31 +24,32 @@ namespace api.Repository
         {
             _context = context;
         }
-        public async Task<List<JokeDTO>> GetSavedJokesForUserAsync(string userId)
+        public async Task<List<JokePreviewDTO>> GetSavedJokesForUserAsync(string userId)
         {
-            var userSavedJokes = await _context.UserSavedJokes
-                                        .Where(usj => usj.UserId == userId)
-                                        .Include(usj => usj.Joke)
-                                            .ThenInclude(j => j.Classification)
-                                        .Include(usj => usj.Joke)
-                                            .ThenInclude(j => j.JokeRatings)
-                                        .Include(usj => usj.Joke)
-                                            .ThenInclude(j => j.Comments)
-                                            .ThenInclude(c => c.User)
-                                            .ThenInclude(c => c.CommentRatings)
-                                        .Select(usj => usj.Joke)
-                                        .ToListAsync();
-            return userSavedJokes.Select(j => j.ToJokeDTO()).ToList();
+            return await _context.UserSavedJokes
+                        .Where(usj => usj.UserId == userId)
+                        .Select(usj => new JokePreviewDTO
+                        {
+                            JokeId = usj.Joke.JokeId,
+                            Text = usj.Joke.Text,
+                            ClassificationName = usj.Joke.Classification != null ? usj.Joke.Classification.Name : "Unknown",
+                            CommentCount = usj.Joke.Comments.Count(),
+                            LikeCount = usj.Joke.JokeRatings.Count(),
+                            Source = usj.Joke.Source,
+                            SubmissionDate = usj.Joke.SubbmissionDate
+                        })
+                        .OrderByDescending(dto => dto.SubmissionDate)
+                        .ToListAsync();
         }
 
-        public async Task<bool> IsJokeSavedByUserAsync(int jokeId, string userId)
+        public async Task<bool> IsJokeSavedByUserAsync(SaveJokeDTO saveJokeDTO, string userId)
         {
-            return await _context.UserSavedJokes.AnyAsync(usj => usj.UserId == userId && usj.JokeId == jokeId);
+            return await _context.UserSavedJokes.AnyAsync(usj => usj.UserId == userId && usj.JokeId == saveJokeDTO.JokeId);
         }
 
-        public async Task<OperationResult> RemoveSavedJokeAsync(int jokeId, string userId)
+        public async Task<OperationResult> RemoveSavedJokeAsync(SaveJokeDTO saveJokeDTO, string userId)
         {
-            var entry = await _context.UserSavedJokes.FirstOrDefaultAsync(suj => suj.UserId == userId && suj.JokeId == jokeId);
+            var entry = await _context.UserSavedJokes.FirstOrDefaultAsync(suj => suj.UserId == userId && suj.JokeId == saveJokeDTO.JokeId);
             if (entry == null)
             {
                 return OperationResult.NotFound("Joke does not saved by user");

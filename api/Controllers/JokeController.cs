@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using api.Data;
 using api.DTOs.Jokes;
+using api.DTOs.SaveJoke;
 using api.Helpers;
 using api.Interfaces;
 using api.Mappers;
@@ -61,6 +62,7 @@ namespace api.Controllers
             }
             return Ok(joke);
         }
+        
 
         [HttpPost]
         [Authorize]
@@ -139,7 +141,7 @@ namespace api.Controllers
                 return NotFound($"Joke with ID {jokeId} not found.");
             }
 
-            var isSaved = await _userSavedJokeRepo.IsJokeSavedByUserAsync(jokeId, userId);
+            var isSaved = await _userSavedJokeRepo.IsJokeSavedByUserAsync(new SaveJokeDTO{JokeId = jokeId}, userId);
 
             return Ok(new { Jokeid = jokeId, IsSaved = isSaved });
         }

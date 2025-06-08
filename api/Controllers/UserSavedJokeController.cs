@@ -40,7 +40,8 @@ namespace api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SaveJokeAsync([FromBody] SaveJokeDTO saveJokeDTO)
+        [Route("{jokeId:int}")]
+        public async Task<IActionResult> SaveJokeAsync([FromRoute] int jokeId)
         {
             if (!ModelState.IsValid)
             {
@@ -48,10 +49,13 @@ namespace api.Controllers
             }
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
-
+            var saveJokeDTO = new SaveJokeDTO
+            {
+                JokeId = jokeId
+            };
             var result = await _userSavedJokeRepo.SaveJokeAsync(saveJokeDTO, userId);
 
-            if (result.IsSuccess) return Ok(saveJokeDTO);
+            if (result.IsSuccess) return Ok(new {Saved = true, saveJokeDTO.JokeId});
 
             if (result.IsAlreadyExists) return Conflict(result.ErrorMessage);
 
@@ -59,7 +63,8 @@ namespace api.Controllers
         }
 
         [HttpDelete]
-        public async Task<IActionResult> DeleteSavedJokeAsync([FromBody] int jokeId)
+        [Route("{jokeId:int}")]
+        public async Task<IActionResult> DeleteSavedJokeAsync([FromRoute] int jokeId)
         {
             if (!ModelState.IsValid)
             {
@@ -72,7 +77,11 @@ namespace api.Controllers
             {
                 return NotFound("User not found");
             }
-            var result = await _userSavedJokeRepo.RemoveSavedJokeAsync(jokeId, userId);
+            var saveJokeDTO = new SaveJokeDTO
+            {
+                JokeId = jokeId
+            };
+            var result = await _userSavedJokeRepo.RemoveSavedJokeAsync(saveJokeDTO, userId);
 
             if (result.IsNotFound)
             {
@@ -80,7 +89,7 @@ namespace api.Controllers
             }
             if (result.IsSuccess)
             {
-                return Ok(new { JokeId = jokeId });
+                return Ok(new { Deleted = true, saveJokeDTO.JokeId });
             }
             return BadRequest(result.ErrorMessage);
         }

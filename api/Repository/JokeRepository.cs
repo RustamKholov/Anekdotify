@@ -59,6 +59,7 @@ namespace api.Repository
             .Include(j => j.Comments)        // To get comments
                 .ThenInclude(c => c.User)    // To get Usernames for comments
                 .ThenInclude(c => c.CommentRatings) // To get ratings for comments
+            .AsSplitQuery()
             .FirstOrDefaultAsync();
             if (joke == null)
             {
@@ -117,9 +118,9 @@ namespace api.Repository
                 .ToListAsync();
         }
 
-        public async Task<bool> JokeExistsAsync(int id)
+        public async Task<bool> JokeExistsAsync(int jokeId)
         {
-            return await _context.Jokes.AnyAsync(j => j.JokeId == id);
+            return await _context.Jokes.AnyAsync(j => j.JokeId == jokeId);
         }
     }
 }
