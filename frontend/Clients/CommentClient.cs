@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using frontend.Comments.DTOs;
 using frontend.DTOs;
 using frontend.Mappers;
 using frontend.Models;
@@ -13,7 +14,7 @@ public class CommentClient(HttpClient httpClient)
     => await httpClient.GetFromJsonAsync<Comment[]>("api/comments") ?? [];
 
     public async Task AddCommentAsync(CommentCreateDTO commentCreateDTO)
-        => await httpClient.PostAsJsonAsync($"api/comments/{commentCreateDTO.JokeID}", commentCreateDTO);
+        => await httpClient.PostAsJsonAsync($"api/comments/{commentCreateDTO.JokeId}", commentCreateDTO);
 
     public async Task UpdateCommentAsync(CommentEditDTO commentEditDTO, int id)
         => await httpClient.PutAsJsonAsync($"api/comments/{id}", commentEditDTO);

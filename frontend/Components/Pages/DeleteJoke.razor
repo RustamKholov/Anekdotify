@@ -10,7 +10,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <p>Are you sure you want to delete @Joke?.Title</p>
+        <p>Are you sure you want to delete this joke</p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -23,23 +23,18 @@
 @code {
 
     [Parameter]
-    public Joke? Joke {get; set;}
+    public Joke Joke {get; set;}
 
-    private string Title = string.Empty;
-
-    protected override void OnParametersSet()
-    {
-        Title = $"Delete {Joke?.Title}";
-    }
-    public static string GetModalId(Joke? joke)
+    private string Title = "Deleting joke";
+    public static string GetModalId(Joke joke)
     {
         ArgumentNullException.ThrowIfNull(joke);
-        return $"modal_{joke.Id}";
+        return $"modal_{joke.JokeId}";
     }
 
     private async Task ConfirmAsync()
     {
-        await jokesClient.DeleteJoke(Joke!.Id);
+        await jokesClient.DeleteJoke(Joke!.JokeId);
         NavigationManager.Refresh();
     }
 }

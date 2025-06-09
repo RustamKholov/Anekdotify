@@ -26,13 +26,14 @@ namespace api.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDTO loginDTO)
+        public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest(loginDTO);
             }
-            User? user = await _userManager.Users.FirstOrDefaultAsync(u => u.UserName == loginDTO.UserName.ToLower());
+            // Accept camelCase by normalizing property names
+            User? user = await _userManager.Users.FirstOrDefaultAsync(u => u.UserName == loginDTO.Username.ToLower());
 
             if (user == null) return Unauthorized("Invalid username!");
 
@@ -41,12 +42,12 @@ namespace api.Controllers
             if (!result.Succeeded) return Unauthorized("Username not found and/or wrong password");
 
             return Ok(
-                new NewUserDTO
-                {
-                    UserName = user.UserName!,
-                    Email = user.Email!,
-                    Token = _tokenService.CreateToken(user)
-                }
+            new NewUserDTO
+            {
+                UserName = user.UserName!,
+                Email = user.Email!,
+                Token = _tokenService.CreateToken(user)
+            }
             );
         }
 

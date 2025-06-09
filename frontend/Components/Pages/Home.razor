@@ -1,9 +1,23 @@
 ﻿@page "/"
+@rendermode RenderMode.InteractiveServer
+@inject IJSRuntime JSRuntime
 
-<PageTitle>Home</PageTitle>
+<AuthorizeView>
+    <NotAuthorized>
+        <div class="m-2">
+            <a class="btn btn-primary m-2" role="button" href="/login" >LogIn</a>
+        </div>
+    </NotAuthorized>
+    <Authorized>
+        <div class="m-2">
+            <h1>Welcome to the Home Page</h1>
+            <p>This is a protected area. You are logged in!</p>
+            
+        </div> 
+    </Authorized>
+</AuthorizeView>
 
-<div class="m-2">
-    <a class="btn btn-primary m-2" role="button" href="/editJoke" >New Joke</a>
-</div>
 
-<JokesTable></JokesTable>
+@code {
+ 
+}

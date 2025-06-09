@@ -53,7 +53,7 @@ namespace api.Controllers
 
         [HttpPost]
         [Route("{jokeId:int}")]
-        [Authorize]
+        
         public async Task<IActionResult> CreateComment([FromRoute] int jokeId, [FromBody] CommentCreateDTO commentCreateDTO)
         {
             if (!ModelState.IsValid)

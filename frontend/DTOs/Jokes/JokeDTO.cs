@@ -2,20 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Xml;
+using frontend.Models;
 
-namespace frontend.Models
+namespace frontend.DTOs.Jokes
 {
-    public class Joke
+    public class JokeDTO
     {
-        public int JokeId { get; set; }
         public string Text { get; set; } = null!;
         public DateTime SubmissionDate { get; set; }
-        public int? SourceId { get; set; }
         public string SourceName { get; set; }
         public int TotalLikes { get; set; }
         public int TotalDislikes { get; set; }
-        public int? ClassificationId { get; set; }
         public string ClassificationName { get; set; }
         public List<Comment> Comments { get; set; } = new List<Comment>();
     }

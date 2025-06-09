@@ -1,14 +1,14 @@
 ﻿@inject NavigationManager NavigationManager
-
+@inject IJSRuntime JSRuntime
 
 <div class="card text-bg-light shadow-sm rounded-4 mb-4 p-3 position-relative h-100"
      style="width: 100%; min-height: 300px; max-height: 300px;">
     <div class="card-header bg-transparent border-bottom-0 d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center">
-            <a class="btn btn-outline-secondary btn-sm me-2" href="@JokeUrl(Joke.Id)" title="Edit">
+            <a class="btn btn-outline-secondary btn-sm me-2" href="@JokeUrl(Joke.JokeId)" title="Edit">
                 <i class="bi bi-pencil"></i>
             </a>
-            <button class="btn btn-outline-danger btn-sm me-2" data-bs-toggle="modal" data-bs-target="#modal_@Joke.Id" title="Delete">
+            <button class="btn btn-outline-danger btn-sm me-2" data-bs-toggle="modal" data-bs-target="#modal_@Joke.JokeId" title="Delete">
                 <i class="bi bi-trash"></i>
             </button>
         </div>
@@ -18,15 +18,14 @@
     <DeleteJoke Joke="@Joke"></DeleteJoke>
 
     <div class="card-body d-flex flex-column justify-content-center align-items-center text-center pb-5">
-        <h5 class="card-title text-dark-emphasis">@Joke.Title</h5>
-        <p class="card-text text-secondary">@Joke.Content</p>
+        <p class="card-text text-secondary">@Joke.Text</p>
     </div>
 
     <div class="position-absolute bottom-0 end-0 p-3">
         <div class="position-relative">
             <button class="btn btn-outline-secondary rounded-circle shadow-sm"
                     data-bs-toggle="collapse"
-                    data-bs-target="#addNewCommentToJoke_@Joke.Id" 
+                    data-bs-target="#addNewCommentToJoke_@Joke.JokeId" 
                     aria-expanded="false" 
                     aria-controls="collapseExample">
                 <i class="bi bi-plus-circle-dotted"></i>
@@ -35,7 +34,7 @@
             
             <button class="btn btn-outline-secondary rounded-circle shadow-sm"
                     data-bs-toggle="collapse"
-                    data-bs-target="#commentCollapseToJoke_@Joke.Id" 
+                    data-bs-target="#commentCollapseToJoke_@Joke.JokeId" 
                     aria-expanded="false" 
                     aria-controls="collapseExample">
                 <i class="bi bi-chat"></i>
@@ -62,11 +61,12 @@
     }
 </div>
 
-<NewCommentForm JokeId="@Joke.Id"></NewCommentForm>
+<NewCommentForm JokeId="@Joke.JokeId"></NewCommentForm>
 
 
 @code {
     [Parameter]
     public Joke Joke {get; set;} = default!;
     private static string JokeUrl(int id) => $"/editJoke/{id}";
+
 }

@@ -1,5 +1,6 @@
 ﻿@page "/editJoke"
 @page "/editJoke/{id:int}"
+@using frontend.Jokes.DTOs
 @inject NavigationManager NavigationManager 
 @inject JokesClient jokesClient
 @rendermode InteractiveServer
@@ -16,19 +17,24 @@ else
     <div class="row">
         <div class="col-md-4">
             <EditForm Model="@jokeCreateDTO" FormName="editJoke" OnValidSubmit="HandleSubmitAsync">
-            <DataAnnotationsValidator/>
-            <div class="mb-3">
-                <label for="title" class="form-label">Title:</label>
-                <InputText type="name" @bind-Value="jokeCreateDTO.Title" class="form-control" id="title" />
-                <ValidationMessage For="() => jokeCreateDTO.Title"/>
-            </div>
-            <div class="mb-3">
-                <label for="content" class="form-label">Content:</label>
-                <InputTextArea  type="text" @bind-Value="jokeCreateDTO.Content" class="form-control" id="content" />
-                <ValidationMessage For="() => jokeCreateDTO.Content"/>
-            </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
-            <a role="button" class="btn btn-secondary" href="/">Cancel</a>
+                <DataAnnotationsValidator />
+                <div class="mb-3">
+                    <label for="text" class="form-label">Text:</label>
+                    <InputText type="text" @bind-Value="jokeCreateDTO.Text" class="form-control" id="text" />
+                    <ValidationMessage For="() => jokeCreateDTO.Text" />
+                </div>
+                <div class="mb-3">
+                    <label for="classification" class="form-label">Classification:</label>
+                    <InputNumber @bind-Value="jokeCreateDTO.ClassificationId" class="form-control" id="classification" />
+                    <ValidationMessage For="() => jokeCreateDTO.ClassificationId" />
+                </div>
+                <div class="mb-3">
+                    <label for="source" class="form-label">Source:</label>
+                    <InputNumber @bind-Value="jokeCreateDTO.SourceId" class="form-control" id="source" />
+                    <ValidationMessage For="() => jokeCreateDTO.SourceId" />
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <a role="button" class="btn btn-secondary" href="/">Cancel</a>
             </EditForm>
         </div>
     </div>
@@ -36,7 +42,7 @@ else
     
 @code {
     [Parameter]
-    public int? Id {get; set;}
+    public int? Id {get; set;} = null!;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -48,20 +54,21 @@ else
         {
             var joke = await jokesClient.GetJokeAsync(Id.Value) ?? throw new Exception("Joke not found");
             jokeCreateDTO = joke.ToJokeCreateDTOFromJoke();
-            Title = $"Editing: {jokeCreateDTO.Title}";
+            Title = $"Editing joke";
         }
         else
         {
             jokeCreateDTO = new()
                 {
-                    Title = string.Empty,
-                    Content = string.Empty
+                    Text = string.Empty,
+                    ClassificationId = 0,
+                    SourceId = -2
                 };
             Title = "New Joke";
         }
     }
     [SupplyParameterFromForm]
-    private JokeCreateDTO? jokeCreateDTO {get; set;}
+    private JokeCreateDTO jokeCreateDTO {get; set;}
     private string Title {get; set;} = string.Empty;
     private async Task HandleSubmitAsync()
     {
@@ -73,7 +80,7 @@ else
         }
         else
         {
-            await jokesClient.UpdateJokeAsync(jokeCreateDTO.ToEditFromCreate(Id.Value));
+            await jokesClient.UpdateJokeAsync(Id ?? 0, new JokeEditDTO {Text = jokeCreateDTO.Text, ClassificationId = jokeCreateDTO.ClassificationId});
         }
         NavigationManager.NavigateTo("/");
     }
