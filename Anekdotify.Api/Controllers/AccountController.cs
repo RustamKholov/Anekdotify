@@ -23,7 +23,7 @@ namespace Anekdotify.Api.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<BaseResponseModel>> Login([FromBody] LoginDTO loginDTO)
+        public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
         {
             if (!ModelState.IsValid)
             {
@@ -44,11 +44,7 @@ namespace Anekdotify.Api.Controllers
                 Token = _tokenService.CreateToken(user)
             };
 
-            return Ok( new BaseResponseModel
-            {
-                Success = true,
-                Data = userDTO
-            });
+            return Ok(userDTO);
         }
 
         [HttpPost("register")]

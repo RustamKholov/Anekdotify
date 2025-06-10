@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Anekdotify.BL.Repositories
 {
-    public class JokeRatingsRepository : IJokeRatingsService
+    public class JokeRatingsRepository : IJokeRatingsRepository
     {
         public readonly ApplicationDBContext _context;
         public JokeRatingsRepository(ApplicationDBContext context)
