@@ -9,10 +9,10 @@ namespace Anekdotify.Api.Controllers
     [Authorize]
     public class ClassificationController : ControllerBase
     {
-        private readonly IClassificationRepository _classificationRepo;
-        public ClassificationController(IClassificationRepository classificationRepo)
+        private readonly IClassifficationService _classificationService;
+        public ClassificationController(IClassifficationService classificationService)
         {
-            _classificationRepo = classificationRepo;
+            _classificationService = classificationService;
         }
 
         [HttpPost]
@@ -26,10 +26,10 @@ namespace Anekdotify.Api.Controllers
             {
                 return BadRequest("Classification name cannot be empty");
             }
-            var classExisting = await _classificationRepo.IsExistingAsync(classificationName);
+            var classExisting = await _classificationService.IsExistingAsync(classificationName);
             if (!classExisting)
             {
-                var creatingResult = await _classificationRepo.CreateClassificationAsync(classificationName);
+                var creatingResult = await _classificationService.CreateClassificationAsync(classificationName);
                 return Ok(creatingResult.Value);
             }
             else
@@ -45,7 +45,7 @@ namespace Anekdotify.Api.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var classifications = await _classificationRepo.GetAllClassificationsAsync();
+            var classifications = await _classificationService.GetAllClassificationsAsync();
             return Ok(classifications.Value);
         }
 
@@ -57,7 +57,7 @@ namespace Anekdotify.Api.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var getResult = await _classificationRepo.GetClassificationByIdAsync(classificationId);
+            var getResult = await _classificationService.GetClassificationByIdAsync(classificationId);
 
             if (getResult.IsNotFound)
             {
@@ -78,7 +78,7 @@ namespace Anekdotify.Api.Controllers
             {
                 return BadRequest("Classification name cannot be empty");
             }
-            var updateResult = await _classificationRepo.UpdateClassificationAsync(classifclassificationId, classificationName);
+            var updateResult = await _classificationService.UpdateClassificationAsync(classifclassificationId, classificationName);
             if (updateResult.IsNotFound)
             {
                 return NotFound(updateResult.ErrorMessage);
@@ -89,7 +89,7 @@ namespace Anekdotify.Api.Controllers
         [Route("{classificationId:int}")]
         public async Task<IActionResult> DeleteClassificationAsync([FromRoute] int classificationId)
         {
-            var deleteResult = await _classificationRepo.DeleteClassificationAsync(classificationId);
+            var deleteResult = await _classificationService.DeleteClassificationAsync(classificationId);
             if (deleteResult.IsNotFound)
             {
                 return NotFound(deleteResult.ErrorMessage);

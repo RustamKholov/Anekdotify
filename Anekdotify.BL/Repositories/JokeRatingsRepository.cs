@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Anekdotify.BL.Repositories
 {
-    public class JokeRatingsRepository : IJokeRatingsRepository
+    public class JokeRatingsRepository : IJokeRatingsService
     {
         public readonly ApplicationDBContext _context;
         public JokeRatingsRepository(ApplicationDBContext context)
@@ -79,7 +79,7 @@ namespace Anekdotify.BL.Repositories
                 }
                 else
                 {
-                    return OperationResult<RatingDTO>.NotFound(new RatingDTO{},"Rating not found to remove.");
+                    return OperationResult<RatingDTO>.NotFound(new RatingDTO { }, "Rating not found to remove.");
                 }
             }
         }

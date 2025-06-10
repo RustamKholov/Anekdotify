@@ -2,6 +2,7 @@
 using Anekdotify.BL.Interfaces;
 using Anekdotify.Models.DTOs.Accounts;
 using Anekdotify.Models.Entities;
+using Anekdotify.Models.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +23,7 @@ namespace Anekdotify.Api.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
+        public async Task<ActionResult<BaseResponseModel>> Login([FromBody] LoginDTO loginDTO)
         {
             if (!ModelState.IsValid)
             {
@@ -36,15 +37,18 @@ namespace Anekdotify.Api.Controllers
             var result = await _signInManager.CheckPasswordSignInAsync(user, loginDTO.Password, false);
 
             if (!result.Succeeded) return Unauthorized("Username not found and/or wrong password");
-
-            return Ok(
-            new NewUserDTO
+            var userDTO = new NewUserDTO
             {
                 UserName = user.UserName!,
                 Email = user.Email!,
                 Token = _tokenService.CreateToken(user)
-            }
-            );
+            };
+
+            return Ok( new BaseResponseModel
+            {
+                Success = true,
+                Data = userDTO
+            });
         }
 
         [HttpPost("register")]

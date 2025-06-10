@@ -3,7 +3,7 @@ using Anekdotify.Api.Mappers;
 using Anekdotify.BL.Helpers;
 using Anekdotify.BL.Interfaces;
 using Anekdotify.Models.DTOs.Jokes;
-using Anekdotify.Models.Models.DTOs.SaveJoke;
+using Anekdotify.Models.DTOs.SaveJoke;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,11 +13,11 @@ namespace Anekdotify.Api.Controllers
     [ApiController]
     public class JokeController : ControllerBase
     {
-        private readonly IJokeRepository _jokeRepo;
+        private readonly IJokeService _jokeService;
         private readonly IUserSavedJokeRepository _userSavedJokeRepo;
-        public JokeController(IJokeRepository jokeRepo, IUserSavedJokeRepository userSavedJokeRepo)
+        public JokeController(IJokeService jokeService, IUserSavedJokeRepository userSavedJokeRepo)
         {
-            _jokeRepo = jokeRepo;
+            _jokeService = jokeService;
 
             _userSavedJokeRepo = userSavedJokeRepo;
         }
@@ -30,7 +30,7 @@ namespace Anekdotify.Api.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var jokeDTOs = await _jokeRepo.GetAllJokesAsync(query);
+            var jokeDTOs = await _jokeService.GetAllJokesAsync(query);
             if (jokeDTOs == null)
             {
                 return NotFound("No jokes found.");
@@ -44,7 +44,7 @@ namespace Anekdotify.Api.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var joke = await _jokeRepo.GetJokeByIdAsync(id);
+            var joke = await _jokeService.GetJokeByIdAsync(id);
             if (joke == null)
             {
                 return NotFound($"Joke with ID {id} not found.");
@@ -72,7 +72,7 @@ namespace Anekdotify.Api.Controllers
             {
                 return Unauthorized("User ID not found in token claims.");
             }
-            var joke = await _jokeRepo.CreateJokeAsync(jokeCreateDTO, userId);
+            var joke = await _jokeService.CreateJokeAsync(jokeCreateDTO, userId);
 
             return CreatedAtAction(nameof(GetJokeById), new { id = joke.JokeId }, joke.ToJokeDTO());
         }
@@ -88,12 +88,12 @@ namespace Anekdotify.Api.Controllers
             {
                 return BadRequest("Joke content cannot be empty.");
             }
-            var joke = await _jokeRepo.GetJokeByIdAsync(id);
+            var joke = await _jokeService.GetJokeByIdAsync(id);
             if (joke == null)
             {
                 return NotFound($"Joke with ID {id} not found.");
             }
-            var jokeDTO = await _jokeRepo.UpdateJokeAsync(id, jokeUpdateDTO);
+            var jokeDTO = await _jokeService.UpdateJokeAsync(id, jokeUpdateDTO);
             return Ok(jokeDTO);
         }
 
@@ -104,12 +104,12 @@ namespace Anekdotify.Api.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var joke = await _jokeRepo.GetJokeByIdAsync(id);
+            var joke = await _jokeService.GetJokeByIdAsync(id);
             if (joke == null)
             {
                 return NotFound($"Joke with ID {id} not found.");
             }
-            await _jokeRepo.DeleteJokeAsync(id);
+            await _jokeService.DeleteJokeAsync(id);
             return NoContent();
         }
         [HttpGet]
@@ -124,7 +124,7 @@ namespace Anekdotify.Api.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId)) return Unauthorized("User ID not found in token.");
 
-            var jokeExists = await _jokeRepo.JokeExistsAsync(jokeId); // Assuming a method like this
+            var jokeExists = await _jokeService.JokeExistsAsync(jokeId); // Assuming a method like this
             if (!jokeExists)
             {
                 return NotFound($"Joke with ID {jokeId} not found.");

@@ -11,13 +11,13 @@ namespace Anekdotify.Api.Controllers
     [ApiController]
     public class CommentController : ControllerBase
     {
-        private readonly ICommentRepository _commentRepo;
-        private readonly IJokeRepository _jokeRepo;
+        private readonly ICommentService _commentService;
+        private readonly IJokeService _jokeService;
 
-        public CommentController(ICommentRepository commentRepo, IJokeRepository jokeRepo)
+        public CommentController(ICommentService commentService, IJokeService jokeService)
         {
-            _commentRepo = commentRepo;
-            _jokeRepo = jokeRepo;
+            _commentService = commentService;
+            _jokeService = jokeService;
         }
         [HttpGet]
         public async Task<IActionResult> GetAllComments([FromQuery] CommentsQueryObject query)
@@ -26,7 +26,7 @@ namespace Anekdotify.Api.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var commentsDTO = await _commentRepo.GetAllCommentsAsync(query);
+            var commentsDTO = await _commentService.GetAllCommentsAsync(query);
             return Ok(commentsDTO);
         }
         [HttpGet("{id:int}")]
@@ -36,7 +36,7 @@ namespace Anekdotify.Api.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var comment = await _commentRepo.GetCommentByIdAsync(id);
+            var comment = await _commentService.GetCommentByIdAsync(id);
             if (comment == null)
             {
                 return NotFound($"Commnet with id {id} not found");
@@ -60,7 +60,7 @@ namespace Anekdotify.Api.Controllers
             {
                 return Unauthorized("User ID not found in token claims.");
             }
-            if (!await _jokeRepo.JokeExistsAsync(jokeId))
+            if (!await _jokeService.JokeExistsAsync(jokeId))
             {
                 return BadRequest($"Joke with id {jokeId} not exist");
             }
@@ -70,7 +70,7 @@ namespace Anekdotify.Api.Controllers
             }
             ArgumentNullException.ThrowIfNull(userId);
             var comment = commentCreateDTO.ToCommentFromCreateDTO(jokeId, userId); //TODO
-            await _commentRepo.CreateCommentAsync(comment);
+            await _commentService.CreateCommentAsync(comment);
 
             return CreatedAtAction(nameof(GetCommentById), new { id = comment.CommentId }, comment.ToCommentDTO());
         }
@@ -84,7 +84,7 @@ namespace Anekdotify.Api.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var comment = await _commentRepo.UpdateCommentAsync(id, commentUpdateDTO);
+            var comment = await _commentService.UpdateCommentAsync(id, commentUpdateDTO);
             if (comment == null)
             {
                 return NotFound($"Comment with id {id} not found");
@@ -100,7 +100,7 @@ namespace Anekdotify.Api.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var comment = await _commentRepo.DeleteCommentAsync(id);
+            var comment = await _commentService.DeleteCommentAsync(id);
             if (comment == null)
             {
                 return NotFound($"Commnet not found");

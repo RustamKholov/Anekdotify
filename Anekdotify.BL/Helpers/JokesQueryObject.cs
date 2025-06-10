@@ -4,7 +4,7 @@ namespace Anekdotify.BL.Helpers
     {
 
         public DateTime? AddingDay { get; set; } = null;
-        public string SortBy { get; set; } = string.Empty;
+        public string SortBy { get; set; } = "AddingDay";
         public bool ByDescending { get; set; } = false;
 
         public int PageNumber { get; set; } = 1;

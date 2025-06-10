@@ -34,7 +34,7 @@
         }
         commentCreateDTO = new()
             {
-                Text = string.Empty,
+                CommentText = string.Empty,
                 ParentCommentId = 0
             };
     }
@@ -43,7 +43,7 @@
     {
         ArgumentNullException.ThrowIfNull(commentCreateDTO);
 
-        await CommentClient.AddCommentAsync(commentCreateDTO);
+        await CommentClient.AddCommentAsync(commentCreateDTO, JokeId);
 
         // Collapse the form using Bootstrap's JavaScript API
 

@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Anekdotify.Common\Anekdotify.Common.csproj" />
     <ProjectReference Include="..\Anekdotify.Database\Anekdotify.Database.csproj" />
     <ProjectReference Include="..\Anekdotify.Models\Anekdotify.Models.csproj" />

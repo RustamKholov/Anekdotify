@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using Anekdotify.BL.Interfaces;
-using Anekdotify.Models.Models.DTOs.SaveJoke;
+using Anekdotify.Models.DTOs.SaveJoke;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,11 +11,11 @@ namespace Anekdotify.Api.Controllers
     [Authorize]
     public class UserSavedJokeController : ControllerBase
     {
-        private readonly IUserSavedJokeRepository _userSavedJokeRepo;
+        private readonly IUserSavedJokeService _userSavedJokeService;
 
-        public UserSavedJokeController(IUserSavedJokeRepository userSavedJokeRepo)
+        public UserSavedJokeController(IUserSavedJokeService userSavedJokeService)
         {
-            _userSavedJokeRepo = userSavedJokeRepo;
+            _userSavedJokeService = userSavedJokeService;
         }
 
         [HttpGet]
@@ -30,7 +30,7 @@ namespace Anekdotify.Api.Controllers
             {
                 return NotFound("User not found");
             }
-            var savedJokes = await _userSavedJokeRepo.GetSavedJokesForUserAsync(userId);
+            var savedJokes = await _userSavedJokeService.GetSavedJokesForUserAsync(userId);
             return Ok(savedJokes);
         }
 
@@ -48,7 +48,7 @@ namespace Anekdotify.Api.Controllers
             {
                 JokeId = jokeId
             };
-            var result = await _userSavedJokeRepo.SaveJokeAsync(saveJokeDTO, userId);
+            var result = await _userSavedJokeService.SaveJokeAsync(saveJokeDTO, userId);
 
             if (result.IsSuccess) return Ok(new {Saved = true, saveJokeDTO.JokeId});
 
@@ -76,7 +76,7 @@ namespace Anekdotify.Api.Controllers
             {
                 JokeId = jokeId
             };
-            var result = await _userSavedJokeRepo.RemoveSavedJokeAsync(saveJokeDTO, userId);
+            var result = await _userSavedJokeService.RemoveSavedJokeAsync(saveJokeDTO, userId);
 
             if (result.IsNotFound)
             {

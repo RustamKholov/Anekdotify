@@ -21,8 +21,8 @@ else
             <DataAnnotationsValidator/>
             <div class="mb-3">
                 <label for="text" class="form-label">Text:</label>
-                <InputTextArea  type="text" @bind-Value="commentUpdateDTO.Text" class="form-control" id="text" />
-                <ValidationMessage For="() => commentUpdateDTO.Text"/>
+                <InputTextArea  type="text" @bind-Value="commentUpdateDTO.CommentText" class="form-control" id="text" />
+                <ValidationMessage For="() => commentUpdateDTO.CommentText"/>
             </div>
             <button type="submit" class="btn btn-primary">Submit</button>
             <a role="button" class="btn btn-secondary" href="/">Cancel</a>
@@ -50,7 +50,7 @@ else
 
             var comment = await commentClient.GetCommentAsync(Id.Value) ?? throw new Exception("Comment not found");
             commentUpdateDTO = new CommentUpdateDTO(){
-                Text = comment.CommentText,
+                CommentText = comment.CommentText,
             };
             Title = $"Editing comment";  
         }
@@ -62,7 +62,7 @@ else
         ArgumentNullException.ThrowIfNull(commentUpdateDTO);
         ArgumentNullException.ThrowIfNull(Id);
 
-        await commentClient.UpdateCommentAsync(commentUpdateDTO, Id.Value);
+        await commentClient.UpdateCommentAsync(commentUpdateDTO.CommentText, Id.Value);
 
         NavigationManager.NavigateTo("/");
     }

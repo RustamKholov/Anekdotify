@@ -54,7 +54,12 @@ else
         if(Id != null)
         {
             var joke = await jokesClient.GetJokeAsync(Id.Value) ?? throw new Exception("Joke not found");
-            jokeCreateDTO = joke.ToJokeCreateDTOFromJoke();
+            jokeCreateDTO = new JokeCreateDTO
+            {
+                Text = joke.Text,
+                ClassificationId = joke.ClassificationId,
+                SourceId = joke.SourceId
+            };
             Title = $"Editing joke";
         }
         else

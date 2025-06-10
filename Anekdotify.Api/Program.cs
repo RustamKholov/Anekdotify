@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.DataProtection;
+using Anekdotify.BL.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,12 +66,21 @@ builder.Services.AddDbContext<ApplicationDBContext>(options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
     }
     );
+
+builder.Services.AddScoped<IJokeService, JokeService>();
+builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<IClassifficationService, ClassifficationService>();
+builder.Services.AddScoped<IJokeRatingsService, JokeRatingsService>();
+builder.Services.AddScoped<IUserSavedJokeService, UserSavedJokeService>();
+
 builder.Services.AddScoped<IJokeRepository, JokeRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
-builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IUserSavedJokeRepository, UserSavedJokeRepository>();
-builder.Services.AddScoped<IJokeRatingsRepository, JokeRatingsRepository>();
+builder.Services.AddScoped<IJokeRatingsService, JokeRatingsRepository>();
 builder.Services.AddScoped<IClassificationRepository, ClassificationRepository>();
+
+builder.Services.AddScoped<ITokenService, TokenService>();
+
 
 builder.Services.AddIdentity<User, IdentityRole>(options =>
     {
@@ -90,7 +100,7 @@ builder.Services.AddAuthentication(options =>
     options.DefaultScheme =
     options.DefaultSignInScheme =
     options.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
-    
+
 }).AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
