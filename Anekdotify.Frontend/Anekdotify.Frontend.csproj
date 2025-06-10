@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Anekdotify.BL\Anekdotify.BL.csproj" />
+    <ProjectReference Include="..\Anekdotify.Common\Anekdotify.Common.csproj" />
+    <ProjectReference Include="..\Anekdotify.Models\Anekdotify.Models.csproj" />
+  </ItemGroup>
+
+</Project>

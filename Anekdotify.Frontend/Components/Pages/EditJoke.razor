@@ -1,0 +1,88 @@
+﻿@page "/editJoke"
+@page "/editJoke/{id:int}"
+@using Anekdotify.Models.DTOs.Jokes
+
+@inject NavigationManager NavigationManager 
+@inject JokesClient jokesClient
+@rendermode InteractiveServer
+
+<PageTitle>@Title</PageTitle>
+<h3>@Title</h3>
+
+@if(jokeCreateDTO is null) 
+{
+    <p><em>Loading....</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm Model="@jokeCreateDTO" FormName="editJoke" OnValidSubmit="HandleSubmitAsync">
+                <DataAnnotationsValidator />
+                <div class="mb-3">
+                    <label for="text" class="form-label">Text:</label>
+                    <InputText type="text" @bind-Value="jokeCreateDTO.Text" class="form-control" id="text" />
+                    <ValidationMessage For="() => jokeCreateDTO.Text" />
+                </div>
+                <div class="mb-3">
+                    <label for="classification" class="form-label">Classification:</label>
+                    <InputNumber @bind-Value="jokeCreateDTO.ClassificationId" class="form-control" id="classification" />
+                    <ValidationMessage For="() => jokeCreateDTO.ClassificationId" />
+                </div>
+                <div class="mb-3">
+                    <label for="source" class="form-label">Source:</label>
+                    <InputNumber @bind-Value="jokeCreateDTO.SourceId" class="form-control" id="source" />
+                    <ValidationMessage For="() => jokeCreateDTO.SourceId" />
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <a role="button" class="btn btn-secondary" href="/">Cancel</a>
+            </EditForm>
+        </div>
+    </div>
+}
+    
+@code {
+    [Parameter]
+    public int? Id {get; set;} = null!;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if(jokeCreateDTO is not null)
+        {
+            return;
+        }
+        if(Id != null)
+        {
+            var joke = await jokesClient.GetJokeAsync(Id.Value) ?? throw new Exception("Joke not found");
+            jokeCreateDTO = joke.ToJokeCreateDTOFromJoke();
+            Title = $"Editing joke";
+        }
+        else
+        {
+            jokeCreateDTO = new()
+                {
+                    Text = string.Empty,
+                    ClassificationId = 0,
+                    SourceId = -2
+                };
+            Title = "New Joke";
+        }
+    }
+    [SupplyParameterFromForm]
+    private JokeCreateDTO jokeCreateDTO {get; set;}
+    private string Title {get; set;} = string.Empty;
+    private async Task HandleSubmitAsync()
+    {
+        ArgumentNullException.ThrowIfNull(jokeCreateDTO);
+
+        if(Id is null)
+        {
+            await jokesClient.AddJokeAsync(jokeCreateDTO);
+        }
+        else
+        {
+            await jokesClient.UpdateJokeAsync(Id ?? 0, new JokeUpdateDTO {Text = jokeCreateDTO.Text, ClassificationId = jokeCreateDTO.ClassificationId});
+        }
+        NavigationManager.NavigateTo("/");
+    }
+}

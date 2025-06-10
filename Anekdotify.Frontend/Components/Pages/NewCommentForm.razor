@@ -1,0 +1,63 @@
+﻿@using Anekdotify.Models.DTOs.Comments
+
+@inject CommentClient CommentClient
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+@rendermode RenderMode.InteractiveServer
+
+<div class="collapse" id="addNewCommentToJoke_@JokeId"> 
+    <EditForm Model="@commentCreateDTO" FormName="createComment" OnValidSubmit="OnSubmitAsync">
+        <DataAnnotationsValidator/>
+    <div class="mb-3">
+        <label for="text" class="form-label">Title</label>
+            <InputText type="text" @bind-Value="commentCreateDTO!.CommentText" class="form-control" id="text" />
+            <ValidationMessage For="() => commentCreateDTO.CommentText" />
+    </div>
+    <button type="submit" class="btn btn-primary">Post</button>
+    </EditForm>
+</div>
+
+
+@code {
+
+    [Parameter]
+    public int JokeId {get; set;}
+
+    [SupplyParameterFromForm]
+    private CommentCreateDTO commentCreateDTO {get; set;}
+
+    protected override void OnParametersSet()
+    {
+        if(commentCreateDTO is not null)
+        {
+            return;
+        }
+        commentCreateDTO = new()
+            {
+                Text = string.Empty,
+                ParentCommentId = 0
+            };
+    }
+
+    private async Task OnSubmitAsync()
+    {
+        ArgumentNullException.ThrowIfNull(commentCreateDTO);
+
+        await CommentClient.AddCommentAsync(commentCreateDTO);
+
+        // Collapse the form using Bootstrap's JavaScript API
+
+        await JS.InvokeVoidAsync("bootstrap.Collapse.getOrCreateInstance", $"#addNewCommentToJoke_{JokeId}");
+        var collapseInstance = await JS.InvokeAsync<IJSObjectReference>("bootstrap.Collapse.getInstance", $"#addNewCommentToJoke_{JokeId}");
+        if (collapseInstance != null)
+        {
+            await collapseInstance.InvokeVoidAsync("hide");
+        }
+        commentCreateDTO = new CommentCreateDTO
+        {
+            CommentText = string.Empty,
+            ParentCommentId = 0
+        };
+        NavigationManager.Refresh();
+    }
+}

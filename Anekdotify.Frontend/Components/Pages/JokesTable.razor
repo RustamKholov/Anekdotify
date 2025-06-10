@@ -1,0 +1,60 @@
+﻿
+@inject JokesClient jokesClient
+@inject CommentClient commentClient
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+@if(jokes == null){
+    <p><em>Loading....</em></p>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        @foreach (var joke in jokes)
+        {
+            <div class="col">
+                <JokeCard Joke="@joke" />
+            </div>
+        }
+    </div>
+}
+@code {
+    private Joke[] jokes;
+    private Comment[] comments;
+    protected override async Task OnInitializedAsync(){
+        
+        comments = await commentClient.GetCommentsAsync();
+        jokes = await jokesClient.GetJokesAsync();
+    }
+
+    private static string CommentUrl(int id) => $"/editComment/{id}";
+
+    private string GetDeleteModalId(Joke joke)
+    {
+        return $"{DeleteJoke.GetModalId(joke)}";
+    }
+
+    private async Task CompleteDeletion(int commentId)
+    {
+        await commentClient.DeleteCommentAsync(commentId);
+        DeleteCommentLocal(commentId);
+        NavigationManager.Refresh();
+    }
+
+    private void DeleteCommentLocal(int commentId)
+    {
+        if (comments == null || jokes == null) return;
+        var comment = comments.FirstOrDefault(c => c.CommentId == commentId);
+        if (comment == null) return;
+        var comms = comments.ToList();
+        comms.Remove(comment);
+        comments = comms.ToArray();
+        var joke = jokes.FirstOrDefault(joke => joke.JokeId == comment.JokeId);
+        if (joke == null) return;
+        var commInJoke = joke.Comments.FirstOrDefault(c => c.CommentId == comment.CommentId);
+        if (commInJoke == null) return;
+        joke.Comments.Remove(commInJoke);
+    }
+    // In your Blazor component (e.g., LoginTest.razor @code block)
+
+}    
