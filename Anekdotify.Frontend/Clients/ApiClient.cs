@@ -1,15 +1,17 @@
 using System.Net.Http.Headers;
+using Anekdotify.Frontend.Authentication;
+using Anekdotify.Frontend.Heplers;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Newtonsoft.Json;
 
 namespace Anekdotify.Frontend.Clients;
 
-public class ApiClient(HttpClient httpClient, ProtectedLocalStorage protectedLocalStorage)
+public class ApiClient(HttpClient httpClient, ProtectedLocalStorage storage)
 {
 
     public async Task SetAuthorizeHeader()
     {
-        var token = (await protectedLocalStorage.GetAsync<string>("authToken")).Value;
+        var token = (await storage.GetAsync<string>( "authToken")).Value;
         if (token != null)
         {
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);

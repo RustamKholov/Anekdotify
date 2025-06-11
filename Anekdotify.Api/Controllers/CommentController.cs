@@ -3,6 +3,7 @@ using Anekdotify.Api.Mappers;
 using Anekdotify.BL.Helpers;
 using Anekdotify.BL.Interfaces;
 using Anekdotify.Models.DTOs.Comments;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Anekdotify.Api.Controllers
@@ -69,10 +70,10 @@ namespace Anekdotify.Api.Controllers
                 return BadRequest("Comment content cannot be empty");
             }
             ArgumentNullException.ThrowIfNull(userId);
-            var comment = commentCreateDTO.ToCommentFromCreateDTO(jokeId, userId); //TODO
+            var comment = commentCreateDTO.ToCommentFromCreateDTO(jokeId, userId);
             await _commentService.CreateCommentAsync(comment);
 
-            return CreatedAtAction(nameof(GetCommentById), new { id = comment.CommentId }, comment.ToCommentDTO());
+            return Created();
         }
 
         [HttpPut]

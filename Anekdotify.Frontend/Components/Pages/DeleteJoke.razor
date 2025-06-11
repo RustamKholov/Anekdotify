@@ -24,10 +24,10 @@
 @code {
 
     [Parameter]
-    public Joke Joke {get; set;}
+    public JokeDTO Joke {get; set;}
 
     private string Title = "Deleting joke";
-    public static string GetModalId(Joke joke)
+    public static string GetModalId(JokeDTO joke)
     {
         ArgumentNullException.ThrowIfNull(joke);
         return $"modal_{joke.JokeId}";
