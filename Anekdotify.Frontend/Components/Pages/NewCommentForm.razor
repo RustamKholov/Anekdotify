@@ -1,6 +1,6 @@
 ﻿@using Anekdotify.Models.DTOs.Comments
 
-@inject CommentClient CommentClient
+@inject ApiClient ApiClient
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
 @rendermode RenderMode.InteractiveServer
@@ -9,7 +9,7 @@
     <EditForm Model="@commentCreateDTO" FormName="createComment" OnValidSubmit="OnSubmitAsync">
         <DataAnnotationsValidator/>
     <div class="mb-3">
-        <label for="text" class="form-label">Title</label>
+        <label for="text" class="form-label">Text:</label>
             <InputText type="text" @bind-Value="commentCreateDTO!.CommentText" class="form-control" id="text" />
             <ValidationMessage For="() => commentCreateDTO.CommentText" />
     </div>
@@ -43,7 +43,7 @@
     {
         ArgumentNullException.ThrowIfNull(commentCreateDTO);
 
-        await CommentClient.AddCommentAsync(commentCreateDTO, JokeId);
+        await ApiClient.PostAsync<CommentDTO, CommentCreateDTO>($"api/comment/{JokeId}", commentCreateDTO);
 
         // Collapse the form using Bootstrap's JavaScript API
 

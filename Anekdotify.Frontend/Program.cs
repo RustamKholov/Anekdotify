@@ -32,7 +32,6 @@ builder.Services.AddHttpClient<CommentClient>(client => client.BaseAddress = new
 builder.Services.AddHttpClient<ApiClient>(client => client.BaseAddress = new Uri(jokeStoreApiUrl));
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient(builder.Configuration["JokeStoreApiUrl"]!));
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
-builder.Services.AddScoped<ProtectedBrowserStorageAccessor>();
 
 var app = builder.Build();
 

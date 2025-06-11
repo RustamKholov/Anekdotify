@@ -65,8 +65,10 @@
 
 
 @code {
+
     [Parameter]
-    public Joke Joke {get; set;} = default!;
+    public JokeDTO Joke {get; set;}
+
     private static string JokeUrl(int id) => $"/editJoke/{id}";
 
 }

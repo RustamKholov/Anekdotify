@@ -42,7 +42,7 @@
 
 @code {
     [Parameter]
-    public Comment Comment { get; set; } = default!;
+    public CommentDTO Comment { get; set; } = default!;
 
     private static string CommentUrl(int id) => $"/editComment/{id}";
 
