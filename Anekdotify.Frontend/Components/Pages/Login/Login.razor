@@ -6,7 +6,7 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @rendermode RenderMode.InteractiveServer
 
-<div class="container d-flex justify-content-center align-items-center vh-100">
+<div class="container d-flex justify-content-md-center align-items-lg-start vh-100">
     <div class="card shadow-lg" style="width: 25rem;">
         <div class="card-body p-4">
             <h4 class="card-title text-center mb-4">Login</h4>
@@ -23,7 +23,7 @@
                     <ValidationMessage For="@(() => loginModel.Password)" class="text-danger" />
                 </div>
                 <div class="d-grid mt-4">
-                    <button type="submit" class="btn btn-primary">Login</button>
+                    <button type="submit" class="btn btn-dark">Login</button>
                 </div>
             </EditForm>
         </div>
