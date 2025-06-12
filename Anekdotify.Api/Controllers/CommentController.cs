@@ -1,9 +1,8 @@
 using System.Security.Claims;
-using Anekdotify.Api.Mappers;
 using Anekdotify.BL.Helpers;
 using Anekdotify.BL.Interfaces;
+using Anekdotify.BL.Mappers;
 using Anekdotify.Models.DTOs.Comments;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Anekdotify.Api.Controllers
