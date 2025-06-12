@@ -1,7 +1,7 @@
 using System.Security.Claims;
-using Anekdotify.Api.Mappers;
 using Anekdotify.BL.Helpers;
 using Anekdotify.BL.Interfaces;
+using Anekdotify.BL.Mappers;
 using Anekdotify.Models.DTOs.Jokes;
 using Anekdotify.Models.DTOs.SaveJoke;
 using Microsoft.AspNetCore.Authorization;
