@@ -60,7 +60,6 @@ namespace Anekdotify.BL.Repositories
             {
                 return null;
             }
-            //from update
             existingComment.CommentText = commentUpdateDTO.CommentText;
             await _context.SaveChangesAsync();
             return existingComment;

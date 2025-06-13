@@ -2,10 +2,11 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Anekdotify.BL.Interfaces;
-using Anekdotify.Models.Entities;
+using Anekdotify.Models.Entities;   
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Anekdotify.Api.Services
+namespace Anekdotify.BL.Services
 {
     public class TokenService : ITokenService
     {
