@@ -1,16 +1,15 @@
 ﻿@inherits LayoutComponentBase
 @using Blazored.Toast.Configuration
 
-<div class="container d-flex flex-column vh-100 bg-white text-dark">
-    <NavMenu /> 
-    <main class="flex-grow-1 d-flex justify-content-md-center align-items-center">
-        <article class="card shadow-lg rounded-4 p-4 bg-light text-dark mx-auto my-auto"> 
-            @Body
-        </article>
+<div class="d-flex flex-column vh-100 bg-white text-dark m-3 p-3">
+    <NavMenu></NavMenu>
+    <main class="flex-grow-1 d-flex justify-content-center align-items-center
+                 card shadow-lg rounded-4 p-4 bg-light text-dark main-fixed-content-area">
+        @Body
     </main>
 </div>
 
-<BlazoredToasts Position="ToastPosition.TopLeft"
+<BlazoredToasts Position="ToastPosition.TopCenter"
                 ShowCloseButton="true"
                 ShowProgressBar="true"
                 IconType="IconType.FontAwesome"

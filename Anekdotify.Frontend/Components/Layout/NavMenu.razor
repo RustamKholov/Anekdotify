@@ -1,10 +1,37 @@
-﻿<nav class="navbar navbar-expand-lg navbar-light" style="background-color: transparent;"> 
-  <div class="container-fluid">
-    <a class="navbar-brand text-dark" href="#">Anekdotify</a> 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+﻿@using System.Security.Claims
+@using Microsoft.IdentityModel.JsonWebTokens
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+
+
+<nav class="navbar navbar-expand-lg navbar-light" style="background-color: transparent;">
+    <div class="container-fluid">
+        <a class="navbar-brand text-dark" href="#">Anekdotify</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav ms-auto d-flex align-items-center gap-2">
+                <AuthorizeView>
+                    <Authorized>
+                        <span class="navbar-text text-dark">Welcome, @context.User.FindFirst(JwtRegisteredClaimNames.GivenName)?.Value! </span>
+                        <a class="nav-link text-dark" href="javascript:void(0)" @onclick="Logout">Logout</a>
+                </Authorized>
+                <NotAuthorized>
+                    <a class="nav-link text-dark" href="/login">Login</a>
+                    <a class="nav-link text-dark" href="/register">Register</a>
+                </NotAuthorized>
+        </AuthorizeView>
+      </div>
     </div>
   </div>
 </nav>
+
+@code {
+
+    private async Task Logout()
+    {
+        NavigationManager.NavigateTo("/logout", forceLoad: true);
+    }
+}

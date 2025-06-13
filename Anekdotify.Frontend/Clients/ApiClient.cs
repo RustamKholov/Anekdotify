@@ -48,4 +48,9 @@ public class ApiClient(HttpClient httpClient, ProtectedLocalStorage storage)
         await SetAuthorizeHeader();
         return await httpClient.DeleteFromJsonAsync<T>(path);
     }
+    public async Task<HttpResponseMessage> DeleteAsync(string path)
+    {
+        await SetAuthorizeHeader();
+        return await httpClient.DeleteAsync(path);
+    }
 }

@@ -1,8 +1,10 @@
 ﻿@using Anekdotify.Frontend.Components.BaseComponents
+@using Microsoft.AspNetCore.Mvc
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject ApiClient ApiClient
 @inject IToastService ToastService
+@rendermode RenderMode.InteractiveServer
 
 <div class="card text-bg-light shadow-sm rounded-4 mb-4 p-3 position-relative h-100"
 style="width: 100%; min-height: 300px; max-height: 300px;">
@@ -89,19 +91,14 @@ style="max-height: 400px; overflow-y: auto;">
 
     private async Task HandleDelete()
     {
-        var res = await ApiClient.DeleteAsync<BaseResponseModel>($"api/joke/{DeleteId}");
-        if (res != null && !res.Success)
+        var res = await ApiClient.DeleteAsync($"api/joke/{DeleteId}");
+        if (!res.IsSuccessStatusCode)
         {
             ToastService.ShowError("Failed to delete joke");
             return;
         }
-        else if (res == null)
-        {
-            ToastService.ShowError("Failed to delete joke, please try again later");
-            return;
-        }
         ToastService.ShowSuccess("Joke deleted successfully");
         Modal.Close();
-        NavigationManager.NavigateTo("/");
+        NavigationManager.NavigateTo("/", true);
     }
 }
