@@ -1,4 +1,5 @@
 ﻿@page "/login"
+@using Microsoft.AspNetCore.Mvc
 @layout MainLayout
 @inject ApiClient ApiClient
 @inject NavigationManager NavigationManager
@@ -30,14 +31,42 @@
 
 @code {
     private LoginDTO loginModel = new LoginDTO();
-
+    [Inject] 
+    private IToastService ToastService { get; set; }
     private async Task HandleLogin()
     {
-        var res = await ApiClient.PostAsync<LoginResponseModel, LoginDTO>("api/account/login", loginModel);
-        if(res != null && res.Token != null)
+        var res = await ApiClient.PostAsync<ActionResult, LoginDTO>("api/account/login", loginModel);
+        if (res is BadRequestObjectResult badRequest)
         {
-            await ((CustomAuthStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(res.Token);
-            NavigationManager.NavigateTo("/");
+            var error = badRequest.Value as string;
+            if (!string.IsNullOrEmpty(error))
+            {
+                ToastService.ShowError(error);
+            }
+            return;
+        }
+        if (res is UnauthorizedObjectResult unauthorized)
+        {
+            var error = unauthorized.Value as string;
+            if (!string.IsNullOrEmpty(error))
+            {
+                ToastService.ShowError(error);
+            }
+            return;
+        }
+        if (res is OkObjectResult okResult)
+        {
+            var token = okResult.Value as string;
+            if (!string.IsNullOrEmpty(token))
+            {
+                await ((CustomAuthStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(token);
+                NavigationManager.NavigateTo("/");
+            }
+            else
+            {
+                ToastService.ShowError("Login failed. Please try again.");
+            }
+            return;
         }
     }
 }
