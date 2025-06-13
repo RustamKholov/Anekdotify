@@ -22,6 +22,7 @@
 
 
 @code {
+
     private bool _toastShownForAuthorized = false;
 
 
@@ -35,7 +36,7 @@
             ShowToast();
             _toastShownForAuthorized = true;
         }
-        else if (user.Identity?.IsAuthenticated == false && _toastShownForAuthorized)
+        else if (user.Identity?.IsAuthenticated == false || _toastShownForAuthorized)
         {
             _toastShownForAuthorized = false;
         }

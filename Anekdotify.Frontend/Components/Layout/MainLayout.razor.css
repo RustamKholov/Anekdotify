@@ -101,15 +101,30 @@ html, body {
     height: 100%;
     overflow: hidden;
     background-color: #fff !important;
-   color: #212529 !important;
+    color: #212529 !important;
 }
+
+.main-fixed-content-area {
+    max-width: 800px;
+    width: 90%;
+    max-height: calc(100% - 20px);
+    overflow-y: auto;
+    box-sizing: border-box;
+    flex-direction: column;
+}
+
+    .main-fixed-content-area > div {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
 
 .success-toasts-override {
     background-color: #28a745 !important;
     color: white !important;
 }
 
-.error-toasts-overrid {
+.error-toasts-override {
     background-color: #dc3545 !important;
     color: white !important;
 }
