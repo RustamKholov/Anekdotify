@@ -68,6 +68,18 @@ namespace Anekdotify.Api.Controllers
             {
                 return BadRequest("Comment content cannot be empty");
             }
+            if (commentCreateDTO.ParentCommentId != null)
+            {
+                var parentComment = await _commentService.GetCommentByIdAsync(commentCreateDTO.ParentCommentId.Value);
+                if (parentComment == null)
+                {
+                    return BadRequest($"Parent comment with id {commentCreateDTO.ParentCommentId} not found");
+                }
+                if (parentComment.JokeId != jokeId)
+                {
+                    return BadRequest("Parent comment does not belong to the same joke");
+                }
+            }
             ArgumentNullException.ThrowIfNull(userId);
             var comment = commentCreateDTO.ToCommentFromCreateDTO(jokeId, userId);
             await _commentService.CreateCommentAsync(comment);

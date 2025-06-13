@@ -1,19 +1,20 @@
 ﻿@page "/"
-
+@using Anekdotify.Frontend.Components.Pages.Login
 @rendermode RenderMode.InteractiveServer
+@inject IToastService ToastService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <AuthorizeView>
     <NotAuthorized>
         <div class="text-center">
             <div class="m-2">
-                <a class="btn btn-secondary m-2" role="button" href="/login">Login</a>
+                <Login></Login>
             </div>
         </div>
     </NotAuthorized>
     <Authorized>
         <div class="m-2">
-            <h1>Welcome to the Home Page</h1>
-            <p>This is a protected area. You are logged in!</p>
+            <h1>Jokes</h1>
             <JokesTable></JokesTable>
         </div> 
     </Authorized>
@@ -21,5 +22,27 @@
 
 
 @code {
- 
+    private bool _toastShownForAuthorized = false;
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true && !_toastShownForAuthorized)
+        {
+            ShowToast();
+            _toastShownForAuthorized = true;
+        }
+        else if (user.Identity?.IsAuthenticated == false && _toastShownForAuthorized)
+        {
+            _toastShownForAuthorized = false;
+        }
+    }
+
+    private void ShowToast()
+    {
+        ToastService.ShowSuccess("Welcome to Anekdotify! Yoy are logged in");
+    }
 }

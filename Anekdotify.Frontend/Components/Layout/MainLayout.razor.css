@@ -94,3 +94,22 @@ main {
         right: 0.75rem;
         top: 0.5rem;
     }
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    background-color: #fff !important;
+   color: #212529 !important;
+}
+
+.success-toasts-override {
+    background-color: #28a745 !important;
+    color: white !important;
+}
+
+.error-toasts-overrid {
+    background-color: #dc3545 !important;
+    color: white !important;
+}
