@@ -38,7 +38,7 @@ namespace Anekdotify.Frontend.Components.Pages
 
                 if (user.Identity?.IsAuthenticated == true)
                 {
-                    jokes = await ApiClient.GetFromJsonAsync<List<JokeDTO>>("api/joke");
+                    jokes = (await ApiClient.GetAsync<List<JokeDTO>>("api/joke")).Data;
                 }
                 else
                 {

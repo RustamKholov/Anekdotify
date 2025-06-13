@@ -23,7 +23,8 @@ namespace Anekdotify.BL.Repositories
                 .Include(j => j.Comments)        // To get comments
                     .ThenInclude(c => c.User)    // To get Usernames for comments
                     .ThenInclude(c => c.CommentRatings)
-                .AsQueryable();
+                .AsQueryable()
+                .AsSplitQuery();
             if (query.AddingDay.HasValue)
             {
                 var day = query.AddingDay.Value.Date;
@@ -46,7 +47,7 @@ namespace Anekdotify.BL.Repositories
         public async Task<JokeDTO?> GetJokeByIdAsync(int jokeId)
         {
             var joke = await _context.Jokes
-            .Where(j => j.JokeId == jokeId) // Only approved jokes
+            .Where(j => j.JokeId == jokeId) 
             .Include(j => j.Source)
             .Include(j => j.Classification) // To get ClassificationName
             .Include(j => j.JokeRatings)     // To calculate TotalLikes/Dislikes
@@ -115,6 +116,34 @@ namespace Anekdotify.BL.Repositories
         public async Task<bool> JokeExistsAsync(int jokeId)
         {
             return await _context.Jokes.AnyAsync(j => j.JokeId == jokeId);
+        }
+
+        public async Task<JokeDTO> GetRandomJokeAsync(List<int> viewedJokes)
+        {
+            
+            var jokeIds = await _context.Jokes.Select(j => j.JokeId).ToListAsync();
+
+            if (jokeIds == null || jokeIds.Count == 0)
+            {
+                 throw new InvalidOperationException("No jokes available to select from.");
+            }
+
+            var random = new Random();
+            var randomIndex = random.Next(0, jokeIds.Count);
+            if(viewedJokes != null && viewedJokes.Count > 0)
+            {
+                // Filter out viewed jokes
+                jokeIds = jokeIds.Where(id => !viewedJokes.Contains(id)).ToList();
+                if (jokeIds.Count == 0)
+                {
+                    throw new InvalidOperationException("No unviewed jokes available to select from.");
+                }
+                randomIndex = random.Next(0, jokeIds.Count);
+            }
+            var randomJokeId = jokeIds[randomIndex];
+
+            
+            return await GetJokeByIdAsync(randomJokeId) ?? throw new KeyNotFoundException($"Joke with ID {randomJokeId} not found.");
         }
     }
 }

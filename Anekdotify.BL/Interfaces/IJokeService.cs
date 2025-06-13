@@ -14,4 +14,5 @@ public interface IJokeService
     Task<Joke> DeleteJokeAsync(int id);
     Task<List<Comment>> GetCommentsByJokeIdAsync(int jokeId);
     Task<bool> JokeExistsAsync(int id);
+    Task<JokeDTO> GetRandomJokeAsync(List<int> viewedJokes);
 }

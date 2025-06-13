@@ -30,6 +30,8 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
 
     public virtual DbSet<UserSavedJoke> UserSavedJokes { get; set; }
 
+    public virtual DbSet<UserViewedJoke> UserViewedJokes { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -213,6 +215,21 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_UserSavedJokes_User");
+        });
+
+        modelBuilder.Entity<UserViewedJoke>(entity =>
+        {
+            entity.HasKey(e => e.UserViewedJokeId);
+            entity.HasIndex(e => new { e.JokeId, e.UserId }, "IX_UserViewedJokes").IsUnique();
+            entity.Property(e => e.ViewedDate).HasColumnType("datetime");
+            entity.HasOne(d => d.Joke).WithMany(p => p.UserViewedJokes)
+                .HasForeignKey(d => d.JokeId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_UserViewedJokes_Jokes");
+            entity.HasOne(d => d.User).WithMany(p => p.UserViewedJokes)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_UserViewedJokes_User");
         });
 
         OnModelCreatingPartial(modelBuilder);

@@ -1,0 +1,62 @@
+﻿@inject Anekdotify.Frontend.Clients.ApiClient ApiClient
+@inject IToastService ToastService
+
+<div class="d-flex flex-column h-100">
+
+    <div class="flex-grow-1 d-flex justify-content-center align-items-center w-100">
+        @if (joke != null)
+        {
+            <JokeCard Joke="@joke" />
+        }
+        else if (isLoading)
+        {
+            <div class="text-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        }
+        else
+        {
+            <p>Click "Get Daily Joke" to fetch one!</p>
+        }
+    </div>
+
+    <div class="mt-auto mb-4">
+        <button class="btn btn-secondary btn-lg" @onclick="GetRandomJoke">Get Daily Joke</button>
+    </div>
+</div>
+
+@code {
+
+
+    private JokeDTO joke;
+    private bool isLoading = false;
+
+    private async Task GetRandomJoke()
+    {
+        isLoading = true;
+        joke = null;
+        try
+        {
+            var result = await ApiClient.GetAsync<JokeDTO>("api/joke/random");
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                joke = result.Data;
+            }
+            else
+            {
+                ToastService.ShowError(result.ErrorMessage ?? "Failed to fetch joke.");
+            }
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"An unexpected error occurred: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

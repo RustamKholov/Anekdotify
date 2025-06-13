@@ -92,7 +92,7 @@ style="max-height: 400px; overflow-y: auto;">
     private async Task HandleDelete()
     {
         var res = await ApiClient.DeleteAsync($"api/joke/{DeleteId}");
-        if (!res.IsSuccessStatusCode)
+        if (!res.IsSuccess)
         {
             ToastService.ShowError("Failed to delete joke");
             return;

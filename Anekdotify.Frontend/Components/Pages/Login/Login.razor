@@ -35,38 +35,17 @@
     private IToastService ToastService { get; set; }
     private async Task HandleLogin()
     {
-        var res = await ApiClient.PostAsync<ActionResult, LoginDTO>("api/account/login", loginModel);
-        if (res is BadRequestObjectResult badRequest)
+        var response = await ApiClient.PostAsync<LoginResponseModel, LoginDTO>("api/account/login", loginModel);
+        if (response.IsSuccess)
         {
-            var error = badRequest.Value as string;
-            if (!string.IsNullOrEmpty(error))
-            {
-                ToastService.ShowError(error);
-            }
-            return;
+            await ((CustomAuthStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(response.Data.Token);
+            NavigationManager.NavigateTo("/");
         }
-        if (res is UnauthorizedObjectResult unauthorized)
+        else
         {
-            var error = unauthorized.Value as string;
-            if (!string.IsNullOrEmpty(error))
-            {
-                ToastService.ShowError(error);
-            }
-            return;
+            ToastService.ShowError("Login failed. Please check your credentials.");
         }
-        if (res is OkObjectResult okResult)
-        {
-            var token = okResult.Value as string;
-            if (!string.IsNullOrEmpty(token))
-            {
-                await ((CustomAuthStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(token);
-                NavigationManager.NavigateTo("/");
-            }
-            else
-            {
-                ToastService.ShowError("Login failed. Please try again.");
-            }
-            return;
-        }
+        loginModel = new LoginDTO();
+
     }
 }

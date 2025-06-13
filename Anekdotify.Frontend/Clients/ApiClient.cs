@@ -1,4 +1,7 @@
+using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
+using Anekdotify.Common;
 using Anekdotify.Frontend.Authentication;
 using Anekdotify.Frontend.Heplers;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
@@ -17,40 +20,82 @@ public class ApiClient(HttpClient httpClient, ProtectedLocalStorage storage)
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
     }
-    public async Task<T> GetFromJsonAsync<T>(string path)
+    public async Task<ApiResult<TSuccessData>> GetAsync<TSuccessData>(string path)
     {
         await SetAuthorizeHeader();
-        return await httpClient.GetFromJsonAsync<T>(path);
+        var response = await httpClient.GetAsync(path);
+        if(response.IsSuccessStatusCode)
+        {
+            var data = await response.Content.ReadFromJsonAsync<TSuccessData>();
+            return ApiResult<TSuccessData>.Success(data, response.StatusCode);
+        }
+        else
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            return ApiResult<TSuccessData>.Failure(errorMessage, response.StatusCode);
+        }
     }
 
-    public async Task<T1> PostAsync<T1, T2>(string path, T2 postModel)
+    public async Task<ApiResult<TSuccessData>> PostAsync<TSuccessData, TRequest>(string path, TRequest postModel)
     {
         await SetAuthorizeHeader();
-        var res = await httpClient.PostAsJsonAsync(path, postModel);
-        if (res != null && res.IsSuccessStatusCode)
+        var response = await httpClient.PostAsJsonAsync(path, postModel);
+        if(response.IsSuccessStatusCode)
         {
-            return JsonConvert.DeserializeObject<T1>(await res.Content.ReadAsStringAsync());
+            
+            if (response.StatusCode == HttpStatusCode.NoContent)
+            {
+                return ApiResult<TSuccessData>.Success(default, response.StatusCode);
+            }
+
+            var successData = await response.Content.ReadFromJsonAsync<TSuccessData>();
+            if (successData == null && typeof(TSuccessData) != typeof(string))
+            {
+                return null;
+            }
+            return ApiResult<TSuccessData>.Success(successData, response.StatusCode);
         }
-        return default;
-    }
-    public async Task<T1> PutAsync<T1, T2>(string path, T2 postModel)
-    {
-        await SetAuthorizeHeader();
-        var res = await httpClient.PutAsJsonAsync(path, postModel);
-        if (res != null && res.IsSuccessStatusCode)
+        else
         {
-            return JsonConvert.DeserializeObject<T1>(await res.Content.ReadAsStringAsync());
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            return ApiResult<TSuccessData>.Failure(errorMessage, response.StatusCode);
         }
-        return default;
     }
-    public async Task<T> DeleteAsync<T>(string path)
+    public async Task<ApiResult<TSuccessData>> PutAsync<TSuccessData, TRequestData>(string path, TRequestData postModel)
     {
         await SetAuthorizeHeader();
-        return await httpClient.DeleteFromJsonAsync<T>(path);
+        var response = await httpClient.PutAsJsonAsync(path, postModel);
+        if (response.IsSuccessStatusCode)
+        {
+            if (response.StatusCode == HttpStatusCode.NoContent)
+            {
+                return ApiResult<TSuccessData>.Success(default, response.StatusCode);
+            }
+            var successData = await response.Content.ReadFromJsonAsync<TSuccessData>();
+            if (successData == null && typeof(TSuccessData) != typeof(string))
+            {
+                return null;
+            }
+            return ApiResult<TSuccessData>.Success(successData, response.StatusCode);
+        }
+        else
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            return ApiResult<TSuccessData>.Failure(errorMessage, response.StatusCode);
+        }
     }
-    public async Task<HttpResponseMessage> DeleteAsync(string path)
+    public async Task<ApiResult<bool>> DeleteAsync(string path)
     {
         await SetAuthorizeHeader();
-        return await httpClient.DeleteAsync(path);
+        var response = await httpClient.DeleteAsync(path);
+        if (response.IsSuccessStatusCode)
+        {
+            return ApiResult<bool>.Success(true, response.StatusCode);
+        }
+        else
+        {
+            string errorMessage = await response.Content.ReadAsStringAsync();
+            return ApiResult<bool>.Failure(errorMessage, response.StatusCode);
+        }
     }
 }

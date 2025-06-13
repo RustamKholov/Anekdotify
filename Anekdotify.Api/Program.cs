@@ -71,12 +71,14 @@ builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IClassifficationService, ClassifficationService>();
 builder.Services.AddScoped<IJokeRatingsService, JokeRatingsService>();
 builder.Services.AddScoped<IUserSavedJokeService, UserSavedJokeService>();
+builder.Services.AddScoped<IUserViewedJokesService, UserViewedJokesService>();
 
 builder.Services.AddScoped<IJokeRepository, JokeRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<IUserSavedJokeRepository, UserSavedJokeRepository>();
 builder.Services.AddScoped<IJokeRatingsRepository, JokeRatingsRepository>();
 builder.Services.AddScoped<IClassificationRepository, ClassificationRepository>();
+builder.Services.AddScoped<IUserViewedJokesRepository, UserViewedJokesRepository>();
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 
