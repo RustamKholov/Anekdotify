@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Anekdotify.Database.Data;
 
@@ -11,9 +12,11 @@ using Anekdotify.Database.Data;
 namespace api.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250606182013_InitialMigration")]
+    partial class InitialMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -47,26 +50,6 @@ namespace api.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "52b00d65-b437-438d-a326-71a911b3e19e",
-                            Name = "Admin",
-                            NormalizedName = "ADMIN"
-                        },
-                        new
-                        {
-                            Id = "e5744710-5b51-469e-aeed-dead3e59e674",
-                            Name = "Moderator",
-                            NormalizedName = "MODERATOR"
-                        },
-                        new
-                        {
-                            Id = "c1b55bc9-a526-41d0-b0ca-05bb35cb1dc1",
-                            Name = "User",
-                            NormalizedName = "USER"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -270,6 +253,7 @@ namespace api.Migrations
                         .HasColumnType("datetime");
 
                     b.Property<string>("ApprovedByUserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("ClassificationId")
@@ -278,13 +262,16 @@ namespace api.Migrations
                     b.Property<bool>("IsApproved")
                         .HasColumnType("bit");
 
-                    b.Property<int>("SourceId")
-                        .HasColumnType("int");
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("SubbmissionDate")
                         .HasColumnType("datetime");
 
                     b.Property<string>("SubbmitedByUserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Text")
@@ -294,8 +281,6 @@ namespace api.Migrations
                     b.HasKey("JokeId");
 
                     b.HasIndex("ClassificationId");
-
-                    b.HasIndex("SourceId");
 
                     b.ToTable("Jokes");
                 });
@@ -389,41 +374,6 @@ namespace api.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("JokeRatings");
-                });
-
-            modelBuilder.Entity("api.Models.Source", b =>
-                {
-                    b.Property<int>("SourceId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SourceId"));
-
-                    b.Property<string>("SourceName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("SourceId");
-
-                    b.ToTable("Sources");
-
-                    b.HasData(
-                        new
-                        {
-                            SourceId = -1,
-                            SourceName = "From User"
-                        },
-                        new
-                        {
-                            SourceId = -2,
-                            SourceName = "System"
-                        },
-                        new
-                        {
-                            SourceId = -3,
-                            SourceName = "Generated"
-                        });
                 });
 
             modelBuilder.Entity("api.Models.User", b =>
@@ -584,7 +534,6 @@ namespace api.Migrations
                     b.HasOne("api.Models.Joke", "Joke")
                         .WithMany("Comments")
                         .HasForeignKey("JokeId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("api.Models.User", "User")
@@ -603,7 +552,6 @@ namespace api.Migrations
                     b.HasOne("api.Models.Comment", "Comment")
                         .WithMany("CommentRatings")
                         .HasForeignKey("CommentId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_CommentRatings_Comments");
 
@@ -625,16 +573,7 @@ namespace api.Migrations
                         .HasForeignKey("ClassificationId")
                         .HasConstraintName("FK_Jokes_Classification");
 
-                    b.HasOne("api.Models.Source", "Source")
-                        .WithMany("Jokes")
-                        .HasForeignKey("SourceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_Jokes_Source");
-
                     b.Navigation("Classification");
-
-                    b.Navigation("Source");
                 });
 
             modelBuilder.Entity("api.Models.JokeLike", b =>
@@ -642,7 +581,6 @@ namespace api.Migrations
                     b.HasOne("api.Models.Joke", "Joke")
                         .WithMany("JokeLikes")
                         .HasForeignKey("JokeId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_JokeLikes_Jokes");
 
@@ -662,7 +600,6 @@ namespace api.Migrations
                     b.HasOne("api.Models.Joke", "AssociatedJoke")
                         .WithMany("JokeParts")
                         .HasForeignKey("AssociatedJokeId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("FK_JokeParts_Jokes");
 
                     b.Navigation("AssociatedJoke");
@@ -673,7 +610,6 @@ namespace api.Migrations
                     b.HasOne("api.Models.Joke", "Joke")
                         .WithMany("JokeRatings")
                         .HasForeignKey("JokeId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_JokeRatings_Jokes");
 
@@ -693,14 +629,12 @@ namespace api.Migrations
                     b.HasOne("api.Models.Joke", "Joke")
                         .WithMany("UserSavedJokes")
                         .HasForeignKey("JokeId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_UserSavedJokes_Jokes");
 
                     b.HasOne("api.Models.User", "User")
                         .WithMany("UserSavedJokes")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_UserSavedJokes_User");
 
@@ -730,11 +664,6 @@ namespace api.Migrations
                     b.Navigation("JokeRatings");
 
                     b.Navigation("UserSavedJokes");
-                });
-
-            modelBuilder.Entity("api.Models.Source", b =>
-                {
-                    b.Navigation("Jokes");
                 });
 
             modelBuilder.Entity("api.Models.User", b =>

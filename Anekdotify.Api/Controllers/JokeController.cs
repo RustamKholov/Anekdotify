@@ -14,12 +14,14 @@ namespace Anekdotify.Api.Controllers
     public class JokeController : ControllerBase
     {
         private readonly IJokeService _jokeService;
-        private readonly IUserSavedJokeRepository _userSavedJokeRepo;
-        public JokeController(IJokeService jokeService, IUserSavedJokeRepository userSavedJokeRepo)
+        private readonly IUserSavedJokeService _userSavedJokeService;
+        private readonly IUserViewedJokesService _userViewedJokesService;
+        public JokeController(IJokeService jokeService, IUserSavedJokeService userSavedJokeService, IUserViewedJokesService userViewedJokesService)
         {
             _jokeService = jokeService;
 
-            _userSavedJokeRepo = userSavedJokeRepo;
+            _userSavedJokeService = userSavedJokeService;
+            _userViewedJokesService = userViewedJokesService;
         }
 
         [HttpGet]
@@ -51,7 +53,31 @@ namespace Anekdotify.Api.Controllers
             }
             return Ok(joke);
         }
-        
+        [HttpGet]
+        [Route("random")]
+        public async Task<IActionResult> GetRandomJokeAsync()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User ID not found in token claims.");
+            }
+            var viewedJokes = await _userViewedJokesService.GetViewedJokesAsync(userId);
+            
+            var joke = await _jokeService.GetRandomJokeAsync(viewedJokes.Value ?? []);
+            if (joke == null)
+            {
+                return NotFound("No jokes found.");
+            }
+            await _userViewedJokesService.AddViewedJokeAsync(userId, joke.JokeId);
+            return Ok(joke);
+        }
+
 
         [HttpPost]
         [Authorize]
@@ -124,13 +150,13 @@ namespace Anekdotify.Api.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId)) return Unauthorized("User ID not found in token.");
 
-            var jokeExists = await _jokeService.JokeExistsAsync(jokeId); // Assuming a method like this
+            var jokeExists = await _jokeService.JokeExistsAsync(jokeId);
             if (!jokeExists)
             {
                 return NotFound($"Joke with ID {jokeId} not found.");
             }
 
-            var isSaved = await _userSavedJokeRepo.IsJokeSavedByUserAsync(new SaveJokeDTO{JokeId = jokeId}, userId);
+            var isSaved = await _userSavedJokeService.IsJokeSavedByUserAsync(new SaveJokeDTO{JokeId = jokeId}, userId);
 
             return Ok(new { Jokeid = jokeId, IsSaved = isSaved });
         }

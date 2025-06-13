@@ -33,6 +33,11 @@ public class JokeService(IJokeRepository jokeRepository) : IJokeService
         return await  jokeRepository.GetJokeByIdAsync(id);
     }
 
+    public async Task<JokeDTO> GetRandomJokeAsync(List<int> viewedJokes)
+    {
+        return await jokeRepository.GetRandomJokeAsync(viewedJokes);
+    }
+
     public async Task<bool> JokeExistsAsync(int id)
     {
         return  await jokeRepository.JokeExistsAsync(id);

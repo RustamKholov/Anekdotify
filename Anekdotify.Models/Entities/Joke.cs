@@ -33,5 +33,7 @@
         public virtual ICollection<JokeRating> JokeRatings { get; set; } = new List<JokeRating>();
 
         public virtual ICollection<UserSavedJoke> UserSavedJokes { get; set; } = new List<UserSavedJoke>();
+
+        public virtual ICollection<UserViewedJoke> UserViewedJokes { get; set; } = new List<UserViewedJoke>();
     }
 }
