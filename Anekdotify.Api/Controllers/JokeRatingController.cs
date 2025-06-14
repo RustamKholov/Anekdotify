@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Anekdotify.Api.Controllers
 {
     [ApiController]
-
+    [Route("api/joke")]
     [Authorize]
     public class JokeRatingController : ControllerBase
     {
