@@ -32,6 +32,8 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
 
     public virtual DbSet<UserViewedJoke> UserViewedJokes { get; set; }
 
+    public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -231,7 +233,15 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_UserViewedJokes_User");
         });
-
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.HasKey(e => e.RefreshTokenId);
+            entity.Property(e => e.Token).IsRequired().HasMaxLength(500);
+            entity.HasOne(d => d.User).WithMany(p => p.RefreshTokens)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_RefreshTokens_User");
+        });
         OnModelCreatingPartial(modelBuilder);
     }
 
