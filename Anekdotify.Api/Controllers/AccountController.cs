@@ -112,12 +112,19 @@ namespace Anekdotify.Api.Controllers
                     return BadRequest(ModelState);
                 }
 
+                var existing = await _userManager.FindByEmailAsync(user.Email ?? string.Empty);
+                if (existing != null)
+                    return BadRequest("User already exists");
+
+
                 var createUser = await _userManager.CreateAsync(user, registerDTO.Password);
                 if (createUser.Succeeded)
                 {
                     var roleResult = await _userManager.AddToRoleAsync(user, "User");
+
                     if (roleResult.Succeeded)
                     {
+
                         return Ok(
                             new NewUserDTO
                             {

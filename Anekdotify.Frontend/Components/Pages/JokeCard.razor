@@ -8,16 +8,21 @@
 
 <div class="card text-bg-light shadow-sm rounded-4 mb-4 p-3 position-relative h-100"
 style="width: 100%; min-height: 300px; max-height: 300px;">
-    <div class="card-header bg-transparent border-bottom-0 d-flex align-items-center justify-content-between">
-        <div class="d-flex align-items-center">
-            <a class="btn btn-outline-secondary btn-sm me-2" href="@JokeUrl(Joke.JokeId)" title="Edit">
-                <i class="bi bi-pencil"></i>
-            </a>
-            <button class="btn btn-outline-danger" @onclick="() => {DeleteId = Joke.JokeId; Modal.Show();}">
-                <i class="bi bi-trash"></i>
-            </button>
-        </div>
-    </div>
+
+    <AuthorizeView Roles="Admin">
+        <Authorized>
+            <div class="card-header bg-transparent border-bottom-0 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <a class="btn btn-outline-secondary btn-sm me-2" href="@JokeUrl(Joke.JokeId)" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <button class="btn btn-outline-danger" @onclick="() => {DeleteId = Joke.JokeId; Modal.Show();}">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </Authorized>
+    </AuthorizeView>
 
     <div class="card-body d-flex flex-column justify-content-center align-items-center text-center pb-5">
         <p class="card-text text-secondary">@Joke.Text</p>

@@ -83,7 +83,12 @@ namespace Anekdotify.Api.Controllers
             {
                 return NotFound("No jokes found.");
             }
-            await _userViewedJokesService.AddViewedJokeAsync(userId, joke.JokeId);
+
+            if (!User.IsInRole("Admin") || !User.IsInRole("Moderator"))
+            {
+                await _userViewedJokesService.AddViewedJokeAsync(userId, joke.JokeId);
+            }
+            
             
             user.LastJokeRetrievalDate = DateTime.UtcNow;
             await _userManager.UpdateAsync(user);
