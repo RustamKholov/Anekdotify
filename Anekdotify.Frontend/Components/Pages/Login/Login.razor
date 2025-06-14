@@ -38,7 +38,7 @@
         var response = await ApiClient.PostAsync<LoginResponseModel, LoginDTO>("api/account/login", loginModel);
         if (response.IsSuccess)
         {
-            await ((CustomAuthStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(response.Data.Token);
+            await ((CustomAuthStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(response.Data);
             NavigationManager.NavigateTo("/");
         }
         else

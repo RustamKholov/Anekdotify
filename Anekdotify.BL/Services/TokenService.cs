@@ -11,18 +11,11 @@ namespace Anekdotify.BL.Services
     public class TokenService : ITokenService
     {
         private readonly IConfiguration _config;
-        private readonly SymmetricSecurityKey _key;
         public TokenService(IConfiguration config)
         {
             _config = config;
-            var signingKey = _config["JWT:SigningKey"];
-            if (string.IsNullOrEmpty(signingKey))
-            {
-                throw new InvalidOperationException("JWT signing key is not configured.");
-            }
-            _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey));
         }
-        public string CreateToken(User user)
+        public string CreateToken(User user, bool isRefreshToken)
         {
             var claims = new List<Claim>
             {
@@ -30,12 +23,18 @@ namespace Anekdotify.BL.Services
                 new Claim(JwtRegisteredClaimNames.GivenName, user.UserName ?? string.Empty),
                 new Claim(ClaimTypes.NameIdentifier, user.Id)
             };
+            var signingKey = isRefreshToken ? _config["JWT:RefreshSigningKey"] : _config["JWT:SigningKey"];
 
+            if (string.IsNullOrEmpty(signingKey))
+            {
+                throw new InvalidOperationException("JWT signing key is not configured.");
+            }
+            var _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey));
             var credentials = new SigningCredentials(_key, SecurityAlgorithms.HmacSha512Signature);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.Now.AddDays(7),
+                Expires = DateTime.UtcNow.AddMinutes(isRefreshToken ? 24*60 : 30),
                 SigningCredentials = credentials,
                 Issuer = _config["JWT:Issuer"],
                 Audience = _config["JWT:Audience"]

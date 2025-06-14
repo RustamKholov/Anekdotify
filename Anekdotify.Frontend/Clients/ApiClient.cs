@@ -4,20 +4,47 @@ using System.Net.Http.Headers;
 using Anekdotify.Common;
 using Anekdotify.Frontend.Authentication;
 using Anekdotify.Frontend.Heplers;
+using Anekdotify.Models.Models;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Newtonsoft.Json;
 
 namespace Anekdotify.Frontend.Clients;
 
-public class ApiClient(HttpClient httpClient, ProtectedLocalStorage storage)
+public class ApiClient(HttpClient httpClient, ProtectedLocalStorage storage,
+    AuthenticationStateProvider authenticationState, NavigationManager navigationManager)
 {
 
     public async Task SetAuthorizeHeader()
     {
-        var token = (await storage.GetAsync<string>( "authToken")).Value;
-        if (token != null)
+
+        var sessionState = (await storage.GetAsync<LoginResponseModel>( "sessionState")).Value;
+        if (sessionState != null && !string.IsNullOrEmpty(sessionState.Token))
         {
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            if (sessionState.ExpiresIn < DateTimeOffset.UtcNow.ToUnixTimeSeconds())
+            {
+                await ((CustomAuthStateProvider)authenticationState).MarkUserAsLoggedOut();
+                navigationManager.NavigateTo("/login", true);
+            }
+            else if (sessionState.ExpiresIn < DateTimeOffset.UtcNow.AddMinutes(10).ToUnixTimeSeconds())
+            {
+                var res = await httpClient.GetFromJsonAsync<LoginResponseModel>($"api/account/loginByRefreshToken?refreshToken={sessionState.RefreshToken}");
+                if (res != null)
+                {
+                    await ((CustomAuthStateProvider)authenticationState).MarkUserAsAuthenticated(res);
+                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", res.Token);
+                }
+                else
+                {
+                    await ((CustomAuthStateProvider)authenticationState).MarkUserAsLoggedOut();
+                    navigationManager.NavigateTo("/login", true);
+                }
+            }
+            else
+            {
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", sessionState.Token);
+            }
         }
     }
     public async Task<ApiResult<TSuccessData>> GetAsync<TSuccessData>(string path)

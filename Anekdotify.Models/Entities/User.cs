@@ -22,5 +22,7 @@ namespace Anekdotify.Models.Entities
         public virtual ICollection<UserSavedJoke> UserSavedJokes { get; set; } = new List<UserSavedJoke>();
 
         public virtual ICollection<UserViewedJoke> UserViewedJokes { get; set; } = new List<UserViewedJoke>();
+
+        public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
     }
 }

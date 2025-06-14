@@ -1,4 +1,7 @@
 
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using Anekdotify.BL.Interfaces;
 using Anekdotify.Models.DTOs.Accounts;
 using Anekdotify.Models.Entities;
@@ -6,6 +9,7 @@ using Anekdotify.Models.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Anekdotify.Api.Controllers
 {
@@ -15,11 +19,15 @@ namespace Anekdotify.Api.Controllers
         private readonly UserManager<User> _userManager;
         private readonly ITokenService _tokenService;
         private readonly SignInManager<User> _signInManager;
-        public AccountController(UserManager<User> userManager, ITokenService tokenService, SignInManager<User> signInManager)
+        private readonly IConfiguration _config;
+        private readonly IAccountService _accountService;
+        public AccountController(UserManager<User> userManager, ITokenService tokenService, SignInManager<User> signInManager, IConfiguration config, IAccountService accountService)
         {
             _userManager = userManager;
             _tokenService = tokenService;
             _signInManager = signInManager;
+            _config = config;
+            _accountService = accountService;
         }
 
         [HttpPost("login")]
@@ -37,15 +45,50 @@ namespace Anekdotify.Api.Controllers
             var result = await _signInManager.CheckPasswordSignInAsync(user, loginDTO.Password, false);
 
             if (!result.Succeeded) return Unauthorized("Username not found and/or wrong password");
-            var userDTO = new NewUserDTO
-            {
-                UserName = user.UserName!,
-                Email = user.Email!,
-                Token = _tokenService.CreateToken(user)
-            };
 
-            return Ok(userDTO);
+            var token = _tokenService.CreateToken(user, isRefreshToken:false);
+            var refreshToken = _tokenService.CreateToken(user, isRefreshToken: true);
+
+            await _accountService.AddRefreshToken(new RefreshToken
+            {
+                UserId = user.Id,
+                Token = refreshToken
+            });
+
+            var loginResponse = new LoginResponseModel
+            {
+                Token = token,
+                RefreshToken = refreshToken,
+                ExpiresIn = DateTimeOffset.UtcNow.AddMinutes(30).ToUnixTimeSeconds() // 1 hour expiration
+            };
+            return Ok(loginResponse);
         }
+        [HttpGet("loginByRefreshToken")]
+        public async Task<ActionResult<LoginResponseModel>> LoginByRefreshToken([FromQuery] string refreshToken)
+        {
+            var refreshTokenEntity = await _accountService.GetRefreshTokenByToken(refreshToken);
+            if (refreshTokenEntity == null)
+            {
+                return Unauthorized("Invalid or expired refresh token.");
+            }
+
+            var token = _tokenService.CreateToken(refreshTokenEntity.User, isRefreshToken: false);
+            var newRefreshToken = _tokenService.CreateToken(refreshTokenEntity.User, isRefreshToken: true);
+
+            await _accountService.AddRefreshToken(new RefreshToken
+            {
+                UserId = refreshTokenEntity.UserId,
+                Token = newRefreshToken
+            });
+
+            return Ok(new LoginResponseModel
+            {
+                Token = token,
+                RefreshToken = newRefreshToken,
+                ExpiresIn = DateTimeOffset.UtcNow.AddMinutes(30).ToUnixTimeSeconds() // 1 hour expiration
+            });
+        }
+
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDTO registerDTO)
@@ -79,7 +122,9 @@ namespace Anekdotify.Api.Controllers
                             {
                                 UserName = user.UserName!,
                                 Email = user.Email!,
-                                Token = _tokenService.CreateToken(user)
+                                Token = _tokenService.CreateToken(user, isRefreshToken: false),
+                                RefreshToken = _tokenService.CreateToken(user, isRefreshToken: true),
+                                ExpiresIn = DateTimeOffset.UtcNow.AddHours(1).ToUnixTimeSeconds() // 1 hour expiration
                             }
                         );
                     }
@@ -98,5 +143,6 @@ namespace Anekdotify.Api.Controllers
                 return StatusCode(500, e);
             }
         }
+
     }
 }
