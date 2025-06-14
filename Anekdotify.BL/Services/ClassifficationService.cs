@@ -1,5 +1,5 @@
-using System;
-using Anekdotify.BL.Interfaces;
+using Anekdotify.BL.Interfaces.Repositories;
+using Anekdotify.BL.Interfaces.Services;
 using Anekdotify.Common;
 using Anekdotify.Models.DTOs.Classification;
 

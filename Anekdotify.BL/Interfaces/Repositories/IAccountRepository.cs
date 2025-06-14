@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Anekdotify.Models.Entities;
+﻿using Anekdotify.Models.Entities;
 
-namespace Anekdotify.BL.Interfaces
+namespace Anekdotify.BL.Interfaces.Repositories
 {
     public interface IAccountRepository
     {

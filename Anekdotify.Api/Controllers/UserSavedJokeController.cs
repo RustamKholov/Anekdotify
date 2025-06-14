@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using Anekdotify.BL.Interfaces;
+using Anekdotify.BL.Interfaces.Services;
 using Anekdotify.Models.DTOs.SaveJoke;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

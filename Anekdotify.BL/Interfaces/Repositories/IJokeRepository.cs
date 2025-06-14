@@ -2,7 +2,7 @@ using Anekdotify.BL.Helpers;
 using Anekdotify.Models.DTOs.Jokes;
 using Anekdotify.Models.Entities;
 
-namespace Anekdotify.BL.Interfaces
+namespace Anekdotify.BL.Interfaces.Repositories
 {
     public interface IJokeRepository
     {

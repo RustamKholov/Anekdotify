@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using Anekdotify.BL.Helpers;
-using Anekdotify.BL.Interfaces;
+using Anekdotify.BL.Interfaces.Services;
 using Anekdotify.BL.Mappers;
 using Anekdotify.Models.DTOs.Comments;
 using Microsoft.AspNetCore.Mvc;

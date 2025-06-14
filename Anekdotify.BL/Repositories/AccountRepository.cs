@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Anekdotify.BL.Interfaces;
+﻿using Anekdotify.BL.Interfaces.Repositories;
 using Anekdotify.Database.Data;
 using Anekdotify.Models.Entities;
 using Microsoft.EntityFrameworkCore;

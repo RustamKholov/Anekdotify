@@ -1,6 +1,6 @@
-using System;
 using Anekdotify.BL.Helpers;
-using Anekdotify.BL.Interfaces;
+using Anekdotify.BL.Interfaces.Repositories;
+using Anekdotify.BL.Interfaces.Services;
 using Anekdotify.Models.DTOs.Jokes;
 using Anekdotify.Models.Entities;
 

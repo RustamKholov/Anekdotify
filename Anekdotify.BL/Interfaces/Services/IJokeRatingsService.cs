@@ -1,8 +1,7 @@
-using System;
 using Anekdotify.Common;
 using Anekdotify.Models.DTOs.JokeRating;
 
-namespace Anekdotify.BL.Interfaces;
+namespace Anekdotify.BL.Interfaces.Services;
 
 public interface IJokeRatingsService
 {

@@ -1,14 +1,11 @@
 using System.Net;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using Anekdotify.Common;
 using Anekdotify.Frontend.Authentication;
-using Anekdotify.Frontend.Heplers;
 using Anekdotify.Models.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using Newtonsoft.Json;
 
 namespace Anekdotify.Frontend.Clients;
 
