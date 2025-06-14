@@ -1,15 +1,10 @@
-
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Anekdotify.BL.Interfaces;
+using Anekdotify.BL.Interfaces.Services;
 using Anekdotify.Models.DTOs.Accounts;
 using Anekdotify.Models.Entities;
 using Anekdotify.Models.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Anekdotify.Api.Controllers
 {
@@ -19,14 +14,13 @@ namespace Anekdotify.Api.Controllers
         private readonly UserManager<User> _userManager;
         private readonly ITokenService _tokenService;
         private readonly SignInManager<User> _signInManager;
-        private readonly IConfiguration _config;
         private readonly IAccountService _accountService;
-        public AccountController(UserManager<User> userManager, ITokenService tokenService, SignInManager<User> signInManager, IConfiguration config, IAccountService accountService)
+        public AccountController(UserManager<User> userManager, ITokenService tokenService,
+            SignInManager<User> signInManager, IAccountService accountService)
         {
             _userManager = userManager;
             _tokenService = tokenService;
             _signInManager = signInManager;
-            _config = config;
             _accountService = accountService;
         }
 
@@ -61,6 +55,10 @@ namespace Anekdotify.Api.Controllers
                 RefreshToken = refreshToken,
                 ExpiresIn = DateTimeOffset.UtcNow.AddMinutes(30).ToUnixTimeSeconds() // 1 hour expiration
             };
+
+            user.LastLoginDate = DateTime.UtcNow;
+            await _userManager.UpdateAsync(user);
+
             return Ok(loginResponse);
         }
         [HttpGet("loginByRefreshToken")]
@@ -80,6 +78,9 @@ namespace Anekdotify.Api.Controllers
                 UserId = refreshTokenEntity.UserId,
                 Token = newRefreshToken
             });
+
+            refreshTokenEntity.User.LastLoginDate = DateTime.UtcNow;
+            await _userManager.UpdateAsync(refreshTokenEntity.User);
 
             return Ok(new LoginResponseModel
             {

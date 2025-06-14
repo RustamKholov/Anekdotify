@@ -1,4 +1,4 @@
-using Anekdotify.BL.Interfaces;
+using Anekdotify.BL.Interfaces.Repositories;
 using Anekdotify.Common;
 using Anekdotify.Database.Data;
 using Anekdotify.Models.DTOs.JokeRating;

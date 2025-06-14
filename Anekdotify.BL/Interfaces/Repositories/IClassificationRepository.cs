@@ -1,7 +1,7 @@
 using Anekdotify.Common;
 using Anekdotify.Models.DTOs.Classification;
 
-namespace Anekdotify.BL.Interfaces
+namespace Anekdotify.BL.Interfaces.Repositories
 {
     public interface IClassificationRepository
     {

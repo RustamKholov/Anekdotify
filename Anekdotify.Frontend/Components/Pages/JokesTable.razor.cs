@@ -1,10 +1,8 @@
 ﻿using Anekdotify.Frontend.Authentication;
 using Anekdotify.Frontend.Clients;
-using Anekdotify.Frontend.Components.BaseComponents;
 using Anekdotify.Models.DTOs.Jokes;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Anekdotify.Frontend.Components.Pages
 {

@@ -1,4 +1,3 @@
-using Anekdotify.BL.Interfaces;
 using Anekdotify.BL.Repositories;
 using Anekdotify.Database.Data;
 using Anekdotify.Models.Entities;
@@ -10,6 +9,8 @@ using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.DataProtection;
 using Anekdotify.BL.Services;
+using Anekdotify.BL.Interfaces.Repositories;
+using Anekdotify.BL.Interfaces.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
