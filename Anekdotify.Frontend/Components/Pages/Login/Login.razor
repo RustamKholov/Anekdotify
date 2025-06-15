@@ -6,28 +6,30 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @rendermode RenderMode.InteractiveServer
 
-
-<div class="card shadow-lg" style="width: 25rem;">
-    <div class="card-body p-4">
-        <h4 class="card-title text-center mb-4">Login</h4>
-        <EditForm Model="loginModel" FormName="login" OnValidSubmit="HandleLogin">
-            <DataAnnotationsValidator />
-            <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
-                <InputText id="username" class="form-control" @bind-Value="loginModel.Username" />
-                <ValidationMessage For="@(() => loginModel.Username)" class="text-danger" />
-            </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <InputText id="password" class="form-control" type="password" @bind-Value="loginModel.Password" />
-                <ValidationMessage For="@(() => loginModel.Password)" class="text-danger" />
-            </div>
-            <div class="d-grid mt-4">
-                <button type="submit" class="btn btn-dark">Login</button>
-            </div>
-        </EditForm>
+<div class="d-flex justify-content-center align-items-center h-100 w-100">
+    <div class=" card shadow-lg" style="width: 25rem;">
+        <div class="card-body p-4">
+            <h4 class="card-title text-center mb-4">Login</h4>
+            <EditForm Model="loginModel" FormName="login" OnValidSubmit="HandleLogin">
+                <DataAnnotationsValidator />
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <InputText id="username" class="form-control" @bind-Value="loginModel.Username" />
+                    <ValidationMessage For="@(() => loginModel.Username)" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <InputText id="password" class="form-control" type="password" @bind-Value="loginModel.Password" />
+                    <ValidationMessage For="@(() => loginModel.Password)" class="text-danger" />
+                </div>
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-dark">Login</button>
+                </div>
+            </EditForm>
+        </div>
     </div>
 </div>
+
 
 @code {
     private LoginDTO loginModel = new LoginDTO();

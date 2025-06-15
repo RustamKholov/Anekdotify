@@ -2,12 +2,13 @@ using Anekdotify.BL.Interfaces.Repositories;
 using Anekdotify.BL.Interfaces.Services;
 using Anekdotify.Common;
 using Anekdotify.Models.DTOs.Classification;
+using Anekdotify.Models.Entities;
 
 namespace Anekdotify.BL.Services;
 
 public class ClassifficationService(IClassificationRepository classificationRepository) : IClassifficationService
 {
-    public async Task<OperationResult<ClassificationDTO>> CreateClassificationAsync(string classificationName)
+    public async Task<OperationResult<Classification>> CreateClassificationAsync(string classificationName)
     {
         return await classificationRepository.CreateClassificationAsync(classificationName);
     }
@@ -25,6 +26,11 @@ public class ClassifficationService(IClassificationRepository classificationRepo
     public async Task<OperationResult<ClassificationDTO>> GetClassificationByIdAsync(int classificationId)
     {
         return await classificationRepository.GetClassificationByIdAsync(classificationId);
+    }
+
+    public async Task<OperationResult<Classification>> GetClassificationByNameAsync(string classificationName)
+    {
+        return await classificationRepository.GetClassificationByNameAsync(classificationName);
     }
 
     public async Task<bool> IsExistingAsync(string classificationName)

@@ -18,26 +18,17 @@ namespace Anekdotify.BL.Repositories
         public async Task<List<JokeDTO>> GetAllJokesAsync(JokesQueryObject query)
         {
             var jokes = _context.Jokes
-                .Include(j => j.Classification) // To get ClassificationName
+                .Include(j => j.Classification)     // To get ClassificationName
+                .Include(j => j.Source)           // To get SourceName
                 .Include(j => j.JokeRatings)     // To calculate TotalLikes/Dislikes
                 .Include(j => j.Comments)        // To get comments
                     .ThenInclude(c => c.User)    // To get Usernames for comments
                     .ThenInclude(c => c.CommentRatings)
                 .AsQueryable()
                 .AsSplitQuery();
-            if (query.AddingDay.HasValue)
-            {
-                var day = query.AddingDay.Value.Date;
-                var nextDay = day.AddDays(1);
-                jokes = jokes.Where(j => j.SubbmissionDate >= day && j.SubbmissionDate < nextDay);
-            }
-            if (!string.IsNullOrWhiteSpace(query.SortBy))
-            {
-                if (string.Equals(query.SortBy, "AddingDay", StringComparison.OrdinalIgnoreCase))
-                {
-                    jokes = query.ByDescending ? jokes.OrderByDescending(j => j.SubbmissionDate) : jokes.OrderBy(j => j.SubbmissionDate);
-                }
-            }
+            
+            jokes = query.ByDescending ? jokes.OrderByDescending(j => j.SubbmissionDate) : jokes.OrderBy(j => j.SubbmissionDate);
+
             var skipNumber = (query.PageNumber - 1) * query.PageSize;
 
             var allJokes = await jokes.Skip(skipNumber).Take(query.PageSize).ToListAsync();
@@ -48,7 +39,7 @@ namespace Anekdotify.BL.Repositories
         {
             var joke = await _context.Jokes
             .Where(j => j.JokeId == jokeId) 
-            .Include(j => j.Source)
+            .Include(j => j.Source)             // To get SourceName
             .Include(j => j.Classification) // To get ClassificationName
             .Include(j => j.JokeRatings)     // To calculate TotalLikes/Dislikes
             .Include(j => j.Comments)        // To get comments

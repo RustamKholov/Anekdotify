@@ -15,12 +15,12 @@ namespace Anekdotify.BL.Repositories
         {
             _context = context;
         }
-        public async Task<OperationResult<ClassificationDTO>> CreateClassificationAsync(string classificationName)
+        public async Task<OperationResult<Classification>> CreateClassificationAsync(string classificationName)
         {
             var classification = new Classification { Name = classificationName };
-            await _context.Classifications.AddAsync(classification);
+            var newClassification = await _context.Classifications.AddAsync(classification);
             await _context.SaveChangesAsync();
-            return OperationResult<ClassificationDTO>.Success(classification.ToDTO());
+            return OperationResult<Classification>.Success(newClassification.Entity);
 
         }
 
@@ -52,9 +52,19 @@ namespace Anekdotify.BL.Repositories
             return OperationResult<ClassificationDTO>.Success(existingClassification.ToDTO());
         }
 
+        public async Task<OperationResult<Classification>> GetClassificationByNameAsync(string classificationName)
+        {
+            var existingClassification = await _context.Classifications.FirstOrDefaultAsync(cl => cl.Name.ToLower() == classificationName.ToLower());
+            if (existingClassification == null)
+            {
+                return OperationResult<Classification>.NotFound(new Classification { Name = "NotFound" }, "Classification not found");
+            }
+            return OperationResult<Classification>.Success(existingClassification);
+        }
+
         public async Task<bool> IsExistingAsync(string classificationName)
         {
-            return await _context.Classifications.AnyAsync(cl => cl.Name == classificationName.ToLower());
+            return await _context.Classifications.AnyAsync(cl => cl.Name.ToLower() == classificationName.ToLower());
         }
 
         public async Task<OperationResult<ClassificationDTO>> UpdateClassificationAsync(int classificationId, string classificationName)
