@@ -16,6 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -74,6 +75,8 @@ builder.Services.AddScoped<IJokeRatingsService, JokeRatingsService>();
 builder.Services.AddScoped<IUserSavedJokeService, UserSavedJokeService>();
 builder.Services.AddScoped<IUserViewedJokesService, UserViewedJokesService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<ISourceFetchedJokesService, SourceFetchedJokesService>();
+
 
 builder.Services.AddScoped<IJokeRepository, JokeRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
@@ -82,9 +85,16 @@ builder.Services.AddScoped<IJokeRatingsRepository, JokeRatingsRepository>();
 builder.Services.AddScoped<IClassificationRepository, ClassificationRepository>();
 builder.Services.AddScoped<IUserViewedJokesRepository, UserViewedJokesRepository>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<ISourceFetchedJokesRepository, SourceFetchedJokesRepository>();
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 
+builder.Services.AddScoped<IJokeSeederService, JokeSeederService>();
+
+builder.Services.AddHttpClient<IJokeSource, JokeSourceJokeApi>(client =>
+{
+    client.BaseAddress = new Uri("https://v2.jokeapi.dev/");
+});
 
 builder.Services.AddIdentity<User, IdentityRole>(options =>
     {
@@ -121,6 +131,8 @@ builder.Services.AddAuthentication(options =>
         )
     };
 });
+
+builder.AddRedisDistributedCache("cache");
 
 var app = builder.Build();
 

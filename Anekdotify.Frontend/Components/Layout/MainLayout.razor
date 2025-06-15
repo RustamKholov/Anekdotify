@@ -2,9 +2,10 @@
 @using Blazored.Toast.Configuration
 
 <div class="d-flex flex-column vh-100 bg-white text-dark m-3 p-3">
-    <NavMenu></NavMenu>
-    <main class="flex-grow-1 d-flex justify-content-center align-items-center
-                 card shadow-lg rounded-4 p-4 bg-light text-dark main-fixed-content-area mb-5">
+    <NavMenu />
+
+    <main class="card shadow-lg rounded-4 p-4 bg-light text-dark mb-5 d-flex flex-column"
+          style="height: 85vh; overflow-y: auto; overflow-x: hidden;">
         @Body
     </main>
 </div>

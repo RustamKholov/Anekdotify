@@ -8,9 +8,9 @@
 @inject IToastService ToastService
 @rendermode RenderMode.InteractiveServer
 
-<div class="card shadow-sm rounded-4 mb-4 p-3 h-100" style="min-height: 300px; max-height: 300px;">
+<div class="card shadow-sm rounded-4 mb-4 p-3 h-100 " style="min-height: 300px; max-height: 300px;">
 
-    <AuthorizeView Roles="Admin">
+    <AuthorizeView Roles="ADMIN">
         <Authorized>
             <div class="card-header bg-transparent border-bottom-0 d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center">
@@ -47,11 +47,7 @@
                 <span class="ms-1">@Joke.TotalDislikes</span>
             </button>
 
-            <button class="btn btn-sm btn-outline-secondary d-flex align-items-center"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#commentCollapseToJoke_@Joke.JokeId"
-                    aria-expanded="false"
-                    aria-controls="collapseExample">
+            <button class="btn btn-sm btn-outline-secondary d-flex align-items-center" aria-expanded="false">
                 <i class="bi bi-chat-left-text"></i>
                 <span class="ms-1">@Joke.Comments.Count</span>
             </button>

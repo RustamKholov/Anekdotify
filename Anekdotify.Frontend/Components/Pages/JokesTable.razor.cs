@@ -1,4 +1,5 @@
-﻿using Anekdotify.Frontend.Authentication;
+﻿using System.Net;
+using Anekdotify.Frontend.Authentication;
 using Anekdotify.Frontend.Clients;
 using Anekdotify.Models.DTOs.Jokes;
 using Microsoft.AspNetCore.Components;
@@ -43,7 +44,7 @@ namespace Anekdotify.Frontend.Components.Pages
                     errorMessage = "You need to be logged in to view jokes.";
                 }
             }
-            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized || ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized || ex.StatusCode == HttpStatusCode.Forbidden)
             {
                 errorMessage = "Access denied. Please log in.";
                 NavigationManager.NavigateTo("/login", forceLoad: true);

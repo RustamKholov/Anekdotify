@@ -37,14 +37,30 @@ namespace Anekdotify.BL.Repositories
         public async Task<List<CommentDTO>> GetAllCommentsAsync(CommentsQueryObject query)
         {
             var AllComments = _context.Comments.AsQueryable();
+
             if (query.JokeId != null)
             {
                 AllComments = AllComments.Where(c => c.JokeId == query.JokeId)
                                         .Include(c => c.User)
+                                        .Include(c => c.CommentRatings)
                                         .OrderBy(c => c.CommentDate);
             }
-            var comments = await AllComments.ToListAsync();
+            if (query.ByDescending)
+            {
+                AllComments = AllComments.OrderByDescending(c => c.CommentDate);
+            }
+            else
+            {
+                AllComments = AllComments.OrderBy(c => c.CommentDate);
+            }
+
+            var comments = await AllComments
+                .Skip((query.PageNumber - 1) * query.PageSize)
+                .Take(query.PageSize)
+                .ToListAsync();
+
             var rootComments = comments.BuildHierarchicalComments();
+
             return rootComments;
         }
 

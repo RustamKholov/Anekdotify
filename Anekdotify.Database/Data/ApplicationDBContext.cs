@@ -34,6 +34,8 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
 
     public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
 
+    public virtual DbSet<SourceFetchedJoke> SourceFetchedJokes { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -72,6 +74,11 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
             {
                 SourceId = -3,
                 SourceName = "Generated"
+            },
+            new Source
+            {
+                SourceId = 1,
+                SourceName = "JokeAPI"
             }
         };
         modelBuilder.Entity<Source>(entity =>
@@ -242,6 +249,17 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_RefreshTokens_User");
         });
+
+        modelBuilder.Entity<SourceFetchedJoke>(entity =>
+        {
+            entity.HasKey(e => e.SourceFetchedJokeId);
+            entity.Property(e => e.FetchedDate).HasColumnType("datetime");
+            entity.HasOne(d => d.Source).WithMany(p => p.SourceFetchedJokes)
+                .HasForeignKey(d => d.SourceId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_SourceFetchedJokes_Source");
+        });
+
         OnModelCreatingPartial(modelBuilder);
     }
 
