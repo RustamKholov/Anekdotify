@@ -1,0 +1,36 @@
+﻿@page "/profile"
+@inject NavigationManager NavigationManager
+@attribute [Authorize]
+
+<div class="card shadow-lg rounded-4 p-4 bg-light text-dark w-100" style="min-height: 70vh;">
+    <h4 class="mb-4 text-center">User Hub</h4>
+
+    <ul class="nav nav-tabs mb-3" id="userHubTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="saved-tab" data-bs-toggle="tab" data-bs-target="#saved" type="button" role="tab">Saved Jokes</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="suggest-tab" data-bs-toggle="tab" data-bs-target="#suggest" type="button" role="tab">Suggest Joke</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab">Profile</button>
+        </li>
+    </ul>
+
+    <div class="tab-content p-3 bg-white border rounded-3" id="userHubTabContent">
+        <div class="tab-pane fade show active" id="saved" role="tabpanel">
+            <JokesTable></JokesTable>
+            <p class="text-muted">Here you'll see your saved jokes. (Coming soon)</p>
+        </div>
+
+        <div class="tab-pane fade" id="suggest" role="tabpanel">
+            <!-- Suggest joke form -->
+            <p class="text-muted">Suggest a new joke here. (Coming soon)</p>
+        </div>
+
+        <div class="tab-pane fade" id="profile" role="tabpanel">
+            <!-- User info -->
+            <p class="text-muted">Profile details and settings. (Coming soon)</p>
+        </div>
+    </div>
+</div>

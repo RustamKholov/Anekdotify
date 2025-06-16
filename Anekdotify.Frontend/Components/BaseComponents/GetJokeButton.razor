@@ -6,7 +6,7 @@
 {
     <div class="position-relative" style="height: 40vh;">
         <div class="position-absolute top-50 start-50 translate-middle">
-            <button class="btn btn-secondary btn-lg" @onclick="GetRandomJoke">Get Daily Joke</button>
+            <button class="btn btn-secondary btn-lg" @onclick="GetAJoke">Get Daily Joke</button>
         </div>
     </div>
 }
@@ -29,7 +29,7 @@ else
 }
 
 @code {
-    private bool isActive = true;
+    public bool isActive = true;
     private DateTime RandomJokeAvalibleAt = DateTime.Now;
 
     [Parameter]
@@ -46,6 +46,18 @@ else
         else
         {
             ToastService.ShowError(isActiveRes.ErrorMessage ?? "Failed to check joke availability.");
+        }
+    }
+    private async Task GetAJoke()
+    {
+        if (GetRandomJoke != null)
+        {
+            await GetRandomJoke.Invoke();
+            isActive = false; // Disable button after fetching a joke
+        }
+        else
+        {
+            ToastService.ShowError("GetRandomJoke function is not set.");
         }
     }
 }

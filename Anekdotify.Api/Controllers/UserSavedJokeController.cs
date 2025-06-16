@@ -50,7 +50,7 @@ namespace Anekdotify.Api.Controllers
             };
             var result = await _userSavedJokeService.SaveJokeAsync(saveJokeDTO, userId);
 
-            if (result.IsSuccess) return Ok(new {Saved = true, saveJokeDTO.JokeId});
+            if (result.IsSuccess) return Ok(true);
 
             if (result.IsAlreadyExists) return Conflict(result.ErrorMessage);
 
@@ -59,7 +59,7 @@ namespace Anekdotify.Api.Controllers
 
         [HttpDelete]
         [Route("{jokeId:int}")]
-        public async Task<IActionResult> DeleteSavedJokeAsync([FromRoute] int jokeId)
+        public async Task<IActionResult> RemoveSavedJokeAsync([FromRoute] int jokeId)
         {
             if (!ModelState.IsValid)
             {

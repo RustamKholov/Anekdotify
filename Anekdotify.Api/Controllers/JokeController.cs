@@ -210,7 +210,7 @@ namespace Anekdotify.Api.Controllers
 
             var isSaved = await _userSavedJokeService.IsJokeSavedByUserAsync(new SaveJokeDTO{JokeId = jokeId}, userId);
 
-            return Ok(new { Jokeid = jokeId, IsSaved = isSaved });
+            return Ok(isSaved);
         }
     }
 }
