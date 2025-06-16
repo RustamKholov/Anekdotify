@@ -26,7 +26,7 @@
         <GetJokeButton GetRandomJoke="GetRandomJoke"></GetJokeButton>
     </div>
 
-    
+
 </div>
 
 @code {
@@ -58,6 +58,7 @@
         finally
         {
             isLoading = false;
+            StateHasChanged();
         }
     }
 }

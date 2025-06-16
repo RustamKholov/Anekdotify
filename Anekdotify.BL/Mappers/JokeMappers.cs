@@ -1,3 +1,4 @@
+using Anekdotify.Models.DTOs.Comments;
 using Anekdotify.Models.DTOs.Jokes;
 using Anekdotify.Models.Entities;
 
@@ -20,9 +21,9 @@ namespace Anekdotify.BL.Mappers
                 SourceId = joke.SourceId,
                 SourceName = joke.Source?.SourceName,
                 ClassificationId = joke.ClassificationId,
-                ClassificationName = joke.Classification?.Name, 
+                ClassificationName = joke.Classification?.Name,
                 TotalLikes = joke.JokeRatings.Count(jr => jr.Rating),
-                TotalDislikes = joke.JokeRatings.Count(jr => !jr.Rating ),
+                TotalDislikes = joke.JokeRatings.Count(jr => !jr.Rating),
                 Comments = joke.Comments.ToList().BuildHierarchicalComments()
             };
         }
@@ -54,6 +55,24 @@ namespace Anekdotify.BL.Mappers
             return jokeModel;
         }
 
+        public static JokeDTO ToDTOFromPreviewDTO(this JokePreviewDTO jokePreview)
+        {
+            if (jokePreview == null)
+            {
+                throw new ArgumentNullException(nameof(jokePreview), "JokePreviewDTO cannot be null.");
+            }
+            return new JokeDTO
+            {
+                JokeId = jokePreview.JokeId,
+                Text = jokePreview.Text,
+                SubmissionDate = jokePreview.SubmissionDate,
+                ClassificationName = jokePreview.ClassificationName,
+                TotalLikes = jokePreview.LikeCount,
+                TotalDislikes = jokePreview.DislikeCount,
+                SourceName = jokePreview.Source,
+                Comments = new List<CommentDTO>() // Assuming no comments in preview
+            };
+        }
         
     }
 }

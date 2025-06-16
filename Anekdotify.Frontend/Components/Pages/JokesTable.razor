@@ -19,7 +19,7 @@ else if (jokes != null && jokes.Any())
         @foreach (var joke in jokes)
         {
             <div class="col">
-                <JokeCard Joke="@joke"/>
+                <JokeCard Joke="@joke.ToDTOFromPreviewDTO()"/>
             </div>
         }
     </div>

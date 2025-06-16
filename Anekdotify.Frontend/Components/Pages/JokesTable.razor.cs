@@ -9,7 +9,7 @@ namespace Anekdotify.Frontend.Components.Pages
 {
     public partial class JokesTable
     {
-        private List<JokeDTO> jokes = new List<JokeDTO>();
+        private List<JokePreviewDTO> jokes = new List<JokePreviewDTO>();
         private bool isLoading = true;
         private string errorMessage = null;
 
@@ -27,7 +27,7 @@ namespace Anekdotify.Frontend.Components.Pages
         {
             isLoading = true;
             errorMessage = null;
-            jokes = new List<JokeDTO>();
+            jokes = new List<JokePreviewDTO>();
             StateHasChanged();
 
             try
@@ -37,7 +37,7 @@ namespace Anekdotify.Frontend.Components.Pages
 
                 if (user.Identity?.IsAuthenticated == true)
                 {
-                    jokes = (await ApiClient.GetAsync<List<JokeDTO>>("api/joke")).Data;
+                    jokes = (await ApiClient.GetAsync<List<JokePreviewDTO>>("api/saved-jokes")).Data;
                 }
                 else
                 {

@@ -48,7 +48,7 @@ namespace Anekdotify.Api.Controllers
             {
                 return BadRequest(ModelState);
             }
-            if (!isLike.HasValue)
+            if (isLike == null)
             {
                 return BadRequest("Rating value (IsLike) is required.");
             }
@@ -56,8 +56,8 @@ namespace Anekdotify.Api.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId)) return Unauthorized("User ID not found in token claims.");
 
-            var jokeExists = await _jokeService.JokeExistsAsync(jokeId);
-            if (!jokeExists)
+            var existingJoke = await _jokeService.JokeExistsAsync(jokeId);
+            if (!existingJoke)
             {
                 return NotFound($"Joke with ID {jokeId} not found.");
             }
@@ -67,16 +67,18 @@ namespace Anekdotify.Api.Controllers
                 JokeId = jokeId,
                 IsLike = isLike
             };
+
             var setOperationResult = await _jokeRatingsService.SetJokeRatingAsync(jokeRatingDTO, userId);
+
             if (setOperationResult.IsSuccess)
             {
-                return Ok(setOperationResult.Value);
+                return Ok(new RatingDTO { IsLike = isLike});
             }
             if (setOperationResult.IsNotFound)
             {
                 return NotFound(setOperationResult.ErrorMessage);
             }
-            return Ok();
+            return Ok(new RatingDTO { IsLike = isLike });
         }
         [HttpDelete]
         [Route("{jokeId:int}/rating/delete")]
