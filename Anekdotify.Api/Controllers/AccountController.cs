@@ -126,9 +126,9 @@ namespace Anekdotify.Api.Controllers
                     {
 
                         return Ok(
-                            new NewUserDTO
+                            new RegisterResponseModel
                             {
-                                UserName = user.UserName!,
+                                Username = user.UserName!,
                                 Email = user.Email!,
                                 Token = _tokenService.CreateToken(user, isRefreshToken: false),
                                 RefreshToken = _tokenService.CreateToken(user, isRefreshToken: true),

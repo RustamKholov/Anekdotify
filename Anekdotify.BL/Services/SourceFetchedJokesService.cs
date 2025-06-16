@@ -16,6 +16,11 @@ namespace Anekdotify.BL.Services
             return await sourceFetchedJokesRepository.AddSourceFetchedJokeAsync(sourceId, sourceJokeId);
         }
 
+        public async Task<OperationResult<List<int>>> GetAllSourceFetchedJokesAsync()
+        {
+            return await sourceFetchedJokesRepository.GetAllSourceFetchedJokesAsync();
+        }
+
         public async Task<OperationResult<bool>> IsJokeFetchedFromSourceAsync(int sourceId, int sourceJokeId)
         {
             return await sourceFetchedJokesRepository.IsJokeFetchedFromSourceAsync(sourceId, sourceJokeId);

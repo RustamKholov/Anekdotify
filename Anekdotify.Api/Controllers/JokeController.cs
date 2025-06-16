@@ -5,6 +5,7 @@ using Anekdotify.BL.Mappers;
 using Anekdotify.Models.DTOs.Jokes;
 using Anekdotify.Models.DTOs.SaveJoke;
 using Anekdotify.Models.Entities;
+using Anekdotify.Models.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -13,6 +14,7 @@ namespace Anekdotify.Api.Controllers
 {
     [Route("api/joke")]
     [ApiController]
+    [Authorize]
     public class JokeController : ControllerBase
     {
         private readonly IJokeService _jokeService;
@@ -29,7 +31,6 @@ namespace Anekdotify.Api.Controllers
         }
 
         [HttpGet]
-        [Authorize]
         public async Task<IActionResult> GetJokesAsync([FromQuery] JokesQueryObject query)
         {
             if (!ModelState.IsValid)
@@ -65,11 +66,20 @@ namespace Anekdotify.Api.Controllers
             {
                 return BadRequest(ModelState);
             }
+
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
                 return Unauthorized("User not found.");
             }
+
+            if(user.LastJokeRetrievalDate.HasValue &&
+               user.LastJokeRetrievalDate.Value.AddHours(24) > DateTime.UtcNow)
+            {
+                if (!User.IsInRole("Admin") || !User.IsInRole("Moderator"))    // moderators and admins do not have this restriction
+                    return BadRequest("User can only get a joke once every 24 hours");
+            }
+
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrEmpty(userId))
@@ -89,16 +99,39 @@ namespace Anekdotify.Api.Controllers
                 await _userViewedJokesService.AddViewedJokeAsync(userId, joke.JokeId);
             }
             
-            
             user.LastJokeRetrievalDate = DateTime.UtcNow;
             await _userManager.UpdateAsync(user);
 
             return Ok(joke);
         }
+        [HttpGet]
+        [Route("random/isActive")]
+        public async Task<IActionResult> IsRandomJokeActiveAsync()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized("User not found.");
+            }
+            if (!User.IsInRole("Admin") || !User.IsInRole("Moderator"))
+            {
+                if (user.LastJokeRetrievalDate.HasValue &&
+                    user.LastJokeRetrievalDate.Value.AddHours(24) > DateTime.UtcNow)
+                {
+                    var jokeAvailableAt = user.LastJokeRetrievalDate.Value.AddHours(24);
+                    return Ok(new IsActiveRandomResponse { IsActive = false, NextRandomJokeAvailableAt = jokeAvailableAt });
+                }
+            }
+            return Ok(new IsActiveRandomResponse { IsActive = true, NextRandomJokeAvailableAt = DateTime.UtcNow});
+        }
 
 
         [HttpPost]
-        [Authorize]
+        [Authorize(Roles ="Admin, Moderator")]
         public async Task<IActionResult> CreateJokeAsync([FromBody] JokeCreateDTO jokeCreateDTO)
         {
             if (!ModelState.IsValid)
@@ -122,6 +155,7 @@ namespace Anekdotify.Api.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "Admin, Moderator")]
         public async Task<IActionResult> UpdateJokeAsync([FromRoute] int id, [FromBody] JokeUpdateDTO jokeUpdateDTO)
         {
             if (!ModelState.IsValid)
@@ -142,6 +176,7 @@ namespace Anekdotify.Api.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Admin, Moderator")]
         public async Task<IActionResult> DeleteJoke([FromRoute] int id)
         {
             if (!ModelState.IsValid)
@@ -158,7 +193,6 @@ namespace Anekdotify.Api.Controllers
         }
         [HttpGet]
         [Route("{jokeId:int}/is-saved")]
-        [Authorize]
         public async Task<IActionResult> IsJokeSaved([FromRoute] int jokeId)
         {
             if (!ModelState.IsValid)

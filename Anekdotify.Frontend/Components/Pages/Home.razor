@@ -3,19 +3,14 @@
 @rendermode RenderMode.InteractiveServer
 @inject IToastService ToastService
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
 
 <AuthorizeView>
     <NotAuthorized>
-        <div class="text-center">
-            <div class="m-2">
-                <Login></Login>
-            </div>
-        </div>
+        <Login></Login>
     </NotAuthorized>
     <Authorized>
-        <div class="m-5">
-            <JokeDisplayPage></JokeDisplayPage>
-        </div> 
+        <JokeDisplayPage></JokeDisplayPage>
     </Authorized>
 </AuthorizeView>
 
