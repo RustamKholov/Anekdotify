@@ -13,7 +13,7 @@
             <EditForm Model="loginModel" FormName="login" OnValidSubmit="HandleLogin">
                 <DataAnnotationsValidator />
                 <div class="mb-3">
-                    <label for="username" class="form-label">Username</label>
+                    <label for="username" class="form-label">Username/Email</label>
                     <InputText id="username" class="form-control" @bind-Value="loginModel.Username" />
                     <ValidationMessage For="@(() => loginModel.Username)" class="text-danger" />
                 </div>
@@ -23,8 +23,22 @@
                     <ValidationMessage For="@(() => loginModel.Password)" class="text-danger" />
                 </div>
                 <div class="d-grid mt-4">
-                    <button type="submit" class="btn btn-dark">Login</button>
+                    <button type="submit" class="btn btn-dark">
+                        @if (isLoading)
+                        {
+                            <div class="text-center">
+                                <div class="spinner-border" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <a>Login</a>
+                        }
+                    </button>
                 </div>
+                <a href="/register" class="d-block text-center mt-3">Don't have an account? Register</a>
             </EditForm>
         </div>
     </div>
@@ -35,19 +49,33 @@
     private LoginDTO loginModel = new LoginDTO();
     [Inject] 
     private IToastService ToastService { get; set; }
+
+    private bool isLoading = false;
+
     private async Task HandleLogin()
     {
-        var response = await ApiClient.PostAsync<LoginResponseModel, LoginDTO>("api/account/login", loginModel);
-        if (response.IsSuccess)
+        try
         {
-            await ((CustomAuthStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(response.Data);
-            NavigationManager.NavigateTo("/");
+            isLoading = true;
+            var response = await ApiClient.PostAsync<LoginResponseModel, LoginDTO>("api/account/login", loginModel);
+            if (response.IsSuccess)
+            {
+                await ((CustomAuthStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(response.Data);
+                NavigationManager.NavigateTo("/");
+            }
+            else
+            {
+                ToastService.ShowError("Login failed. Please check your credentials.");
+            }
+            loginModel = new LoginDTO();
         }
-        else
+        catch (Exception e)
         {
-            ToastService.ShowError("Login failed. Please check your credentials.");
+            ToastService.ShowError($"An error occurred while logging in: {e.Message}");
         }
-        loginModel = new LoginDTO();
-
+        finally
+        {
+            isLoading = false;
+        }
     }
 }

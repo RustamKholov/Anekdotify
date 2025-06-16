@@ -11,5 +11,6 @@ namespace Anekdotify.BL.Interfaces.Repositories
     {
         Task<OperationResult> AddSourceFetchedJokeAsync(int sourceId, int sourceJokeId);
         Task<OperationResult<bool>> IsJokeFetchedFromSourceAsync(int sourceId, int sourceJokeId);
+        Task<OperationResult<List<int>>> GetAllSourceFetchedJokesAsync();
     }
 }

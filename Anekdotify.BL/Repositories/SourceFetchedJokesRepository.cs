@@ -25,6 +25,13 @@ namespace Anekdotify.BL.Repositories
             return OperationResult.Success();
         }
 
+        public async Task<OperationResult<List<int>>> GetAllSourceFetchedJokesAsync()
+        {
+            var fetchedJokes = await context.SourceFetchedJokes.Select(sfj => sfj.SourceJokeId)
+                .ToListAsync();
+            return OperationResult<List<int>>.Success(fetchedJokes);
+        }
+
         public async Task<OperationResult<bool>> IsJokeFetchedFromSourceAsync(int sourceId, int sourceJokeId)
         {
            var res = await context.SourceFetchedJokes

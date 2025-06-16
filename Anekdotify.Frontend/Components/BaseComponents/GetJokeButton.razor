@@ -1,0 +1,51 @@
+﻿@inject ApiClient ApiClient
+@inject IToastService ToastService
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+@if (isActive)
+{
+    <div class="position-relative" style="height: 40vh;">
+        <div class="position-absolute top-50 start-50 translate-middle">
+            <button class="btn btn-secondary btn-lg" @onclick="GetRandomJoke">Get Daily Joke</button>
+        </div>
+    </div>
+}
+else
+{
+    <div class="d-flex position-relative" style="height: 40vh;">
+        <div class="position-absolute top-50 start-50 translate-middle text-center">
+
+            <button type="button" class="btn btn-outline-secondary btn-lg" disabled>
+                Get Daily Joke
+            </button>
+
+            <div class="mt-2 small text-muted">
+                <i class="bi bi-clock"></i> Next joke after @RandomJokeAvalibleAt.ToString("g")
+            </div>
+
+        </div>
+    </div>
+    
+}
+
+@code {
+    private bool isActive = true;
+    private DateTime RandomJokeAvalibleAt = DateTime.Now;
+
+    [Parameter]
+    public Func<Task> GetRandomJoke { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var isActiveRes = await ApiClient.GetAsync<IsActiveRandomResponse>("api/joke/random/isActive");
+        if (isActiveRes.IsSuccess)
+        {
+            isActive = isActiveRes.Data.IsActive;
+            RandomJokeAvalibleAt = isActiveRes.Data.NextRandomJokeAvailableAt;
+        }
+        else
+        {
+            ToastService.ShowError(isActiveRes.ErrorMessage ?? "Failed to check joke availability.");
+        }
+    }
+}

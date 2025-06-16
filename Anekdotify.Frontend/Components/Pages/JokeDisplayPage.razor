@@ -1,4 +1,5 @@
-﻿@inject Anekdotify.Frontend.Clients.ApiClient ApiClient
+﻿@using Anekdotify.Frontend.Components.BaseComponents
+@inject Anekdotify.Frontend.Clients.ApiClient ApiClient
 @inject IToastService ToastService
 
 <div class="d-flex flex-column h-100 w-100">
@@ -22,19 +23,13 @@
                 <p>Click "Get Daily Joke" to fetch one!</p>
             }
         </div>
-
-        <div class="position-relative" style="height: 40vh;">
-            <div class="position-absolute top-50 start-50 translate-middle">
-                <button class="btn btn-secondary btn-lg" @onclick="GetRandomJoke">Get Daily Joke</button>
-            </div>
-        </div>
+        <GetJokeButton GetRandomJoke="GetRandomJoke"></GetJokeButton>
     </div>
 
     
 </div>
 
 @code {
-
 
     private JokeDTO joke;
     private bool isLoading = false;

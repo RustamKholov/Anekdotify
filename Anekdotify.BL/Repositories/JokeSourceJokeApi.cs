@@ -17,6 +17,7 @@ namespace Anekdotify.BL.Repositories
         private readonly HttpClient _httpClient;
         private readonly IClassifficationService _classifficationService;
         private readonly ISourceFetchedJokesService _sourceFetchedService;
+        private List<int> _fetchedJokes = new List<int>();
         public JokeSourceJokeApi(HttpClient httpClient,
         IClassifficationService classifficationService, ISourceFetchedJokesService sourceFetchedService)
         {
@@ -26,21 +27,29 @@ namespace Anekdotify.BL.Repositories
         }
         public async Task<JokeCreateDTO?> GetJokeAsync()
         {
-            var response = await _httpClient.GetAsync("joke/Any?type=single");
+            if (_fetchedJokes.Count == 0)
+            {
+                var allreadyFetchedJokesRes = await _sourceFetchedService.GetAllSourceFetchedJokesAsync();
+                _fetchedJokes = allreadyFetchedJokesRes.Value ?? new List<int>();
+            }
+
+            var response = await _httpClient.GetAsync("joke/Any");
             if(!response.IsSuccessStatusCode)
             {
                 return null;
             }
 
             var content = await response.Content.ReadAsStringAsync();
+
             var parsed = JsonConvert.DeserializeObject<JokeApiResponse>(content);
-            
-            if (parsed == null || parsed.Joke == null)
+
+            var isTwoParted = parsed?.Type == "twopart";
+
+            if (parsed == null || (parsed.Joke == null && parsed.Setup == null && parsed.Delivery == null))
             {
                 return null;
             }
-            var allreadyFetchedRes = await _sourceFetchedService.IsJokeFetchedFromSourceAsync(1, parsed.Id ?? 0);
-            if (allreadyFetchedRes.Value)
+            if (_fetchedJokes.Any(fj => fj == parsed.Id))
             {
                 return null; // Joke already fetched
             }
@@ -67,10 +76,11 @@ namespace Anekdotify.BL.Repositories
             }
 
             await _sourceFetchedService.AddSourceFetchedJokeAsync(1, parsed.Id ?? 0);
+            _fetchedJokes.Add(parsed.Id ?? 0);
 
             return new JokeCreateDTO
                 {
-                    Text = parsed.Joke,
+                    Text = isTwoParted ? parsed.Setup + "\n" + parsed.Delivery : parsed.Joke,
                     ClassificationId = classification.ClassificationId,
                     SourceId = 1
                 };
