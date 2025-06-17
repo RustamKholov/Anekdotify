@@ -1,4 +1,5 @@
 using Anekdotify.BL.Interfaces.Repositories;
+using Anekdotify.BL.Mappers;
 using Anekdotify.Common;
 using Anekdotify.Database.Data;
 using Anekdotify.Models.DTOs.Jokes;
@@ -16,22 +17,9 @@ namespace Anekdotify.BL.Repositories
         {
             _context = context;
         }
-        public async Task<List<JokePreviewDTO>> GetSavedJokesForUserAsync(string userId)
+        public async Task<List<int>> GetSavedJokesForUserAsync(string userId)
         {
-            return await _context.UserSavedJokes
-                        .Where(usj => usj.UserId == userId)
-                        .Select(usj => new JokePreviewDTO
-                        {
-                            JokeId = usj.Joke.JokeId,
-                            Text = usj.Joke.Text,
-                            ClassificationName = usj.Joke.Classification != null ? usj.Joke.Classification.Name : "Unknown",
-                            CommentCount = usj.Joke.Comments.Count(),
-                            LikeCount = usj.Joke.JokeRatings.Count(),
-                            Source = usj.Joke.Source != null ? usj.Joke.Source.SourceName : "Unknown",
-                            SubmissionDate = usj.Joke.SubbmissionDate
-                        })
-                        .OrderByDescending(dto => dto.SubmissionDate)
-                        .ToListAsync();
+           return await _context.UserSavedJokes.Where(sj => sj.UserId == userId).Select(sj => sj.JokeId).ToListAsync();
         }
 
         public async Task<bool> IsJokeSavedByUserAsync(SaveJokeDTO saveJokeDTO, string userId)

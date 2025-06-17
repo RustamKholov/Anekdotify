@@ -123,7 +123,7 @@ namespace Anekdotify.BL.Repositories
             var randomIndex = random.Next(0, jokeIds.Count);
             if(viewedJokes != null && viewedJokes.Count > 0)
             {
-                // Filter out viewed jokes
+                
                 jokeIds = jokeIds.Where(id => !viewedJokes.Contains(id)).ToList();
                 if (jokeIds.Count == 0)
                 {
@@ -135,6 +135,22 @@ namespace Anekdotify.BL.Repositories
 
             
             return await GetJokeByIdAsync(randomJokeId) ?? throw new KeyNotFoundException($"Joke with ID {randomJokeId} not found.");
+        }
+
+        public async Task<List<JokeDTO>> GetJokesByIdsAsync(List<int> ids)
+        {
+            var jokes = await _context.Jokes
+                .Where(j => ids.Contains(j.JokeId))
+                .Include(j => j.Source)
+                .Include(j => j.Classification)
+                .Include(j => j.JokeRatings)
+                .Include(j => j.Comments)
+                    .ThenInclude(c => c.User)
+                    .ThenInclude(u => u.CommentRatings)
+                .AsSplitQuery()
+                .ToListAsync();
+
+            return jokes.Select(j => j.ToJokeDTO()).ToList();
         }
     }
 }

@@ -10,4 +10,5 @@ public interface IUserSavedJokeService
     Task<OperationResult> RemoveSavedJokeAsync(SaveJokeDTO saveJokeDTO, string userId);
     Task<List<JokePreviewDTO>> GetSavedJokesForUserAsync(string userId);
     Task<bool> IsJokeSavedByUserAsync(SaveJokeDTO saveJokeDTO, string userId);
+
 }
