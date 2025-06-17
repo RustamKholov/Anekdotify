@@ -44,18 +44,24 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
         {
             new IdentityRole
             {
+                Id = "1",  
                 Name = "Admin",
-                NormalizedName = "ADMIN"
+                NormalizedName = "ADMIN",
+                ConcurrencyStamp = Guid.NewGuid().ToString()
             },
             new IdentityRole
             {
+                Id = "2",
                 Name = "Moderator",
-                NormalizedName = "MODERATOR"
+                NormalizedName = "MODERATOR",
+                ConcurrencyStamp = Guid.NewGuid().ToString()
             },
             new IdentityRole
             {
+                Id = "3",
                 Name = "User",
-                NormalizedName = "USER"
+                NormalizedName = "USER",
+                ConcurrencyStamp = Guid.NewGuid().ToString()
             }
         };
         List<Source> sources = new List<Source>

@@ -70,7 +70,7 @@ namespace Anekdotify.BL.Mappers
                 TotalLikes = jokePreview.LikeCount,
                 TotalDislikes = jokePreview.DislikeCount,
                 SourceName = jokePreview.Source,
-                Comments = new List<CommentDTO>() // Assuming no comments in preview
+                Comments = new List<CommentDTO>()
             };
         }
         

@@ -45,7 +45,6 @@ namespace Anekdotify.Frontend.Components.Pages
         {
             if (isSaved == true)
             {
-                // Case 1: Already saved → remove save
                 var res = await ApiClient.DeleteAsync($"api/saved-jokes/{Joke.JokeId}");
                 if (res.IsSuccess)
                 {
@@ -59,7 +58,6 @@ namespace Anekdotify.Frontend.Components.Pages
             }
             else
             {
-                // Case 2: Not saved → add save
                 var res = await ApiClient.PostAsync<bool, int>($"api/saved-jokes/{Joke.JokeId}", Joke.JokeId);
                 if (res.IsSuccess)
                 {
@@ -75,13 +73,11 @@ namespace Anekdotify.Frontend.Components.Pages
 
         private async Task OnRateClick(bool newValue)
         {
-            // Case 1: Already clicked → remove rating
             if (isLiked == newValue)
             {
                 var res = await ApiClient.DeleteAsync($"api/joke/{Joke.JokeId}/rating/delete");
                 if (res.IsSuccess)
                 {
-                    // Undo the count
                     if (newValue) Joke.TotalLikes--;
                     else Joke.TotalDislikes--;
 
@@ -95,7 +91,6 @@ namespace Anekdotify.Frontend.Components.Pages
                 return;
             }
 
-            // Case 2: New rating or switch rating
             var updateRes = await ApiClient.PutAsync<RatingDTO, bool>($"api/joke/{Joke.JokeId}/rating", newValue);
             if (updateRes.IsSuccess)
             {
