@@ -1,6 +1,8 @@
 ﻿@using Anekdotify.Frontend.Components.BaseComponents
 @inject Anekdotify.Frontend.Clients.ApiClient ApiClient
 @inject IToastService ToastService
+@inject ILocalStorageService LocalStorageService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <div class="d-flex flex-column h-100 w-100">
 
@@ -33,6 +35,29 @@
 
     private JokeDTO joke;
     private bool isLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var lastViewedActualRes = await ApiClient.GetAsync<bool>("api/joke/last-viewed/isActual");
+
+        if (lastViewedActualRes.IsSuccess && lastViewedActualRes.Data)
+        {
+            var previousJokeResult = await ApiClient.GetAsync<JokeDTO>("api/joke/last-viewed");
+            var previousJoke = previousJokeResult.Data;
+            if (previousJokeResult.IsSuccess && previousJoke != null)
+            {
+                joke = previousJoke;
+                StateHasChanged();
+            }
+        }
+        bool toastShown = await LocalStorageService.GetItemAsync<bool>("toastShown");
+
+        if (!toastShown)
+        {
+            ToastService.ShowSuccess("Welcome to Anekdotify! You are logged in.");
+            await LocalStorageService.SetItemAsync("toastShown", true);
+        }
+    }
 
     private async Task GetRandomJoke()
     {

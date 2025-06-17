@@ -7,6 +7,7 @@ namespace Anekdotify.BL.Interfaces.Services;
 public interface IJokeService
 {
     Task<List<JokeDTO>> GetAllJokesAsync(JokesQueryObject query);
+    Task<List<JokeDTO>> GetJokesByIdsAsync(List<int> ids);
     Task<JokeDTO?> GetJokeByIdAsync(int id);
     Task<Joke> CreateJokeAsync(JokeCreateDTO jokeCreateDTO, string userId);
     Task<Joke> UpdateJokeAsync(int id, JokeUpdateDTO jokeUpdateDTO);

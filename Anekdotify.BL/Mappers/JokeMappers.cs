@@ -73,6 +73,32 @@ namespace Anekdotify.BL.Mappers
                 Comments = new List<CommentDTO>()
             };
         }
-        
+        public static JokePreviewDTO ToPreviewDTOFromDTO(this JokeDTO jokeDTO)
+        {
+            return new JokePreviewDTO
+            {
+                JokeId = jokeDTO.JokeId,
+                Text = jokeDTO.Text,
+                SubmissionDate = jokeDTO.SubmissionDate,
+                ClassificationName = jokeDTO.ClassificationName ?? "Unknown", 
+                LikeCount  = jokeDTO.TotalLikes,
+                DislikeCount = jokeDTO.TotalDislikes,
+                CommentCount = jokeDTO.Comments.Count,
+                Source = jokeDTO.SourceName ?? "Unknown"
+            };
+        }
+        public static JokePreviewDTO ToPreviewFromJoke (this Joke joke)
+        {
+            return new JokePreviewDTO
+            {
+                JokeId = joke.JokeId,
+                Text = joke.Text,
+                ClassificationName = joke.Classification?.Name ?? "Unknown",
+                CommentCount = joke.Comments.Count,
+                LikeCount = joke.JokeRatings.Count,
+                Source = joke.Source?.SourceName ?? "Unknown",
+                SubmissionDate = joke.SubbmissionDate
+            };
+        }
     }
 }

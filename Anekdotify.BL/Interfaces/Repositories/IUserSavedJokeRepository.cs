@@ -8,7 +8,7 @@ namespace Anekdotify.BL.Interfaces.Repositories
     {
         Task<OperationResult> SaveJokeAsync(SaveJokeDTO saveJokeDTO, string userId);
         Task<OperationResult> RemoveSavedJokeAsync(SaveJokeDTO saveJokeDTO, string userId);
-        Task<List<JokePreviewDTO>> GetSavedJokesForUserAsync(string userId);
+        Task<List<int>> GetSavedJokesForUserAsync(string userId);
         Task<bool> IsJokeSavedByUserAsync(SaveJokeDTO saveJokeDTO, string userId);
     }
 }

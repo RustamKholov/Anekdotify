@@ -4,6 +4,7 @@ using Anekdotify.Frontend.Components;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components.Authorization;
 using Blazored.Toast;
+using Blazored.LocalStorage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,7 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddBlazoredToast();
 builder.Services.AddBlazorBootstrap();
+builder.Services.AddBlazoredLocalStorage();
 
 var jokeStoreApiUrl = builder.Configuration["JokeStoreApiUrl"] ?? throw new Exception("Joke Store Api Url is not set");
 

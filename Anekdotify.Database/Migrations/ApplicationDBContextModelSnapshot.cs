@@ -485,19 +485,22 @@ namespace api.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "da738c5e-138e-4f84-96a7-5d5538a76125",
+                            Id = "1",
+                            ConcurrencyStamp = "5f046f5e-87e3-4f9b-a943-7ca89c63fb33",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "11f4bec5-4723-4407-aa66-3c9a3f1d4dcb",
+                            Id = "2",
+                            ConcurrencyStamp = "2adad081-00fc-4570-be81-a8e0f127e890",
                             Name = "Moderator",
                             NormalizedName = "MODERATOR"
                         },
                         new
                         {
-                            Id = "1b6a9731-1201-48e0-bc19-74e0781ec4d5",
+                            Id = "3",
+                            ConcurrencyStamp = "8d598c6e-b5ba-4781-8114-80526f7e1496",
                             Name = "User",
                             NormalizedName = "USER"
                         });

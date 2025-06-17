@@ -128,6 +128,50 @@ namespace Anekdotify.Api.Controllers
             }
             return Ok(new IsActiveRandomResponse { IsActive = true, NextRandomJokeAvailableAt = DateTime.UtcNow});
         }
+        [HttpGet]
+        [Route("last-viewed")]
+        public async Task<IActionResult> GetLastViewedJokeAsync()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User ID not found in token claims.");
+            }
+            var lastViewedJokeResult = await _userViewedJokesService.GetLastViewedJokeAsync(userId);
+            if (!lastViewedJokeResult.IsSuccess)
+            {
+                return NotFound(lastViewedJokeResult.ErrorMessage);
+            }
+            if (lastViewedJokeResult.Value == null)
+            {
+                return NotFound("No viewed jokes found for this user.");
+            }
+            return Ok(lastViewedJokeResult.Value);
+        }
+        [HttpGet]
+        [Route("last-viewed/isActual")]
+        public async Task<IActionResult> GetIsLastViewedActual()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User ID not found in token claims.");
+            }
+            var isActualRes = await _userViewedJokesService.IsLastViewedJokeActualAsync(userId);
+            if (!isActualRes.IsSuccess)
+            {
+                return NotFound(isActualRes.ErrorMessage);
+            }
+            return Ok(isActualRes.Value);
+        }
 
 
         [HttpPost]

@@ -76,6 +76,7 @@ builder.Services.AddScoped<IUserSavedJokeService, UserSavedJokeService>();
 builder.Services.AddScoped<IUserViewedJokesService, UserViewedJokesService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ISourceFetchedJokesService, SourceFetchedJokesService>();
+builder.Services.AddScoped<IJokeCacheService, JokeCacheService>();
 
 
 builder.Services.AddScoped<IJokeRepository, JokeRepository>();

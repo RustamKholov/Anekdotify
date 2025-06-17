@@ -1,9 +1,12 @@
 ﻿@page "/"
 @using Anekdotify.Frontend.Components.Pages.Login
+@using Blazored.LocalStorage
+@using System.Security.Claims
 @rendermode RenderMode.InteractiveServer
 @inject IToastService ToastService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
+@inject ILocalStorageService LocalStorageService
 
 <AuthorizeView>
     <NotAuthorized>
@@ -17,27 +20,4 @@
 
 @code {
 
-    private bool _toastShownForAuthorized = false;
-
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-
-        if (user.Identity?.IsAuthenticated == true && !_toastShownForAuthorized)
-        {
-            ShowToast();
-            _toastShownForAuthorized = true;
-        }
-        else if (user.Identity?.IsAuthenticated == false || _toastShownForAuthorized)
-        {
-            _toastShownForAuthorized = false;
-        }
-    }
-
-    private void ShowToast()
-    {
-        ToastService.ShowSuccess("Welcome to Anekdotify! Yoy are logged in");
-    }
 }
