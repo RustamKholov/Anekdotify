@@ -1,0 +1,75 @@
+﻿@using Anekdotify.Models.DTOs.Classification
+@inject ApiClient ApiClient
+@inject IToastService Toast
+
+<h2 class="text-xl font-bold mb-4">Suggest a Joke</h2>
+
+@if (classifications == null)
+{
+    <p>Loading categories...</p>
+}
+else
+{
+    <EditForm Model="newJoke" OnValidSubmit="SubmitJoke">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-4">
+            <label class="block font-semibold mb-1">Category</label>
+            <InputSelect @bind-Value="newJoke.ClassificationId" class="w-full p-2 rounded border">
+                <option value="">-- Select Category --</option>
+                @foreach (var c in classifications)
+                {
+                    <option value="@c.ClassificationId">@c.Name</option>
+                }
+            </InputSelect>
+        </div>
+
+        <div class="mb-4">
+            <label class="block font-semibold mb-1">Joke Text</label>
+            <InputTextArea @bind-Value="newJoke.Text" class="w-full p-2 rounded border" rows="5" />
+        </div>
+
+        <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Submit Joke</button>
+    </EditForm>
+}
+
+@if (suggestedJoke != null)
+{
+    <SuggestedJokeCard Joke="suggestedJoke" />
+}
+
+@code {
+    private List<ClassificationDetailedDTO> classifications;
+    private JokeCreateDTO newJoke = new();
+    private SuggestedJokeDTO? suggestedJoke;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var res = await ApiClient.GetAsync<List<ClassificationDetailedDTO>>("api/classification");
+        if (res.IsSuccess)
+        {
+            classifications = res.Data;
+        }
+        else
+        {
+            Toast.ShowError("Failed to load categories.");
+        }
+    }
+
+    private async Task SubmitJoke()
+    {
+        var response = await ApiClient.PostAsync<SuggestedJokeDTO, JokeCreateDTO>("api/joke/suggest", newJoke);
+        if (response.IsSuccess)
+        {
+            Toast.ShowSuccess("Joke submitted for review!");
+            response.Data.Classification = classifications.FirstOrDefault(c => c.ClassificationId == newJoke.ClassificationId)?.Name;
+            suggestedJoke = response.Data;
+            newJoke = new(); // reset form
+        }
+        else
+        {
+            Toast.ShowError("Failed to submit joke.");
+        }
+    }
+}

@@ -88,6 +88,19 @@ public class JokeService(IJokeRepository jokeRepository, IJokeCacheService jokeC
         return await jokeRepository.JokeExistsAsync(id);
     }
 
+    public async Task<SuggestedJokeDTO> SuggestJokeAsync(JokeCreateDTO jokeCreateDTO, string userId)
+    {
+        var joke = await jokeRepository.CreateJokeAsync(jokeCreateDTO, userId);
+        await jokeCacheService.InvalidateJokeAsync(joke.JokeId);
+        return new SuggestedJokeDTO
+        {
+            Id = joke.JokeId,
+            Text = joke.Text,
+            ClassificationName = joke.Classification?.Name ?? "Unknown",
+            Status = "Pending" 
+        };
+    }
+
     public async Task<Joke> UpdateJokeAsync(int id, JokeUpdateDTO jokeUpdateDTO)
     {
         var joke = await jokeRepository.UpdateJokeAsync(id, jokeUpdateDTO);

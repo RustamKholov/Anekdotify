@@ -299,6 +299,11 @@ namespace api.Migrations
                         {
                             SourceId = 1,
                             SourceName = "JokeAPI"
+                        },
+                        new
+                        {
+                            SourceId = -4,
+                            SourceName = "Suggested"
                         });
                 });
 
@@ -486,21 +491,21 @@ namespace api.Migrations
                         new
                         {
                             Id = "1",
-                            ConcurrencyStamp = "5f046f5e-87e3-4f9b-a943-7ca89c63fb33",
+                            ConcurrencyStamp = "317773c6-d92d-408f-a57b-a20f548bb60f",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
                             Id = "2",
-                            ConcurrencyStamp = "2adad081-00fc-4570-be81-a8e0f127e890",
+                            ConcurrencyStamp = "ab945fc8-d1d2-4d76-bae6-179c34ff94ec",
                             Name = "Moderator",
                             NormalizedName = "MODERATOR"
                         },
                         new
                         {
                             Id = "3",
-                            ConcurrencyStamp = "8d598c6e-b5ba-4781-8114-80526f7e1496",
+                            ConcurrencyStamp = "6804eeba-74eb-4202-8773-0825618cdbc8",
                             Name = "User",
                             NormalizedName = "USER"
                         });

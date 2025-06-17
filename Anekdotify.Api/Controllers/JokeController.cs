@@ -197,6 +197,27 @@ namespace Anekdotify.Api.Controllers
 
             return CreatedAtAction(nameof(GetJokeById), new { id = joke.JokeId }, joke.ToJokeDTO());
         }
+        [HttpPost]
+        [Route("suggest")]
+        public async Task<IActionResult> SuggestJokeAsync([FromBody] JokeCreateDTO jokeCreateDTO)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            if (jokeCreateDTO == null || string.IsNullOrWhiteSpace(jokeCreateDTO.Text))
+            {
+                return BadRequest("Joke content cannot be empty.");
+            }
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User ID not found in token claims.");
+            }
+            jokeCreateDTO.SourceId = -4; // Set SourceId to -1 for suggested jokes
+            var joke = await _jokeService.SuggestJokeAsync(jokeCreateDTO, userId);
+            return Ok(joke);
+        }
 
         [HttpPut("{id:int}")]
         [Authorize(Roles = "Admin, Moderator")]
