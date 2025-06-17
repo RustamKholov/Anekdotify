@@ -1,0 +1,27 @@
+﻿
+<div class="bg-gray-100 border rounded-xl p-4 mt-6 shadow-sm">
+    <div class="text-sm text-gray-500">Suggested Joke ID: @Joke.Id</div>
+    <div class="font-semibold mt-2">@Joke.Text</div>
+    <div class="text-sm mt-2">
+        Category: <span class="font-medium">@Joke.ClassificationName</span>
+    </div>
+    <div class="text-sm mt-1">
+        Status:
+        <span class="@GetStatusColor(Joke.Status)">
+            @Joke.Status
+        </span>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public SuggestedJokeDTO Joke { get; set; } = default!;
+
+    private string GetStatusColor(string status) => status switch
+    {
+        "Pending" => "text-yellow-500",
+        "Approved" => "text-green-600",
+        "Rejected" => "text-red-500",
+        _ => "text-gray-500"
+    };
+}

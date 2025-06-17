@@ -63,10 +63,10 @@ namespace Anekdotify.BL.Repositories
 
             var joke = jokeCreateDTO.ToJokeFromCreateDTO(userId);
 
-            await _context.Jokes.AddAsync(joke);
+            var res = await _context.Jokes.AddAsync(joke);
             await _context.SaveChangesAsync();
 
-            return joke;
+            return res.Entity;
         }
         public async Task<Joke> UpdateJokeAsync(int id, JokeUpdateDTO jokeUpdateDTO)
         {
@@ -112,7 +112,7 @@ namespace Anekdotify.BL.Repositories
         public async Task<JokeDTO> GetRandomJokeAsync(List<int> viewedJokes)
         {
             
-            var jokeIds = await _context.Jokes.Select(j => j.JokeId).ToListAsync();
+            var jokeIds = await _context.Jokes.Where(j => j.SourceId != -4).Select(j => j.JokeId).ToListAsync(); 
 
             if (jokeIds == null || jokeIds.Count == 0)
             {

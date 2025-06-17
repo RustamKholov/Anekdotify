@@ -85,6 +85,11 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
             {
                 SourceId = 1,
                 SourceName = "JokeAPI"
+            },
+            new Source
+            {
+                SourceId = -4,
+                SourceName = "Suggested"
             }
         };
         modelBuilder.Entity<Source>(entity =>
