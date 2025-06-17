@@ -1,5 +1,7 @@
 ﻿@inject ApiClient ApiClient
 @inject IToastService ToastService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 
 @if (isActive)
@@ -25,7 +27,7 @@ else
 
         </div>
     </div>
-    
+
 }
 
 @code {
@@ -53,7 +55,17 @@ else
         if (GetRandomJoke != null)
         {
             await GetRandomJoke.Invoke();
-            isActive = false; // Disable button after fetching a joke
+            var isActiveRes = await ApiClient.GetAsync<IsActiveRandomResponse>("api/joke/random/isActive");
+            if (isActiveRes.IsSuccess)
+            {
+                isActive = isActiveRes.Data.IsActive;
+                RandomJokeAvalibleAt = isActiveRes.Data.NextRandomJokeAvailableAt;
+                NavigationManager.Refresh();
+            }
+            else
+            {
+                ToastService.ShowError(isActiveRes.ErrorMessage ?? "Failed to check joke availability.");
+            }
         }
         else
         {
