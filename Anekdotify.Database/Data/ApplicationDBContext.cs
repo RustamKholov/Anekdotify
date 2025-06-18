@@ -197,7 +197,7 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
         modelBuilder.Entity<Joke>(entity =>
         {
             entity.HasKey(e => e.JokeId);
-
+            entity.HasIndex(e => e.SubbmissionDate, "IX_Jokes_SubbmissionDate");
             entity.Property(e => e.ApprovalDate).HasColumnType("datetime");
             entity.Property(e => e.SubbmissionDate).HasColumnType("datetime");
 

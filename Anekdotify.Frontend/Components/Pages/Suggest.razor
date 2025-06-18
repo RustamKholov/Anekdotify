@@ -63,7 +63,7 @@ else
         if (response.IsSuccess)
         {
             Toast.ShowSuccess("Joke submitted for review!");
-            response.Data.Classification = classifications.FirstOrDefault(c => c.ClassificationId == newJoke.ClassificationId)?.Name;
+            response.Data.ClassificationName = classifications.FirstOrDefault(c => c.ClassificationId == newJoke.ClassificationId)?.Name;
             suggestedJoke = response.Data;
             newJoke = new(); // reset form
         }
