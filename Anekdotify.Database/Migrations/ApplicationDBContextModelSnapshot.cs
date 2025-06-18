@@ -37,7 +37,7 @@ namespace api.Migrations
 
                     b.HasKey("ClassificationId");
 
-                    b.ToTable("Classifications");
+                    b.ToTable("Classifications", (string)null);
                 });
 
             modelBuilder.Entity("Anekdotify.Models.Entities.Comment", b =>
@@ -71,7 +71,7 @@ namespace api.Migrations
 
                     b.HasIndex(new[] { "JokeId" }, "IX_Comments_JokeId");
 
-                    b.ToTable("Comments");
+                    b.ToTable("Comments", (string)null);
                 });
 
             modelBuilder.Entity("Anekdotify.Models.Entities.CommentRating", b =>
@@ -102,7 +102,7 @@ namespace api.Migrations
                     b.HasIndex(new[] { "CommentId", "UserId" }, "IX_CommentRatings")
                         .IsUnique();
 
-                    b.ToTable("CommentRatings");
+                    b.ToTable("CommentRatings", (string)null);
                 });
 
             modelBuilder.Entity("Anekdotify.Models.Entities.Joke", b =>
@@ -144,7 +144,7 @@ namespace api.Migrations
 
                     b.HasIndex("SourceId");
 
-                    b.ToTable("Jokes");
+                    b.ToTable("Jokes", (string)null);
                 });
 
             modelBuilder.Entity("Anekdotify.Models.Entities.JokeLike", b =>
@@ -172,7 +172,7 @@ namespace api.Migrations
                     b.HasIndex(new[] { "JokeId", "UserId" }, "UQ_UserJokeLike")
                         .IsUnique();
 
-                    b.ToTable("JokeLikes");
+                    b.ToTable("JokeLikes", (string)null);
                 });
 
             modelBuilder.Entity("Anekdotify.Models.Entities.JokePart", b =>
@@ -205,7 +205,7 @@ namespace api.Migrations
 
                     b.HasIndex("AssociatedJokeId");
 
-                    b.ToTable("JokeParts");
+                    b.ToTable("JokeParts", (string)null);
                 });
 
             modelBuilder.Entity("Anekdotify.Models.Entities.JokeRating", b =>
@@ -235,7 +235,7 @@ namespace api.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("JokeRatings");
+                    b.ToTable("JokeRatings", (string)null);
                 });
 
             modelBuilder.Entity("Anekdotify.Models.Entities.RefreshToken", b =>
@@ -259,7 +259,7 @@ namespace api.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens");
+                    b.ToTable("RefreshTokens", (string)null);
                 });
 
             modelBuilder.Entity("Anekdotify.Models.Entities.Source", b =>
@@ -277,7 +277,7 @@ namespace api.Migrations
 
                     b.HasKey("SourceId");
 
-                    b.ToTable("Sources");
+                    b.ToTable("Sources", (string)null);
 
                     b.HasData(
                         new
@@ -328,7 +328,7 @@ namespace api.Migrations
 
                     b.HasIndex("SourceId");
 
-                    b.ToTable("SourceFetchedJokes");
+                    b.ToTable("SourceFetchedJokes", (string)null);
                 });
 
             modelBuilder.Entity("Anekdotify.Models.Entities.User", b =>
@@ -430,7 +430,7 @@ namespace api.Migrations
                     b.HasIndex(new[] { "JokeId", "UserId" }, "IX_UserSavedJokes")
                         .IsUnique();
 
-                    b.ToTable("UserSavedJokes");
+                    b.ToTable("UserSavedJokes", (string)null);
                 });
 
             modelBuilder.Entity("Anekdotify.Models.Entities.UserViewedJoke", b =>
@@ -458,7 +458,7 @@ namespace api.Migrations
                     b.HasIndex(new[] { "JokeId", "UserId" }, "IX_UserViewedJokes")
                         .IsUnique();
 
-                    b.ToTable("UserViewedJokes");
+                    b.ToTable("UserViewedJokes", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

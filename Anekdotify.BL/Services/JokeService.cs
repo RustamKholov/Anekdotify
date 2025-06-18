@@ -31,13 +31,19 @@ public class JokeService(IJokeRepository jokeRepository, IJokeCacheService jokeC
 
     public async Task<List<JokeDTO>> GetAllJokesAsync(JokesQueryObject query)
     {
-        var cacheValue = await jokeCacheService.GetStringAsync("list_jokes");
-        if (cacheValue != null)
+        var cacheKey = $"jokes_page{query.PageNumber}_size{query.PageSize}_sort{query.ByDescending}";
+
+        var cached = await jokeCacheService.GetStringAsync(cacheKey);
+        if (cached != null)
         {
-            return JsonConvert.DeserializeObject<List<JokeDTO>>(cacheValue) ?? new List<JokeDTO>();
+            return JsonConvert.DeserializeObject<List<JokeDTO>>(cached) ?? new List<JokeDTO>();
         }
-        var jokes =  await jokeRepository.GetAllJokesAsync(query);
-        await jokeCacheService.SetStringAsync("list_jokes", JsonConvert.SerializeObject(jokes));
+
+        var jokes = await jokeRepository.GetAllJokesAsync(query);
+
+        // Cache for 5 minutes
+        await jokeCacheService.SetStringAsync(cacheKey, JsonConvert.SerializeObject(jokes), TimeSpan.FromMinutes(5));
+
         return jokes;
     }
 

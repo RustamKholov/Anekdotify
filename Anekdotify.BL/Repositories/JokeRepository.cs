@@ -2,6 +2,7 @@ using Anekdotify.BL.Helpers;
 using Anekdotify.BL.Interfaces.Repositories;
 using Anekdotify.BL.Mappers;
 using Anekdotify.Database.Data;
+using Anekdotify.Models.DTOs.Comments;
 using Anekdotify.Models.DTOs.Jokes;
 using Anekdotify.Models.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -17,23 +18,34 @@ namespace Anekdotify.BL.Repositories
         }
         public async Task<List<JokeDTO>> GetAllJokesAsync(JokesQueryObject query)
         {
-            var jokes = _context.Jokes
-                .Include(j => j.Classification)     // To get ClassificationName
-                .Include(j => j.Source)           // To get SourceName
-                .Include(j => j.JokeRatings)     // To calculate TotalLikes/Dislikes
-                .Include(j => j.Comments)        // To get comments
-                    .ThenInclude(c => c.User)    // To get Usernames for comments
-                    .ThenInclude(c => c.CommentRatings)
-                .AsQueryable()
-                .AsSplitQuery();
-            
-            jokes = query.ByDescending ? jokes.OrderByDescending(j => j.SubbmissionDate) : jokes.OrderBy(j => j.SubbmissionDate);
+            var skip = (query.PageNumber - 1) * query.PageSize;
 
-            var skipNumber = (query.PageNumber - 1) * query.PageSize;
+            var jokes = await _context.Jokes
+                .Where(j => j.SourceId != -4) // Exclude suggested jokes (id -4)
+                .OrderByDescending(j => j.SubbmissionDate)
+                .Skip(skip)
+                .Take(query.PageSize)
+                .Select(j => new JokeDTO
+                {
+                    JokeId = j.JokeId,
+                    Text = j.Text,
+                    ClassificationName = j.Classification.Name ?? "Unknown",
+                    ClassificationId = j.ClassificationId,
+                    SourceName = j.Source.SourceName ?? "Unknown",
+                    SourceId = j.SourceId,
+                    TotalLikes = j.JokeRatings.Count(r => r.Rating),
+                    TotalDislikes = j.JokeRatings.Count(r => !r.Rating),
+                    Comments = j.Comments.Select(c => new CommentDTO
+                    {
+                        CommentText = c.CommentText,
+                        Username = c.User.UserName ?? "Unknown",
+                        TotalLikes = c.CommentRatings.Count(r => r.Rating),
+                        TotalDislikes = c.CommentRatings.Count(r => !r.Rating)
+                    }).ToList()
+                })
+                .ToListAsync();
 
-            var allJokes = await jokes.Skip(skipNumber).Take(query.PageSize).ToListAsync();
-            var allJokesDTOS = allJokes.Select(j => j.ToJokeDTO()).ToList();
-            return allJokesDTOS;
+            return jokes;
         }
         public async Task<JokeDTO?> GetJokeByIdAsync(int jokeId)
         {
