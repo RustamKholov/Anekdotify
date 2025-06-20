@@ -7,6 +7,12 @@
 @inject IToastService ToastService
 @rendermode @(new InteractiveServerRenderMode(prerender:false))
 
+
+@if (SelectedJokeId != null)
+{
+    <CommentsModal Comments="@comments" OnClose="@CloseModal" />
+}
+
 <div class="card shadow-sm rounded-4 mb-4 p-3 h-100" style="min-height: 300px; max-height: 300px; position: relative;">
 
     <!-- Save Icon -->
@@ -52,9 +58,9 @@
                 <span class="ms-1">@Joke.TotalDislikes</span>
             </button>
 
-            <button class="btn btn-sm btn-outline-secondary d-flex align-items-center">
+            <button class="btn btn-sm btn-outline-secondary d-flex align-items-center" @onclick="() => OpenComments(Joke.JokeId)">
                 <i class="bi bi-chat-left-text"></i>
-                <span class="ms-1">@Joke.Comments.Count</span>
+                <span class="ms-1">@Joke.Comments.Capacity</span>
             </button>
         </div>
     </div>
