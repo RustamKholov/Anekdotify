@@ -1,4 +1,5 @@
 ﻿using Anekdotify.Frontend.Components.BaseComponents;
+using Anekdotify.Models.DTOs.Comments;
 using Anekdotify.Models.DTOs.JokeRating;
 using Anekdotify.Models.DTOs.Jokes;
 using Microsoft.AspNetCore.Components;
@@ -9,6 +10,10 @@ namespace Anekdotify.Frontend.Components.Pages
     {
         [Parameter] public JokeDTO Joke { get; set; }
         public AppModal Modal { get; set; }
+
+        public int? SelectedJokeId = null;
+
+        private List<CommentDTO> comments = new List<CommentDTO>();
         public int DeleteId { get; set; }
         private bool? isLiked = null;
         private bool? isSaved = null;
@@ -132,6 +137,31 @@ namespace Anekdotify.Frontend.Components.Pages
                 NavigationManager.NavigateTo("/", true);
             }
             else ToastService.ShowError("Failed to delete");
+        }
+
+        private async Task OpenComments(int jokeId)
+        {
+            SelectedJokeId = jokeId;
+            comments = await LoadComments(jokeId);
+        }
+
+        private async Task<List<CommentDTO>> LoadComments(int jokeId)
+        {
+            var res = await ApiClient.GetAsync<List<CommentDTO>>($"api/comments?JokeId={jokeId}");
+            if (res.IsSuccess)
+            {
+                return res.Data;
+            }
+            else
+            {
+                ToastService.ShowError("Failed to load comments");
+                return new List<CommentDTO>();
+            }
+        }
+
+        private void CloseModal()
+        {
+            SelectedJokeId = null;
         }
     }
 }

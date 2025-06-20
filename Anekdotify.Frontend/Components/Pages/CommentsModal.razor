@@ -1,0 +1,71 @@
+﻿@inject IJSRuntime JS
+
+<div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" @onclick:stopPropagation>
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-fullscreen-sm-down">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Comments</h5>
+                <button type="button" class="btn-close" @onclick="Close"></button>
+            </div>
+            <div class="modal-body overflow-auto" style="max-height: 70vh;">
+                @if (Comments is null)
+                {
+                    <p>Loading...</p>
+                }
+                else if (!Comments.Any())
+                {
+                    <p>No comments yet.</p>
+                }
+                else
+                {
+                    @foreach (var comment in Comments)
+                    {
+                        <div class="mb-3 border-bottom pb-2">
+                            <p class="fw-bold mb-1">@comment.Username</p>
+                            <p>@comment.CommentText</p>
+
+                            @if (comment.Replies?.Any() == true)
+                            {
+                                <button class="btn btn-sm btn-link p-0" @onclick="() => ToggleReplies(comment.CommentId)">
+                                    @(ExpandedReplies.Contains(comment.CommentId) ? "Hide replies" : $"Show replies ({comment.Replies.Count})")
+                                </button>
+
+                                @if (ExpandedReplies.Contains(comment.CommentId))
+                                {
+                                    <div class="mt-2 ms-3 border-start ps-2">
+                                        @foreach (var reply in comment.Replies)
+                                        {
+                                            <div class="mb-2">
+                                                <p class="fw-light small mb-1">@reply.Username</p>
+                                                <p class="small">@reply.CommentText</p>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            }
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter] public List<CommentDTO> Comments { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private HashSet<int> ExpandedReplies = new();
+
+    private void ToggleReplies(int commentId)
+    {
+        if (!ExpandedReplies.Add(commentId))
+            ExpandedReplies.Remove(commentId);
+    }
+
+    private async Task Close()
+    {
+        await OnClose.InvokeAsync();
+    }
+}

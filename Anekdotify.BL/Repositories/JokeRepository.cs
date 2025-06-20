@@ -50,21 +50,33 @@ namespace Anekdotify.BL.Repositories
         public async Task<JokeDTO?> GetJokeByIdAsync(int jokeId)
         {
             var joke = await _context.Jokes
-            .Where(j => j.JokeId == jokeId) 
-            .Include(j => j.Source)             // To get SourceName
-            .Include(j => j.Classification) // To get ClassificationName
-            .Include(j => j.JokeRatings)     // To calculate TotalLikes/Dislikes
-            .Include(j => j.Comments)        // To get comments
-                .ThenInclude(c => c.User)    // To get Usernames for comments
-                .ThenInclude(c => c.CommentRatings) // To get ratings for comments
-            .AsSplitQuery()
+            .Where(j => j.JokeId == jokeId)
+            .Select(j => new JokeDTO
+            {
+                JokeId = j.JokeId,
+                Text = j.Text,
+                ClassificationName = j.Classification.Name ?? "Unknown",
+                ClassificationId = j.ClassificationId,
+                SourceName = j.Source.SourceName ?? "Unknown",
+                SourceId = j.SourceId,
+                TotalLikes = j.JokeRatings.Count(r => r.Rating),
+                TotalDislikes = j.JokeRatings.Count(r => !r.Rating),
+                Comments = j.Comments.Select(c => new CommentDTO
+                {
+                    CommentText = c.CommentText,
+                    Username = c.User.UserName ?? "Unknown",
+                    TotalLikes = c.CommentRatings.Count(r => r.Rating),
+                    TotalDislikes = c.CommentRatings.Count(r => !r.Rating)
+                }).ToList()
+            })
             .FirstOrDefaultAsync();
+
             if (joke == null)
             {
                 return null;
             }
-            var jokeDTO = joke.ToJokeDTO();
-            return jokeDTO;
+           
+            return joke;
         }
         public async Task<Joke> CreateJokeAsync(JokeCreateDTO jokeCreateDTO, string userId)
         {
