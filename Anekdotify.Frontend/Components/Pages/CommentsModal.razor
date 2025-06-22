@@ -54,9 +54,9 @@
 
 @code {
 
-    [Parameter] public JokeDTO Joke { get; set; }
+    [Parameter] public JokeDTO? Joke { get; set; }
 
-    [Parameter] public List<CommentDTO> Comments { get; set; }
+    [Parameter] public List<CommentDTO>? Comments { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
 
     private HashSet<int> ExpandedReplies = new();

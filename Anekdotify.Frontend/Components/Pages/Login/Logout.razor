@@ -6,7 +6,11 @@
 @code {
     protected override async Task OnInitializedAsync()
     {
-        await (AuthenticationStateProvider as CustomAuthStateProvider)?.MarkUserAsLoggedOut();
+        var customAuthProvider = AuthenticationStateProvider as CustomAuthStateProvider;
+        if (customAuthProvider != null)
+        {
+            await customAuthProvider.MarkUserAsLoggedOut();
+        }
         await LocalStorageService.RemoveItemAsync("toastShown");
         NavigationManager.NavigateTo("/login", true);
     }

@@ -31,9 +31,9 @@ namespace Anekdotify.BL.Repositories
                 {
                     j.JokeId,
                     j.Text,
-                    ClassificationName = j.Classification.Name,
+                    ClassificationName = j.Classification != null ? j.Classification.Name : null,
                     j.ClassificationId,
-                    SourceName = j.Source.SourceName,
+                    SourceName = j.Source != null ? j.Source.SourceName : null,
                     j.SourceId
                 })
                 .ToListAsync();
@@ -107,9 +107,9 @@ namespace Anekdotify.BL.Repositories
                 {
                     j.JokeId,
                     j.Text,
-                    ClassificationName = j.Classification.Name,
+                    ClassificationName = j.Classification != null ? j.Classification.Name : null,
                     j.ClassificationId,
-                    SourceName = j.Source.SourceName,
+                    SourceName = j.Source != null ? j.Source.SourceName : null,
                     j.SourceId
                 })
                 .FirstOrDefaultAsync();
@@ -269,9 +269,9 @@ namespace Anekdotify.BL.Repositories
                 {
                     j.JokeId,
                     j.Text,
-                    ClassificationName = j.Classification.Name,
+                    ClassificationName = j.Classification != null ? j.Classification.Name : null,
                     j.ClassificationId,
-                    SourceName = j.Source.SourceName,
+                    SourceName = j.Source != null ? j.Source.SourceName : null,
                     j.SourceId
                 })
                 .ToListAsync();

@@ -8,8 +8,8 @@ namespace Anekdotify.Frontend.Components.Pages
 {
     public partial class JokeCard
     {
-        [Parameter] public JokeDTO Joke { get; set; }
-        public AppModal Modal { get; set; }
+        [Parameter] public JokeDTO? Joke { get; set; }
+        public AppModal? Modal { get; set; }
 
         public int? SelectedJokeId = null;
 
@@ -23,8 +23,14 @@ namespace Anekdotify.Frontend.Components.Pages
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             if (!firstRender) return;
+            if (Joke == null)
+            {
+                ToastService.ShowError("Joke not found");
+                return;
+            }
+
             var resRate = await ApiClient.GetAsync<RatingDTO>($"api/joke/{Joke.JokeId}/rating");
-            if (resRate.IsSuccess)
+            if (resRate.IsSuccess && resRate.Data != null)
             {
                 if (resRate.Data.IsLike != null)
                 {
@@ -48,6 +54,12 @@ namespace Anekdotify.Frontend.Components.Pages
         }
         private async Task OnSaveClick()
         {
+            if (Joke == null)
+            {
+                ToastService.ShowError("Joke not found");
+                return;
+            }
+
             if (isSaved == true)
             {
                 var res = await ApiClient.DeleteAsync($"api/saved-jokes/{Joke.JokeId}");
@@ -80,6 +92,11 @@ namespace Anekdotify.Frontend.Components.Pages
         {
             if (isLiked == newValue)
             {
+                if (Joke == null)
+                {
+                    ToastService.ShowError("Joke not found");
+                    return;
+                }
                 var res = await ApiClient.DeleteAsync($"api/joke/{Joke.JokeId}/rating/delete");
                 if (res.IsSuccess)
                 {
@@ -96,6 +113,11 @@ namespace Anekdotify.Frontend.Components.Pages
                 return;
             }
 
+            if (Joke == null)
+            {
+                ToastService.ShowError("Joke not found");
+                return;
+            }
             var updateRes = await ApiClient.PutAsync<RatingDTO, bool>($"api/joke/{Joke.JokeId}/rating", newValue);
             if (updateRes.IsSuccess)
             {
@@ -133,7 +155,7 @@ namespace Anekdotify.Frontend.Components.Pages
             if (res.IsSuccess)
             {
                 ToastService.ShowSuccess("Joke deleted");
-                Modal.Close();
+                Modal?.Close();
                 NavigationManager.NavigateTo("/", true);
             }
             else ToastService.ShowError("Failed to delete");
@@ -150,7 +172,7 @@ namespace Anekdotify.Frontend.Components.Pages
             var res = await ApiClient.GetAsync<List<CommentDTO>>($"api/comments?JokeId={jokeId}");
             if (res.IsSuccess)
             {
-                return res.Data;
+                return res.Data ?? new List<CommentDTO>();
             }
             else
             {

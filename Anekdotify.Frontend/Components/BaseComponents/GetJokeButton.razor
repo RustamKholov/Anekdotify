@@ -35,12 +35,12 @@ else
     private DateTime RandomJokeAvalibleAt = DateTime.Now;
 
     [Parameter]
-    public Func<Task> GetRandomJoke { get; set; }
+    public Func<Task>? GetRandomJoke { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         var isActiveRes = await ApiClient.GetAsync<IsActiveRandomResponse>("api/joke/random/isActive");
-        if (isActiveRes.IsSuccess)
+        if (isActiveRes.IsSuccess && isActiveRes.Data != null)
         {
             isActive = isActiveRes.Data.IsActive;
             RandomJokeAvalibleAt = isActiveRes.Data.NextRandomJokeAvailableAt;
@@ -56,7 +56,7 @@ else
         {
             await GetRandomJoke.Invoke();
             var isActiveRes = await ApiClient.GetAsync<IsActiveRandomResponse>("api/joke/random/isActive");
-            if (isActiveRes.IsSuccess)
+            if (isActiveRes.IsSuccess && isActiveRes.Data != null)
             {
                 isActive = isActiveRes.Data.IsActive;
                 RandomJokeAvalibleAt = isActiveRes.Data.NextRandomJokeAvailableAt;

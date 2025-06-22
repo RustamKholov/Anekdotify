@@ -48,7 +48,7 @@
 @code {
     private LoginDTO loginModel = new LoginDTO();
     [Inject] 
-    private IToastService ToastService { get; set; }
+    private IToastService? ToastService { get; set; }
 
     private bool isLoading = false;
 
@@ -58,20 +58,20 @@
         {
             isLoading = true;
             var response = await ApiClient.PostAsync<LoginResponseModel, LoginDTO>("api/account/login", loginModel);
-            if (response.IsSuccess)
+            if (response.IsSuccess && response.Data != null)
             {
                 await ((CustomAuthStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(response.Data);
                 NavigationManager.NavigateTo("/");
             }
             else
             {
-                ToastService.ShowError("Login failed. Please check your credentials.");
+                ToastService?.ShowError("Login failed. Please check your credentials.");
             }
             loginModel = new LoginDTO();
         }
         catch (Exception e)
         {
-            ToastService.ShowError($"An error occurred while logging in: {e.Message}");
+            ToastService?.ShowError($"An error occurred while logging in: {e.Message}");
         }
         finally
         {

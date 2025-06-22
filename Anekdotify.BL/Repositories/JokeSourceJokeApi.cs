@@ -77,10 +77,12 @@ namespace Anekdotify.BL.Repositories
 
             await _sourceFetchedService.AddSourceFetchedJokeAsync(1, parsed.Id ?? 0);
             _fetchedJokes.Add(parsed.Id ?? 0);
-
+            
             return new JokeCreateDTO
                 {
-                    Text = isTwoParted ? parsed.Setup + "\n" + parsed.Delivery : parsed.Joke,
+                    Text = isTwoParted 
+                        ? $"{parsed.Setup ?? string.Empty}\n{parsed.Delivery ?? string.Empty}" 
+                        : parsed.Joke ?? string.Empty,
                     ClassificationId = classification.ClassificationId,
                     SourceId = 1
                 };

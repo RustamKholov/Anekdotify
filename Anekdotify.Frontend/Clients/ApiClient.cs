@@ -52,7 +52,7 @@ public class ApiClient(HttpClient httpClient, ProtectedLocalStorage storage,
         if(response.IsSuccessStatusCode)
         {
             var data = await response.Content.ReadFromJsonAsync<TSuccessData>();
-            return ApiResult<TSuccessData>.Success(data, response.StatusCode);
+            return ApiResult<TSuccessData>.Success(data ?? default!, response.StatusCode);
         }
         else
         {
@@ -70,15 +70,15 @@ public class ApiClient(HttpClient httpClient, ProtectedLocalStorage storage,
             
             if (response.StatusCode == HttpStatusCode.NoContent)
             {
-                return ApiResult<TSuccessData>.Success(default, response.StatusCode);
+                return ApiResult<TSuccessData>.Success(default!, response.StatusCode);
             }
 
             var successData = await response.Content.ReadFromJsonAsync<TSuccessData>();
             if (successData == null && typeof(TSuccessData) != typeof(string))
             {
-                return null;
+                return ApiResult<TSuccessData>.Failure("No content returned from API.", response.StatusCode);
             }
-            return ApiResult<TSuccessData>.Success(successData, response.StatusCode);
+            return ApiResult<TSuccessData>.Success(successData ?? default!, response.StatusCode);
         }
         else
         {
@@ -94,14 +94,14 @@ public class ApiClient(HttpClient httpClient, ProtectedLocalStorage storage,
         {
             if (response.StatusCode == HttpStatusCode.NoContent)
             {
-                return ApiResult<TSuccessData>.Success(default, response.StatusCode);
+                return ApiResult<TSuccessData>.Success(default!, response.StatusCode);
             }
             var successData = await response.Content.ReadFromJsonAsync<TSuccessData>();
             if (successData == null && typeof(TSuccessData) != typeof(string))
             {
-                return null;
+                return ApiResult<TSuccessData>.Failure("No content returned from API.", response.StatusCode);
             }
-            return ApiResult<TSuccessData>.Success(successData, response.StatusCode);
+            return ApiResult<TSuccessData>.Success(successData ?? default!, response.StatusCode);
         }
         else
         {

@@ -13,7 +13,7 @@ public class CustomAuthStateProvider(ProtectedLocalStorage protectedLocalStorage
         var sessionModel = (await protectedLocalStorage.GetAsync<LoginResponseModel>("sessionState")).Value;
 
         ClaimsIdentity identity;
-        if (sessionModel != null)
+        if (sessionModel != null && !string.IsNullOrEmpty(sessionModel.Token))
         {
             identity = GetClaimsIdentity(sessionModel.Token);
         }
@@ -28,7 +28,15 @@ public class CustomAuthStateProvider(ProtectedLocalStorage protectedLocalStorage
     public async Task MarkUserAsAuthenticated(LoginResponseModel loginResponse)
     {
         await protectedLocalStorage.SetAsync("sessionState", loginResponse);
-        var identity = GetClaimsIdentity(loginResponse.Token);
+        ClaimsIdentity identity;
+        if (!string.IsNullOrEmpty(loginResponse?.Token))
+        {
+            identity = GetClaimsIdentity(loginResponse.Token);
+        }
+        else
+        {
+            identity = new ClaimsIdentity();
+        }
         var user = new ClaimsPrincipal(identity);
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));
     }
