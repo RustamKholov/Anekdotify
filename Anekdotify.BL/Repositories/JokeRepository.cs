@@ -6,6 +6,7 @@ using Anekdotify.Models.DTOs.Comments;
 using Anekdotify.Models.DTOs.Jokes;
 using Anekdotify.Models.Entities;
 using Microsoft.EntityFrameworkCore;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Anekdotify.BL.Repositories
 {
@@ -20,63 +21,160 @@ namespace Anekdotify.BL.Repositories
         {
             var skip = (query.PageNumber - 1) * query.PageSize;
 
-            var jokes = await _context.Jokes
-                .Where(j => j.SourceId != -4) // Exclude suggested jokes (id -4)
+            var baseJokes = await _context.Jokes
+                .AsNoTracking()
+                .Where(j => j.SourceId != -4)
                 .OrderByDescending(j => j.SubbmissionDate)
                 .Skip(skip)
                 .Take(query.PageSize)
-                .Select(j => new JokeDTO
+                .Select(j => new
                 {
-                    JokeId = j.JokeId,
-                    Text = j.Text,
-                    ClassificationName = j.Classification.Name ?? "Unknown",
-                    ClassificationId = j.ClassificationId,
-                    SourceName = j.Source.SourceName ?? "Unknown",
-                    SourceId = j.SourceId,
-                    TotalLikes = j.JokeRatings.Count(r => r.Rating),
-                    TotalDislikes = j.JokeRatings.Count(r => !r.Rating),
-                    Comments = j.Comments.Select(c => new CommentDTO
-                    {
-                        CommentText = c.CommentText,
-                        Username = c.User.UserName ?? "Unknown",
-                        TotalLikes = c.CommentRatings.Count(r => r.Rating),
-                        TotalDislikes = c.CommentRatings.Count(r => !r.Rating)
-                    }).ToList()
+                    j.JokeId,
+                    j.Text,
+                    ClassificationName = j.Classification.Name,
+                    j.ClassificationId,
+                    SourceName = j.Source.SourceName,
+                    j.SourceId
                 })
                 .ToListAsync();
 
-            return jokes;
-        }
-        public async Task<JokeDTO?> GetJokeByIdAsync(int jokeId)
-        {
-            var joke = await _context.Jokes
-            .Where(j => j.JokeId == jokeId)
-            .Select(j => new JokeDTO
+            var jokeIds = baseJokes.Select(j => j.JokeId).ToList();
+
+            var ratings = await _context.JokeRatings
+                .AsNoTracking()
+                .Where(r => jokeIds.Contains(r.JokeId))
+                .GroupBy(r => r.JokeId)
+                .Select(g => new
+                {
+                    JokeId = g.Key,
+                    Likes = g.Count(r => r.Rating),
+                    Dislikes = g.Count(r => !r.Rating)
+                })
+                .ToListAsync();
+
+            var comments = await _context.Comments
+                .AsNoTracking()
+                .Where(c => jokeIds.Contains(c.JokeId))
+                .Select(c => new
+                {
+                    c.JokeId,
+                    c.CommentText,
+                    Username = c.User.UserName,
+                    CommentId = c.CommentId,
+                    Ratings = c.CommentRatings
+                })
+                .ToListAsync();
+
+            var commentRatings = comments.Select(c => new CommentDTO
+            {
+                CommentText = c.CommentText,
+                Username = c.Username ?? "Unknown",
+                TotalLikes = c.Ratings.Count(r => r.Rating),
+                TotalDislikes = c.Ratings.Count(r => !r.Rating)
+            });
+
+            var groupedComments = comments
+                .GroupBy(c => c.JokeId)
+                .ToDictionary(g => g.Key, g => g.Select(c => new CommentDTO
+                {
+                    CommentText = c.CommentText,
+                    Username = c.Username ?? "Unknown",
+                    TotalLikes = c.Ratings.Count(r => r.Rating),
+                    TotalDislikes = c.Ratings.Count(r => !r.Rating)
+                }).ToList());
+
+            var jokeDTOs = baseJokes.Select(j => new JokeDTO
             {
                 JokeId = j.JokeId,
                 Text = j.Text,
-                ClassificationName = j.Classification.Name ?? "Unknown",
+                ClassificationName = j.ClassificationName ?? "Unknown",
                 ClassificationId = j.ClassificationId,
-                SourceName = j.Source.SourceName ?? "Unknown",
+                SourceName = j.SourceName ?? "Unknown",
                 SourceId = j.SourceId,
-                TotalLikes = j.JokeRatings.Count(r => r.Rating),
-                TotalDislikes = j.JokeRatings.Count(r => !r.Rating),
-                Comments = j.Comments.Select(c => new CommentDTO
-                {
-                    CommentText = c.CommentText,
-                    Username = c.User.UserName ?? "Unknown",
-                    TotalLikes = c.CommentRatings.Count(r => r.Rating),
-                    TotalDislikes = c.CommentRatings.Count(r => !r.Rating)
-                }).ToList()
-            })
-            .FirstOrDefaultAsync();
+                TotalLikes = ratings.FirstOrDefault(r => r.JokeId == j.JokeId)?.Likes ?? 0,
+                TotalDislikes = ratings.FirstOrDefault(r => r.JokeId == j.JokeId)?.Dislikes ?? 0,
+                Comments = groupedComments.TryGetValue(j.JokeId, out var cmts) ? cmts : new List<CommentDTO>()
+            }).ToList();
 
-            if (joke == null)
+            return jokeDTOs;
+        }
+        public async Task<JokeDTO?> GetJokeByIdAsync(int jokeId)
+        {
+            var baseJoke = await _context.Jokes
+                .AsNoTracking()
+                .Where(j => j.JokeId == jokeId)
+                .Select(j => new
+                {
+                    j.JokeId,
+                    j.Text,
+                    ClassificationName = j.Classification.Name,
+                    j.ClassificationId,
+                    SourceName = j.Source.SourceName,
+                    j.SourceId
+                })
+                .FirstOrDefaultAsync();
+
+            if (baseJoke == null)
             {
                 return null;
             }
-           
-            return joke;
+            var ratings = await _context.JokeRatings
+                 .AsNoTracking()
+                 .Where(r => r.JokeId == baseJoke.JokeId)
+                 .GroupBy(r => r.JokeId)
+                 .Select(g => new
+                 {
+                     JokeId = g.Key,
+                     Likes = g.Count(r => r.Rating),
+                     Dislikes = g.Count(r => !r.Rating)
+                 })
+                 .ToListAsync();
+
+            var comments = await _context.Comments
+                .AsNoTracking()
+                .Where(c => c.JokeId == baseJoke.JokeId)
+                .Select(c => new
+                {
+                    c.JokeId,
+                    c.CommentText,
+                    Username = c.User.UserName,
+                    CommentId = c.CommentId,
+                    Ratings = c.CommentRatings
+                })
+                .ToListAsync();
+
+            var commentRatings = comments.Select(c => new CommentDTO
+            {
+                CommentText = c.CommentText,
+                Username = c.Username ?? "Unknown",
+                TotalLikes = c.Ratings.Count(r => r.Rating),
+                TotalDislikes = c.Ratings.Count(r => !r.Rating)
+            });
+
+            var groupedComments = comments
+                .GroupBy(c => c.JokeId)
+                .ToDictionary(g => g.Key, g => g.Select(c => new CommentDTO
+                {
+                    CommentText = c.CommentText,
+                    Username = c.Username ?? "Unknown",
+                    TotalLikes = c.Ratings.Count(r => r.Rating),
+                    TotalDislikes = c.Ratings.Count(r => !r.Rating)
+                }).ToList());
+
+            var jokeDTO = new JokeDTO
+            {
+                JokeId = baseJoke.JokeId,
+                Text = baseJoke.Text,
+                ClassificationName = baseJoke.ClassificationName ?? "Unknown",
+                ClassificationId = baseJoke.ClassificationId,
+                SourceName = baseJoke.SourceName ?? "Unknown",
+                SourceId = baseJoke.SourceId,
+                TotalLikes = ratings.FirstOrDefault(r => r.JokeId == baseJoke.JokeId)?.Likes ?? 0,
+                TotalDislikes = ratings.FirstOrDefault(r => r.JokeId == baseJoke.JokeId)?.Dislikes ?? 0,
+                Comments = groupedComments.TryGetValue(baseJoke.JokeId, out var cmts) ? cmts : new List<CommentDTO>()
+            };
+
+            return jokeDTO;
         }
         public async Task<Joke> CreateJokeAsync(JokeCreateDTO jokeCreateDTO, string userId)
         {
@@ -163,18 +261,80 @@ namespace Anekdotify.BL.Repositories
 
         public async Task<List<JokeDTO>> GetJokesByIdsAsync(List<int> ids)
         {
-            var jokes = await _context.Jokes
+            var baseJokes = await _context.Jokes
+                .AsNoTracking()
                 .Where(j => ids.Contains(j.JokeId))
-                .Include(j => j.Source)
-                .Include(j => j.Classification)
-                .Include(j => j.JokeRatings)
-                .Include(j => j.Comments)
-                    .ThenInclude(c => c.User)
-                    .ThenInclude(u => u.CommentRatings)
-                .AsSplitQuery()
+                .OrderByDescending(j => j.SubbmissionDate)
+                .Select(j => new
+                {
+                    j.JokeId,
+                    j.Text,
+                    ClassificationName = j.Classification.Name,
+                    j.ClassificationId,
+                    SourceName = j.Source.SourceName,
+                    j.SourceId
+                })
                 .ToListAsync();
 
-            return jokes.Select(j => j.ToJokeDTO()).ToList();
+            var jokeIds = baseJokes.Select(j => j.JokeId).ToList();
+
+            var ratings = await _context.JokeRatings
+                .AsNoTracking()
+                .Where(r => jokeIds.Contains(r.JokeId))
+                .GroupBy(r => r.JokeId)
+                .Select(g => new
+                {
+                    JokeId = g.Key,
+                    Likes = g.Count(r => r.Rating),
+                    Dislikes = g.Count(r => !r.Rating)
+                })
+                .ToListAsync();
+
+            var comments = await _context.Comments
+                .AsNoTracking()
+                .Where(c => jokeIds.Contains(c.JokeId))
+                .Select(c => new
+                {
+                    c.JokeId,
+                    c.CommentText,
+                    Username = c.User.UserName,
+                    CommentId = c.CommentId,
+                    Ratings = c.CommentRatings
+                })
+                .ToListAsync();
+
+            var commentRatings = comments.Select(c => new CommentDTO
+            {
+                CommentText = c.CommentText,
+                Username = c.Username ?? "Unknown",
+                TotalLikes = c.Ratings.Count(r => r.Rating),
+                TotalDislikes = c.Ratings.Count(r => !r.Rating)
+            });
+
+            var groupedComments = comments
+                .GroupBy(c => c.JokeId)
+                .ToDictionary(g => g.Key, g => g.Select(c => new CommentDTO
+                {
+                    CommentText = c.CommentText,
+                    Username = c.Username ?? "Unknown",
+                    TotalLikes = c.Ratings.Count(r => r.Rating),
+                    TotalDislikes = c.Ratings.Count(r => !r.Rating)
+                }).ToList());
+
+            var jokeDTOs = baseJokes.Select(j => new JokeDTO
+            {
+                JokeId = j.JokeId,
+                Text = j.Text,
+                ClassificationName = j.ClassificationName ?? "Unknown",
+                ClassificationId = j.ClassificationId,
+                SourceName = j.SourceName ?? "Unknown",
+                SourceId = j.SourceId,
+                TotalLikes = ratings.FirstOrDefault(r => r.JokeId == j.JokeId)?.Likes ?? 0,
+                TotalDislikes = ratings.FirstOrDefault(r => r.JokeId == j.JokeId)?.Dislikes ?? 0,
+                Comments = groupedComments.TryGetValue(j.JokeId, out var cmts) ? cmts : new List<CommentDTO>()
+            }).ToList();
+
+            return jokeDTOs;
         }
     }
 }

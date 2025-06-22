@@ -10,7 +10,7 @@
 
 @if (SelectedJokeId != null)
 {
-    <CommentsModal Comments="@comments" OnClose="@CloseModal" />
+    <CommentsModal Joke="@Joke" Comments="@comments" OnClose="@CloseModal" />
 }
 
 <div class="card shadow-sm rounded-4 mb-4 p-3 h-100" style="min-height: 300px; max-height: 300px; position: relative;">

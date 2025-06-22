@@ -114,6 +114,8 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
 
             entity.HasIndex(e => new { e.CommentId, e.UserId }, "IX_CommentRatings").IsUnique();
 
+            entity.HasIndex(cr => new { cr.CommentId, cr.Rating });
+
             entity.Property(e => e.RatingDate).HasColumnType("datetime");
 
             entity.HasOne(d => d.Comment).WithMany(p => p.CommentRatings)
@@ -180,6 +182,7 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
         modelBuilder.Entity<JokeRating>(entity =>
         {
             entity.HasKey(e => e.RatingId);
+            entity.HasIndex(jr => new { jr.JokeId, jr.Rating });
 
             entity.Property(e => e.RatingDate).HasColumnType("datetime");
 
