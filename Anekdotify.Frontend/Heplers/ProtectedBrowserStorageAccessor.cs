@@ -19,14 +19,14 @@ public class ProtectedBrowserStorageAccessor
         if (_isClientSide)
         {
             var result = await storage.GetAsync<T>(key);
-            return result.Success ? result.Value : default;
+            return result.Success ? result.Value! : default(T)!;
         }
-        return default; // Return default if not client-side (during prerendering)
+        return default(T)!; 
     }
 
     public async Task SetAsync<T>(ProtectedLocalStorage storage, string key, T value)
     {
-        if (_isClientSide)
+        if (_isClientSide && value is not null)
         {
             await storage.SetAsync(key, value);
         }

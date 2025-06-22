@@ -1,4 +1,5 @@
-﻿@using Anekdotify.Models.DTOs.Classification
+﻿
+@using Anekdotify.Models.DTOs.Classification
 @inject ApiClient ApiClient
 @inject IToastService Toast
 
@@ -40,7 +41,7 @@ else
 }
 
 @code {
-    private List<ClassificationDetailedDTO> classifications;
+    private List<ClassificationDetailedDTO>? classifications;
     private JokeCreateDTO newJoke = new();
     private SuggestedJokeDTO? suggestedJoke;
 
@@ -49,7 +50,7 @@ else
         var res = await ApiClient.GetAsync<List<ClassificationDetailedDTO>>("api/classification");
         if (res.IsSuccess)
         {
-            classifications = res.Data;
+            classifications = res.Data ?? new List<ClassificationDetailedDTO>();
         }
         else
         {
@@ -63,8 +64,17 @@ else
         if (response.IsSuccess)
         {
             Toast.ShowSuccess("Joke submitted for review!");
-            response.Data.ClassificationName = classifications.FirstOrDefault(c => c.ClassificationId == newJoke.ClassificationId)?.Name;
-            suggestedJoke = response.Data;
+            if (response.Data != null)
+            {
+                var classificationName = classifications != null
+                    ? classifications.FirstOrDefault(c => c.ClassificationId == newJoke.ClassificationId)?.Name
+                    : null;
+                if (classificationName != null)
+                {
+                    response.Data.ClassificationName = classificationName;
+                }
+                suggestedJoke = response.Data;
+            }
             newJoke = new(); // reset form
         }
         else

@@ -52,7 +52,7 @@
 @code {
     private RegisterDTO registerModel = new RegisterDTO();
     [Inject] 
-    private IToastService ToastService { get; set; }
+    private IToastService? ToastService { get; set; }
     private bool isLoading = false;
 
     private async Task HandleRegister()
@@ -64,12 +64,12 @@
 
             if (response == null || response.Data == null)
             {
-                ToastService.ShowError("Registration failed. Please try again.");
+                ToastService?.ShowError("Registration failed. Please try again.");
                 return;
             }
             if (!response.IsSuccess)
             {
-                ToastService.ShowError($"Registration failed. {response.ErrorMessage}.");
+                ToastService?.ShowError($"Registration failed. {response.ErrorMessage}.");
                 return;
             }
             var loginModel = new LoginResponseModel
@@ -86,13 +86,13 @@
             }
             else
             {
-                ToastService.ShowError("Registration failed. Please check your credentials.");
+                ToastService?.ShowError("Registration failed. Please check your credentials.");
             }
             registerModel = new RegisterDTO();
         }
         catch (Exception e)
         {
-            ToastService.ShowError($"An error occurred during registration: {e.Message}");
+            ToastService?.ShowError($"An error occurred during registration: {e.Message}");
         }
         finally
         {
