@@ -24,7 +24,7 @@ namespace Anekdotify.BL.Mappers
                 ClassificationName = joke.Classification?.Name,
                 TotalLikes = joke.JokeRatings.Count(jr => jr.Rating),
                 TotalDislikes = joke.JokeRatings.Count(jr => !jr.Rating),
-                Comments = joke.Comments.ToList().BuildHierarchicalComments()
+                Comments = joke.Comments.Select(c => c.ToCommentDTO()).ToList().BuildHierarchicalComments()
             };
         }
         public static Joke ToJokeFromCreateDTO(this JokeCreateDTO jokeCreateDTO, string userId)

@@ -68,7 +68,7 @@ namespace Anekdotify.Api.Controllers
             {
                 return BadRequest("Comment content cannot be empty");
             }
-            if (commentCreateDTO.ParentCommentId != null)
+            if (commentCreateDTO.ParentCommentId != null && commentCreateDTO.ParentCommentId != 0)
             {
                 var parentComment = await _commentService.GetCommentByIdAsync(commentCreateDTO.ParentCommentId.Value);
                 if (parentComment == null)
@@ -80,7 +80,10 @@ namespace Anekdotify.Api.Controllers
                     return BadRequest("Parent comment does not belong to the same joke");
                 }
             }
-            ArgumentNullException.ThrowIfNull(userId);
+            if(string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User ID not found in token claims.");
+            }
             var comment = commentCreateDTO.ToCommentFromCreateDTO(jokeId, userId);
             await _commentService.CreateCommentAsync(comment);
 

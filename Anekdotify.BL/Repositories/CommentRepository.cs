@@ -36,30 +36,30 @@ namespace Anekdotify.BL.Repositories
 
         public async Task<List<CommentDTO>> GetAllCommentsAsync(CommentsQueryObject query)
         {
-            var AllComments = _context.Comments.AsQueryable();
+            var baseQuery = _context.Comments
+                .AsNoTracking()
+                .Where(c => query.JokeId == null || c.JokeId == query.JokeId);
 
-            if (query.JokeId != null)
-            {
-                AllComments = AllComments.Where(c => c.JokeId == query.JokeId)
-                                        .Include(c => c.User)
-                                        .Include(c => c.CommentRatings)
-                                        .OrderBy(c => c.CommentDate);
-            }
-            if (query.ByDescending)
-            {
-                AllComments = AllComments.OrderByDescending(c => c.CommentDate);
-            }
-            else
-            {
-                AllComments = AllComments.OrderBy(c => c.CommentDate);
-            }
+            baseQuery = query.ByDescending
+                ? baseQuery.OrderByDescending(c => c.CommentDate)
+                : baseQuery.OrderBy(c => c.CommentDate);
 
-            var comments = await AllComments
+            var pagedComments = await baseQuery
                 .Skip((query.PageNumber - 1) * query.PageSize)
                 .Take(query.PageSize)
+                .Select(c => new CommentDTO
+                {
+                    JokeId = c.JokeId,
+                    CommentId = c.CommentId,
+                    CommentText = c.CommentText,
+                    Username = c.User.UserName ?? "Unknown",
+                    TotalLikes = c.CommentRatings.Count(r => r.Rating),
+                    TotalDislikes = c.CommentRatings.Count(r => !r.Rating),
+                    ParentCommentId = c.ParentCommentId
+                })
                 .ToListAsync();
 
-            var rootComments = comments.BuildHierarchicalComments();
+            var rootComments = pagedComments.BuildHierarchicalComments();
 
             return rootComments;
         }
