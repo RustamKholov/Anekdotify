@@ -13,12 +13,9 @@ namespace Anekdotify.Frontend.Components.Pages
         private bool isLoading = true;
         private string? errorMessage = null;
 
-        [Inject]
-        public ApiClient? ApiClient { get; set; }
-        [Inject]
-        public AuthenticationStateProvider? AuthenticationStateProvider { get; set; }
-        [Inject]
-        public NavigationManager? NavigationManager { get; set; }
+        [Inject] public ApiClient? ApiClient { get; set; }
+        [Inject] public AuthenticationStateProvider? AuthenticationStateProvider { get; set; }
+        [Inject] public NavigationManager? NavigationManager { get; set; }
         protected override async Task OnInitializedAsync()
         {
             await LoadJokes();

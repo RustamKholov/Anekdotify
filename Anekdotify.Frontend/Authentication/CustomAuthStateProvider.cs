@@ -44,7 +44,12 @@ public class CustomAuthStateProvider(ProtectedLocalStorage protectedLocalStorage
     {
         var handler = new JwtSecurityTokenHandler();
         var jwtToken = handler.ReadJwtToken(token);
-        var claims = jwtToken.Claims;
+        var claims = jwtToken.Claims.Select(c =>
+        {
+            if (c.Type == "role")
+                return new Claim(ClaimTypes.Role, c.Value);
+            return c;
+        }).ToList();
         return new ClaimsIdentity(claims, "jwt");
     }
 

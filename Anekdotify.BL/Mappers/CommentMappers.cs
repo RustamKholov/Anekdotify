@@ -32,9 +32,9 @@ namespace Anekdotify.BL.Mappers
             };
         }
 
-        public static List<CommentDTO> BuildHierarchicalComments(this List<Comment> flatComments)
+        public static List<CommentDTO> BuildHierarchicalComments(this List<CommentDTO> flatComments)
         {
-            var allCommentsDTOs = flatComments.Select(c => c.ToCommentDTO()).ToDictionary(dto => dto.CommentId);
+            var allCommentsDTOs = flatComments.ToDictionary(dto => dto.CommentId);
 
             var rootComments = new List<CommentDTO>();
 

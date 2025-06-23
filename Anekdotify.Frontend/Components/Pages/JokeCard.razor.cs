@@ -2,6 +2,7 @@
 using Anekdotify.Models.DTOs.Comments;
 using Anekdotify.Models.DTOs.JokeRating;
 using Anekdotify.Models.DTOs.Jokes;
+using Anekdotify.Models.Entities;
 using Microsoft.AspNetCore.Components;
 
 namespace Anekdotify.Frontend.Components.Pages
@@ -22,6 +23,7 @@ namespace Anekdotify.Frontend.Components.Pages
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
+            
             if (!firstRender) return;
             if (Joke == null)
             {
