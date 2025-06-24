@@ -45,41 +45,55 @@
             {
                 <div class="mb-3 border-bottom pb-2">
                     <p class="fw-bold mb-1">@comment.Username</p>
+                    <span class="text-muted small ms-2">@GetTimeAgo(comment.CommentDate)</span>
                     <p>@comment.CommentText</p>
 
-                    <div class="d-flex justify-content-between align-items-center mt-1">
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-sm btn-outline-success" @onclick="() => LikeComment(comment.CommentId)">
-                                <i class="bi bi-hand-thumbs-up"></i> <span>@comment.TotalLikes</span>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DislikeComment(comment.CommentId)">
-                                <i class="bi bi-hand-thumbs-down"></i> <span>@comment.TotalDislikes</span>
-                            </button>
-                        </div>
-
-                        <button class="btn btn-sm btn-link p-0" @onclick="() => SetReplyTo(comment.Username, comment.CommentId)">
-                            Reply
+                    <div class="d-flex justify-content-end align-items-center gap-2 mt-1">
+                        <button class="btn btn-sm btn-dark" @onclick="() => SetReplyTo(comment.Username, comment.CommentId)">
+                            <i class="bi bi-reply"></i> Reply
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" @onclick="() => LikeComment(comment.CommentId)">
+                            <i class="bi bi-hand-thumbs-up"></i> <span>@comment.TotalLikes</span>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" @onclick="() => DislikeComment(comment.CommentId)">
+                            <i class="bi bi-hand-thumbs-down"></i> <span>@comment.TotalDislikes</span>
                         </button>
                     </div>
 
-                    @if (comment.Replies?.Any() == true)
+                    <button class="btn btn-sm btn-link p-0" @onclick="() => ToggleReplies(comment.CommentId)">
+                        <i class="bi @(ExpandedReplies.Contains(comment.CommentId) ? "bi-chevron-up" : "bi-chevron-down")"></i> Replies
+                    </button>
+                    @if (ExpandedReplies.Contains(comment.CommentId))
                     {
-                        <button class="btn btn-sm btn-link-secondary p-0 mt-2" @onclick="() => ToggleReplies(comment.CommentId)">
-                            @(ExpandedReplies.Contains(comment.CommentId) ? "Hide replies" : $"Show replies ({comment.Replies.Count})")
-                        </button>
-
-                        @if (ExpandedReplies.Contains(comment.CommentId))
-                        {
-                            <div class="mt-2 ms-3 border-start ps-2">
-                                @foreach (var reply in comment.Replies)
+                        <div class="mt-2 ms-3 border-start ps-2">
+                            @{
+                                var flatReplies = FlattenReplies(comment.Replies);
+                                foreach (var reply in flatReplies)
                                 {
                                     <div class="mb-2">
-                                        <p class="fw-light small mb-1">@reply.Username</p>
-                                        <p class="small">@reply.CommentText</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+
+                                                <span class="fw-light small">@reply.Username</span>
+                                                <span class="text-muted small ms-2">@GetTimeAgo(reply.CommentDate)</span>
+                                            </div>
+                                        </div>
+                                        <p class="small mb-1">@reply.CommentText</p>
+                                        <div class="d-flex justify-content-end align-items-center gap-2">
+                                            <button class="btn btn-sm btn-dark" @onclick="() => SetReplyTo(reply.Username, reply.CommentId)">
+                                                <i class="bi bi-reply"></i> Reply
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success" @onclick="() => LikeComment(reply.CommentId)">
+                                                <i class="bi bi-hand-thumbs-up"></i> <span>@reply.TotalLikes</span>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DislikeComment(reply.CommentId)">
+                                                <i class="bi bi-hand-thumbs-down"></i> <span>@reply.TotalDislikes</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 }
-                            </div>
-                        }
+                            }
+                        </div>
                     }
                 </div>
             }
@@ -90,6 +104,7 @@
 @code {
     [Parameter] public int JokeId { get; set; }
     [Parameter] public List<CommentDTO>? Comments { get; set; }
+    [Parameter] public EventCallback<List<CommentDTO>> OnCommentsChanged { get; set; }
 
     private HashSet<int> ExpandedReplies = new();
 
@@ -152,8 +167,8 @@
         if (res.IsSuccess && res.Data != null)
         {
             Comments = await LoadComments(JokeId);
+            await OnCommentsChanged.InvokeAsync(Comments);
             StateHasChanged();
-            
         }
         else
         {
@@ -180,5 +195,32 @@
     private void DislikeComment(int commentId)
     {
         
+    }
+}
+
+@functions {
+    string GetTimeAgo(DateTime date)
+    {
+        var span = DateTime.UtcNow - date;
+        if (span.TotalDays >= 1)
+            return $"{(int)span.TotalDays} day{(span.TotalDays >= 2 ? "s" : "")} ago";
+        if (span.TotalHours >= 1)
+            return $"{(int)span.TotalHours} hour{(span.TotalHours >= 2 ? "s" : "")} ago";
+        if (span.TotalMinutes >= 1)
+            return $"{(int)span.TotalMinutes} minute{(span.TotalMinutes >= 2 ? "s" : "")} ago";
+        return "just now";
+    }
+
+    List<CommentDTO> FlattenReplies(List<CommentDTO> replies)
+    {
+        var flat = new List<CommentDTO>();
+        foreach (var reply in replies.OrderBy(r => r.CommentDate))
+        {
+
+            flat.Add(reply);
+            if (reply.Replies != null && reply.Replies.Any())
+                flat.AddRange(FlattenReplies(reply.Replies));
+        }
+        return flat;
     }
 }

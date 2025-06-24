@@ -19,8 +19,8 @@ else if (jokes != null && jokes.Any())
         @foreach (var joke in jokes)
         {
             <div class="col">
-                <JokeCard Joke="@joke.ToDTOFromPreviewDTO()"/>
-                <CommentsModal Comments="@(new List<CommentDTO>(joke.CommentCount))" JokeId="@joke.JokeId" />
+                <JokeCard Joke="@joke"/>
+                <CommentsModal Comments="@(joke.Comments)" JokeId="@joke.JokeId" />
             </div>
         }
     </div>

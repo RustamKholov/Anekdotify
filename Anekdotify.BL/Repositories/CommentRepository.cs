@@ -52,6 +52,7 @@ namespace Anekdotify.BL.Repositories
                     JokeId = c.JokeId,
                     CommentId = c.CommentId,
                     CommentText = c.CommentText,
+                    CommentDate = c.CommentDate,
                     Username = c.User.UserName ?? "Unknown",
                     TotalLikes = c.CommentRatings.Count(r => r.Rating),
                     TotalDislikes = c.CommentRatings.Count(r => !r.Rating),
