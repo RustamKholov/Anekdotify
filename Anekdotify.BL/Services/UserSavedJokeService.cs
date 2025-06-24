@@ -11,22 +11,21 @@ namespace Anekdotify.BL.Services;
 
 public class UserSavedJokeService(IUserSavedJokeRepository userSavedJokeRepository, IJokeService jokeService, IJokeCacheService jokecacheService) : IUserSavedJokeService
 {
-    public async Task<List<JokePreviewDTO>> GetSavedJokesForUserAsync(string userId)
+    public async Task<List<JokeDTO>> GetSavedJokesForUserAsync(string userId)
     {
         var cacheKey = $"saved_jokes_{userId}";
         var cacheValue = await jokecacheService.GetStringAsync(cacheKey);
         if (cacheValue != null)
         {
-            return JsonConvert.DeserializeObject<List<JokePreviewDTO>>(cacheValue) ?? new List<JokePreviewDTO>();
+            return JsonConvert.DeserializeObject<List<JokeDTO>>(cacheValue) ?? new List<JokeDTO>();
         }
         var savedJokesIds = await userSavedJokeRepository.GetSavedJokesForUserAsync(userId);
 
         var savedJokes = await jokeService.GetJokesByIdsAsync(savedJokesIds);
-        var savedJokesDTOs = savedJokes.Select(j => j.ToPreviewDTOFromDTO()).ToList();
 
-        await jokecacheService.SetStringAsync(cacheKey, JsonConvert.SerializeObject(savedJokesDTOs));
+        await jokecacheService.SetStringAsync(cacheKey, JsonConvert.SerializeObject(savedJokes));
 
-        return savedJokesDTOs;
+        return savedJokes;
     }
 
     public async Task<bool> IsJokeSavedByUserAsync(SaveJokeDTO saveJokeDTO, string userId)

@@ -6,20 +6,20 @@
 
 <div class="d-flex flex-row vh-100 w-100">
 
-    <div class="flex-grow-1 overflow-auto">
+    <div class="flex-grow-1">
         <div class="d-flex flex-column align-items-center">
 
             @if (joke != null)
             {
                 <div class="w-75"> 
                     <JokeCard Joke="@joke" />
-                    <CommentsModal Comments="@joke.Comments" JokeId="@joke.JokeId" />
+                    <CommentsModal Comments="@joke.Comments" JokeId="@joke.JokeId"  OnCommentsChanged="UpdateComments"/>
                 </div>
             }
             else if (isLoading)
             {
                 <div class="card shadow-sm rounded-4 mb-4 p-3"
-                     style="width: 80%; height: 40vh; position: relative; overflow: hidden;">
+                style="width: 80%; height: 40vh; position: relative; overflow: hidden;">
                     <div class="card-body d-flex justify-content-center align-items-center text-center">
                         <div class="spinner-border" role="status">
                             <span class="visually-hidden">Loading...</span>
@@ -30,7 +30,7 @@
             else
             {
                 <div class="card shadow-sm rounded-4 mb-4 p-3"
-                     style="width: 80%; height: 40vh; position: relative; overflow: hidden;">
+                style="width: 80%; height: 40vh; position: relative; overflow: hidden;">
                     <div class="card-body d-flex justify-content-center align-items-center text-center">
                         <p class="card-text text-secondary fs-5">Click the button below to get a random joke.</p>
                     </div>
@@ -38,7 +38,7 @@
             }
 
         </div>
-            <GetJokeButton GetRandomJoke="GetRandomJoke" />
+        <GetJokeButton GetRandomJoke="GetRandomJoke" />
     </div>
 </div>
 
@@ -94,8 +94,17 @@
         }
         finally
         {
-            
+
             isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void UpdateComments(List<CommentDTO> comments)
+    {
+        if (joke != null)
+        {
+            joke.Comments = comments;
             StateHasChanged();
         }
     }
