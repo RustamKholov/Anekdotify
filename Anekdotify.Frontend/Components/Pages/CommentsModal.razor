@@ -1,65 +1,112 @@
-﻿@inject IJSRuntime JS
+﻿@using Microsoft.IdentityModel.JsonWebTokens
+@rendermode @(new InteractiveServerRenderMode(prerender:false))
+@inject ApiClient ApiClient
+@inject IToastService ToastService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
 
+<div class="collapse" id="collapse_comments_@JokeId">
+    <div class="card card-body overflow-auto w-100" style="max-height: 50vh;">
 
-<div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" @onclick:stopPropagation>
-    <div class="modal-dialog modal-dialog-centered modal-lg modal-fullscreen-sm-down">
-        <div class="modal-content">
-            <div class="modal-header">
-                <JokeCard Joke="@Joke"></JokeCard>
-                <button type="button" class="btn-close" @onclick="Close"></button>
+        <!-- Reply to info -->
+        @if (ReplyingToUsername != null)
+        {
+            <div class="alert alert-info py-1 px-2 small mb-2">
+                Replying to <strong>@ReplyingToUsername</strong>
+                <button class="btn-close btn-sm float-end" @onclick="CancelReply"></button>
             </div>
-            <div class="modal-body overflow-auto" style="max-height: 70vh;">
-                @if (Comments is null)
-                {
-                    <p>Loading...</p>
-                }
-                else if (!Comments.Any())
-                {
-                    <p>No comments yet.</p>
-                }
-                else
-                {
-                    @foreach (var comment in Comments)
-                    {
-                        <div class="mb-3 border-bottom pb-2">
-                            <p class="fw-bold mb-1">@comment.Username</p>
-                            <p>@comment.CommentText</p>
+        }
 
-                            @if (comment.Replies?.Any() == true)
-                            {
-                                <button class="btn btn-sm btn-link-secondary p-0" @onclick="() => ToggleReplies(comment.CommentId)">
-                                    @(ExpandedReplies.Contains(comment.CommentId) ? "Hide replies" : $"Show replies ({comment.Replies.Count})")
-                                </button>
-
-                                @if (ExpandedReplies.Contains(comment.CommentId))
-                                {
-                                    <div class="mt-2 ms-3 border-start ps-2">
-                                        @foreach (var reply in comment.Replies)
-                                        {
-                                            <div class="mb-2">
-                                                <p class="fw-light small mb-1">@reply.Username</p>
-                                                <p class="small">@reply.CommentText</p>
-                                            </div>
-                                        }
-                                    </div>
-                                }
-                            }
-                        </div>
-                    }
-                }
+        <!-- Post comment -->
+        <div class="mb-3">
+            <label class="form-label fw-semibold mb-1">@CurrentUsername:</label>
+            <div class="d-flex">
+                <input type="text"
+                       class="form-control me-2"
+                       placeholder="Write a comment..."
+                       @bind="NewCommentText"
+                       @onkeypress="HandleEnterPress" />
+                <button class="btn btn-primary" @onclick="PostComment">Post</button>
             </div>
         </div>
+
+        <!-- Comments -->
+        @if (Comments == null)
+        {
+            <p class="text-muted">Loading comments...</p>
+        }
+        else if (!Comments.Any())
+        {
+            <p class="text-muted">No comments yet.</p>
+        }
+        else
+        {
+            @foreach (var comment in Comments)
+            {
+                <div class="mb-3 border-bottom pb-2">
+                    <p class="fw-bold mb-1">@comment.Username</p>
+                    <p>@comment.CommentText</p>
+
+                    <div class="d-flex justify-content-between align-items-center mt-1">
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-success" @onclick="() => LikeComment(comment.CommentId)">
+                                <i class="bi bi-hand-thumbs-up"></i> <span>@comment.TotalLikes</span>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DislikeComment(comment.CommentId)">
+                                <i class="bi bi-hand-thumbs-down"></i> <span>@comment.TotalDislikes</span>
+                            </button>
+                        </div>
+
+                        <button class="btn btn-sm btn-link p-0" @onclick="() => SetReplyTo(comment.Username, comment.CommentId)">
+                            Reply
+                        </button>
+                    </div>
+
+                    @if (comment.Replies?.Any() == true)
+                    {
+                        <button class="btn btn-sm btn-link-secondary p-0 mt-2" @onclick="() => ToggleReplies(comment.CommentId)">
+                            @(ExpandedReplies.Contains(comment.CommentId) ? "Hide replies" : $"Show replies ({comment.Replies.Count})")
+                        </button>
+
+                        @if (ExpandedReplies.Contains(comment.CommentId))
+                        {
+                            <div class="mt-2 ms-3 border-start ps-2">
+                                @foreach (var reply in comment.Replies)
+                                {
+                                    <div class="mb-2">
+                                        <p class="fw-light small mb-1">@reply.Username</p>
+                                        <p class="small">@reply.CommentText</p>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+            }
+        }
     </div>
 </div>
 
 @code {
-
-    [Parameter] public JokeDTO? Joke { get; set; }
-
+    [Parameter] public int JokeId { get; set; }
     [Parameter] public List<CommentDTO>? Comments { get; set; }
-    [Parameter] public EventCallback OnClose { get; set; }
 
     private HashSet<int> ExpandedReplies = new();
+
+    private string NewCommentText = "";
+    private string? ReplyingToUsername = null;
+    private string CurrentUsername = "Guest";
+    private int CurrentReplyToCommentId = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Comments = await LoadComments(JokeId);
+        var res = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (res.User.Identity?.IsAuthenticated == true)
+        {
+            CurrentUsername = res.User.FindFirst(JwtRegisteredClaimNames.GivenName)?.Value!;
+        }
+    }
 
     private void ToggleReplies(int commentId)
     {
@@ -67,8 +114,71 @@
             ExpandedReplies.Remove(commentId);
     }
 
-    private async Task Close()
+    private async Task<List<CommentDTO>> LoadComments(int jokeId)
     {
-        await OnClose.InvokeAsync();
+        var res = await ApiClient.GetAsync<List<CommentDTO>>($"api/comments?JokeId={jokeId}");
+        if (res.IsSuccess)
+        {
+            return res.Data ?? new List<CommentDTO>();
+        }
+        else
+        {
+            ToastService.ShowError("Failed to load comments");
+            return new List<CommentDTO>();
+        }
+    }
+
+
+
+    private void SetReplyTo(string username, int commentId)
+    {
+        ReplyingToUsername = username;
+        CurrentReplyToCommentId = commentId;
+    }
+
+    private void CancelReply()
+    {
+        ReplyingToUsername = null;
+        StateHasChanged();
+    }
+
+    private async Task PostComment()
+    {
+        var res = await ApiClient.PostAsync<CommentDTO, CommentCreateDTO>($"api/comments/{JokeId}", new CommentCreateDTO
+            {
+                CommentText = NewCommentText,
+                ParentCommentId = CurrentReplyToCommentId
+            });
+        if (res.IsSuccess && res.Data != null)
+        {
+            Comments = await LoadComments(JokeId);
+            StateHasChanged();
+            
+        }
+        else
+        {
+            ToastService.ShowError("Failed to post comment");
+        }
+        NewCommentText = "";
+        CurrentReplyToCommentId = 0;
+        StateHasChanged();
+    }
+
+    private async Task HandleEnterPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await PostComment();
+        }
+    }
+
+    private void LikeComment(int commentId)
+    {
+        
+    }
+
+    private void DislikeComment(int commentId)
+    {
+        
     }
 }
