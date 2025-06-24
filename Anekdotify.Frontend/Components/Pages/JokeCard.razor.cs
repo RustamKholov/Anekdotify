@@ -163,26 +163,6 @@ namespace Anekdotify.Frontend.Components.Pages
             else ToastService.ShowError("Failed to delete");
         }
 
-        private async Task OpenComments(int jokeId)
-        {
-            SelectedJokeId = jokeId;
-            comments = await LoadComments(jokeId);
-        }
-
-        private async Task<List<CommentDTO>> LoadComments(int jokeId)
-        {
-            var res = await ApiClient.GetAsync<List<CommentDTO>>($"api/comments?JokeId={jokeId}");
-            if (res.IsSuccess)
-            {
-                return res.Data ?? new List<CommentDTO>();
-            }
-            else
-            {
-                ToastService.ShowError("Failed to load comments");
-                return new List<CommentDTO>();
-            }
-        }
-
         private void CloseModal()
         {
             SelectedJokeId = null;

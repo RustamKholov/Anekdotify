@@ -85,9 +85,9 @@ namespace Anekdotify.Api.Controllers
                 return Unauthorized("User ID not found in token claims.");
             }
             var comment = commentCreateDTO.ToCommentFromCreateDTO(jokeId, userId);
-            await _commentService.CreateCommentAsync(comment);
+            var createdComment = await _commentService.CreateCommentAsync(comment);
 
-            return Created();
+            return Created(nameof(_commentService.CreateCommentAsync),createdComment.ToCommentDTO());
         }
 
         [HttpPut]

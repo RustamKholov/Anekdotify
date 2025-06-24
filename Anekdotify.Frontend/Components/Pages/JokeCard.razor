@@ -8,12 +8,8 @@
 @rendermode @(new InteractiveServerRenderMode(prerender:false))
 
 
-@if (SelectedJokeId != null)
-{
-    <CommentsModal Joke="@Joke" Comments="@comments" OnClose="@CloseModal" />
-}
-
-<div class="card shadow-sm rounded-4 mb-4 p-3 h-100" style="min-height: 300px; max-height: 300px; position: relative;">
+<div class="card shadow-sm rounded-4 mb-4 p-3"
+     style="w-100; height: 40vh; position: relative; overflow: hidden;" id="joke_card_@Joke.JokeId">
 
     <!-- Save Icon -->
     <button class="btn btn-sm btn-light position-absolute top-0 end-0 m-2" title="Save joke" @onclick="() => OnSaveClick()">
@@ -61,7 +57,13 @@
                 <span class="ms-1">@Joke?.TotalDislikes</span>
             </button>
 
-            <button class="btn btn-sm btn-outline-secondary d-flex align-items-center" @onclick="() => OpenComments(Joke?.JokeId ?? 0)">
+            <button class="btn btn-sm btn-outline-secondary d-flex align-items-center"
+            type="button" 
+            
+            data-bs-toggle="collapse"
+                    data-bs-target="#collapse_comments_@Joke.JokeId"
+                    aria-expanded="false"
+                    aria-controls="collapse_comments_@Joke.JokeId">
                 <i class="bi bi-chat-left-text"></i>
                 <span class="ms-1">@Joke?.Comments.Capacity</span>
             </button>

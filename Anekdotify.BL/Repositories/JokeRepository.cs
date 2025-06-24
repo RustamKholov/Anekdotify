@@ -60,8 +60,9 @@ namespace Anekdotify.BL.Repositories
                     c.JokeId,
                     c.CommentText,
                     Username = c.User.UserName,
-                    CommentId = c.CommentId,
-                    Ratings = c.CommentRatings
+                    c.CommentId,
+                    Ratings = c.CommentRatings,
+                    c.ParentCommentId
                 })
                 .ToListAsync();
 
@@ -73,15 +74,16 @@ namespace Anekdotify.BL.Repositories
                 TotalDislikes = c.Ratings.Count(r => !r.Rating)
             });
 
-            var groupedComments = comments
-                .GroupBy(c => c.JokeId)
-                .ToDictionary(g => g.Key, g => g.Select(c => new CommentDTO
+            var groupedComments = comments.Select(c => new CommentDTO
                 {
+                    JokeId = c.JokeId,
+                    CommentId = c.CommentId,
+                    ParentCommentId = c.ParentCommentId,
                     CommentText = c.CommentText,
                     Username = c.Username ?? "Unknown",
                     TotalLikes = c.Ratings.Count(r => r.Rating),
                     TotalDislikes = c.Ratings.Count(r => !r.Rating)
-                }).ToList());
+                }).ToList();
 
             var jokeDTOs = baseJokes.Select(j => new JokeDTO
             {
@@ -93,7 +95,7 @@ namespace Anekdotify.BL.Repositories
                 SourceId = j.SourceId,
                 TotalLikes = ratings.FirstOrDefault(r => r.JokeId == j.JokeId)?.Likes ?? 0,
                 TotalDislikes = ratings.FirstOrDefault(r => r.JokeId == j.JokeId)?.Dislikes ?? 0,
-                Comments = groupedComments.TryGetValue(j.JokeId, out var cmts) ? cmts : new List<CommentDTO>()
+                Comments = groupedComments.BuildHierarchicalComments()
             }).ToList();
 
             return jokeDTOs;
@@ -138,8 +140,9 @@ namespace Anekdotify.BL.Repositories
                     c.JokeId,
                     c.CommentText,
                     Username = c.User.UserName,
-                    CommentId = c.CommentId,
-                    Ratings = c.CommentRatings
+                    c.CommentId,
+                    Ratings = c.CommentRatings,
+                    c.ParentCommentId
                 })
                 .ToListAsync();
 
@@ -151,15 +154,16 @@ namespace Anekdotify.BL.Repositories
                 TotalDislikes = c.Ratings.Count(r => !r.Rating)
             });
 
-            var groupedComments = comments
-                .GroupBy(c => c.JokeId)
-                .ToDictionary(g => g.Key, g => g.Select(c => new CommentDTO
-                {
-                    CommentText = c.CommentText,
-                    Username = c.Username ?? "Unknown",
-                    TotalLikes = c.Ratings.Count(r => r.Rating),
-                    TotalDislikes = c.Ratings.Count(r => !r.Rating)
-                }).ToList());
+            var groupedComments = comments.Select(c => new CommentDTO
+            {
+                JokeId = c.JokeId,
+                CommentId = c.CommentId,
+                ParentCommentId = c.ParentCommentId,
+                CommentText = c.CommentText,
+                Username = c.Username ?? "Unknown",
+                TotalLikes = c.Ratings.Count(r => r.Rating),
+                TotalDislikes = c.Ratings.Count(r => !r.Rating)
+            }).ToList();
 
             var jokeDTO = new JokeDTO
             {
@@ -171,7 +175,7 @@ namespace Anekdotify.BL.Repositories
                 SourceId = baseJoke.SourceId,
                 TotalLikes = ratings.FirstOrDefault(r => r.JokeId == baseJoke.JokeId)?.Likes ?? 0,
                 TotalDislikes = ratings.FirstOrDefault(r => r.JokeId == baseJoke.JokeId)?.Dislikes ?? 0,
-                Comments = groupedComments.TryGetValue(baseJoke.JokeId, out var cmts) ? cmts : new List<CommentDTO>()
+                Comments = groupedComments.BuildHierarchicalComments()
             };
 
             return jokeDTO;
