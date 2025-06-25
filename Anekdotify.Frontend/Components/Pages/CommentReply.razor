@@ -1,0 +1,56 @@
+﻿
+
+<div class="mb-2">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            @if (!string.IsNullOrEmpty(ReplyToUsername))
+            {
+                <span class="fw-light small ms-2 text-secondary"><i class="bi bi-arrow-return-right"></i> @($"@{ReplyToUsername} ")</span>
+            }
+            <span class="fw-semibold small">@Reply.Username</span>
+            <span class="text-muted small ms-2">@GetTimeAgo(Reply.CommentDate)</span>
+            
+        </div>
+    </div>
+    <div class="d-flex justify-content-between align-items-center">
+        <p class="small mb-1 mb-0 flex-grow-1">@Reply.CommentText</p>
+        <div class="d-flex align-items-center gap-2 ms-3">
+            <button class="btn btn-sm btn-secondary" @onclick="() => ReplyTo()">
+                <i class="bi bi-reply"></i> Reply
+            </button>
+            <button class="btn btn-sm btn-outline-success" @onclick="() => RateComment(true)">
+                <i class="bi bi-hand-thumbs-up"></i> <span>@Reply.TotalLikes</span>
+            </button>
+            <button class="btn btn-sm btn-outline-danger" @onclick="() => RateComment(false)">
+                <i class="bi bi-hand-thumbs-down"></i> <span>@Reply.TotalDislikes</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter] public string ReplyToUsername { get; set; } = default!;
+    [Parameter] public CommentDTO Reply { get; set; } = default!;
+    [Parameter] public EventCallback<(string username, int commentId)> SetReplyTo { get; set; }
+
+    private void ReplyTo()
+    {
+        SetReplyTo.InvokeAsync((Reply.Username, Reply.CommentId));
+    }
+    private void RateComment(bool newValue)
+    {
+        
+    }
+    
+    private string GetTimeAgo(DateTime dateTime)
+    {
+        var timeSpan = DateTime.Now - dateTime;
+        if (timeSpan.TotalMinutes < 1) return "Just now";
+        if (timeSpan.TotalHours < 1) return $"{(int)timeSpan.TotalMinutes} minutes ago";
+        if (timeSpan.TotalDays < 1) return $"{(int)timeSpan.TotalHours} hours ago";
+        return $"{(int)timeSpan.TotalDays} days ago";
+    }
+
+
+}
