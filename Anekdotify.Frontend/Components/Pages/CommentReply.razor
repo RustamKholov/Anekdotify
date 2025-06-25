@@ -1,46 +1,126 @@
-﻿
+﻿@using Anekdotify.Models.DTOs.JokeRating
+@inject ApiClient ApiClient
+@inject IToastService ToastService
+
+@rendermode @(new InteractiveServerRenderMode(prerender:false))
 
 <div class="mb-2">
     <div class="d-flex justify-content-between align-items-center">
         <div>
             @if (!string.IsNullOrEmpty(ReplyToUsername))
             {
-                <span class="fw-light small ms-2 text-secondary"><i class="bi bi-arrow-return-right"></i> @($"@{ReplyToUsername} ")</span>
+                <span class="fw-light small ms-2 text-secondary">
+                    <i class="bi bi-arrow-return-right"></i> @($"@{ReplyToUsername}")
+                </span>
             }
             <span class="fw-semibold small">@Reply.Username</span>
             <span class="text-muted small ms-2">@GetTimeAgo(Reply.CommentDate)</span>
-            
         </div>
     </div>
-    <div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center">
         <p class="small mb-1 mb-0 flex-grow-1">@Reply.CommentText</p>
-        <div class="d-flex align-items-center gap-2 ms-3">
-            <button class="btn btn-sm btn-secondary" @onclick="() => ReplyTo()">
-                <i class="bi bi-reply"></i> Reply
+        <div class="d-flex align-items-center gap-1 ms-2">
+            <button class="btn btn-link btn-sm p-0 text-dark" title="Reply" @onclick="() => ReplyTo()">
+                <i class="bi bi-reply"></i>
             </button>
-            <button class="btn btn-sm btn-outline-success" @onclick="() => RateComment(true)">
-                <i class="bi bi-hand-thumbs-up"></i> <span>@Reply.TotalLikes</span>
+            <button class="btn btn-link btn-sm p-0 text-success" title="Like" @onclick="() => RateComment(true)">
+                <i class="bi bi-hand-thumbs-up"></i>
+                <span class="small text-decoration-none">@Reply.TotalLikes</span>
             </button>
-            <button class="btn btn-sm btn-outline-danger" @onclick="() => RateComment(false)">
-                <i class="bi bi-hand-thumbs-down"></i> <span>@Reply.TotalDislikes</span>
+            <button class="btn btn-link btn-sm p-0 text-danger" title="Dislike" @onclick="() => RateComment(false)">
+                <i class="bi bi-hand-thumbs-down"></i>
+                <span class="small text-decoration-none">@Reply.TotalDislikes</span>
             </button>
         </div>
     </div>
 </div>
-
+<style>
+    button:focus { outline: none; box-shadow: none; }
+</style>
 @code {
 
     [Parameter] public string ReplyToUsername { get; set; } = default!;
     [Parameter] public CommentDTO Reply { get; set; } = default!;
     [Parameter] public EventCallback<(string username, int commentId)> SetReplyTo { get; set; }
 
+    private bool? isLiked { get; set; } = null;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        var ratingRes = await ApiClient.GetAsync<RatingDTO>($"api/comment/rate/{Reply.CommentId}");
+        if (ratingRes.IsSuccess)
+        {
+            if(ratingRes.Data != null && ratingRes.Data.IsLike.HasValue)
+            {
+                isLiked = ratingRes.Data.IsLike;
+            }
+        }
+        else
+        {
+            ToastService.ShowError("Failed to load comment rating.");
+        }
+    }
     private void ReplyTo()
     {
         SetReplyTo.InvokeAsync((Reply.Username, Reply.CommentId));
     }
-    private void RateComment(bool newValue)
+    private async Task RateComment(bool newValue)
     {
-        
+       if(isLiked == newValue)
+       {
+            var res = await ApiClient.DeleteAsync($"api/comment/rate/{Reply.CommentId}");
+            if(res.IsSuccess)
+            {
+                if (newValue) Reply.TotalLikes--;
+                else Reply.TotalDislikes--;
+
+                isLiked = null;
+                StateHasChanged();
+            }
+            else
+            {
+                ToastService.ShowError("Failed to remove rating.");
+            }
+            return;
+       }
+       
+        var updateRes = await ApiClient.PutAsync<RatingDTO, bool>($"api/comment/rate/{Reply.CommentId}", newValue);
+         if (updateRes.IsSuccess)
+         {
+                if (newValue)
+                {
+                    if( isLiked == false)
+                    {
+                        Reply.TotalDislikes--;
+                        Reply.TotalLikes++;
+                    }
+                    else if (isLiked == null)
+                    {
+                        Reply.TotalLikes++;
+                    }
+                }
+                else
+                {
+                    if (isLiked == true)
+                    {
+                        Reply.TotalLikes--;
+                        Reply.TotalDislikes++;
+                    }
+                    else if (isLiked == null)
+                    {
+                        Reply.TotalDislikes++;
+                    }
+                }
+                isLiked = newValue;
+                StateHasChanged();
+         }
+         else
+         {
+                ToastService.ShowError("Failed to update rating.");
+         }
+
     }
     
     private string GetTimeAgo(DateTime dateTime)

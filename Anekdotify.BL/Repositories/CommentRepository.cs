@@ -15,6 +15,12 @@ namespace Anekdotify.BL.Repositories
         {
             _context = context;
         }
+
+        public async Task<bool> CommentExistsAsync(int id)
+        {
+            return await _context.Comments.AnyAsync(c => c.CommentId == id);
+        }
+
         public async Task<Comment> CreateCommentAsync(Comment comment)
         {
             await _context.Comments.AddAsync(comment);

@@ -20,14 +20,15 @@
         <!-- Post comment -->
         <div class="mb-3">
             <label class="form-label fw-semibold mb-1">@CurrentUsername:</label>
-            <div class="d-flex">
-                <input type="text"
-                       class="form-control me-2"
-                       placeholder="Write a comment..."
-                       @bind="NewCommentText"
-                       @onkeypress="HandleEnterPress" />
-                <button class="btn btn-primary" @onclick="PostComment">Post</button>
-            </div>
+            <EditForm Model="@this" OnValidSubmit="PostComment">
+                <div class="d-flex">
+                    <InputText class="form-control me-2"
+                            placeholder="Write a comment..."
+                            @bind-Value="NewCommentText" 
+                            />
+                    <button class="btn btn-secondary" type="submit">Post</button>
+                </div>
+            </EditForm>
         </div>
 
         <!-- Comments -->
@@ -52,7 +53,6 @@
 
                     @if (ExpandedReplies.Contains(comment.CommentId))
                     {
-                        
                         <div class="mt-2 ms-3 border-start ps-2">
                             @{
                                 var flatReplies = FlattenReplies(comment.Replies);
@@ -150,13 +150,6 @@
         StateHasChanged();
     }
 
-    private async Task HandleEnterPress(KeyboardEventArgs e)
-    {
-        if (e.Key == "Enter")
-        {
-            await PostComment();
-        }
-    }
     private List<(CommentDTO Reply, int? ParentCommentId, string? ParentUsername)> FlattenReplies(List<CommentDTO> replies, int? parentId = null, string? parentUsername = null)
     {
         var flat = new List<(CommentDTO, int?, string?)>();
