@@ -1,4 +1,7 @@
-﻿
+﻿@using Anekdotify.Models.DTOs.JokeRating
+@rendermode @(new InteractiveServerRenderMode(prerender:false))
+@inject ApiClient ApiClient
+@inject IToastService ToastService
 
 <div class="mb-3 border-bottom pb-2">
     <div class="d-flex justify-content-between align-items-center">
@@ -10,15 +13,17 @@
 
     <div class="d-flex align-items-center">
         <p class="mb-1 mb-0 flex-grow-1">@CommentDto.CommentText</p>
-        <div class="d-flex align-items-center gap-2 ms-3">
-            <button class="btn btn-sm btn-secondary" @onclick="ReplyTo">
-                <i class="bi bi-reply"></i> Reply
+        <div class="d-flex align-items-center gap-1 ms-2">
+            <button class="btn btn-link btn-sm p-0 text-dark" title="Reply" @onclick="() => ReplyTo()">
+                <i class="bi bi-reply"></i>
             </button>
-            <button class="btn btn-sm btn-outline-success" @onclick="() => RateComment(true)">
-                <i class="bi bi-hand-thumbs-up"></i> <span>@CommentDto.TotalLikes</span>
+            <button class="btn btn-link btn-sm p-0 text-success" title="Like" @onclick="() => RateComment(true)">
+                <i class="bi bi-hand-thumbs-up"></i>
+                <span class="small text-decoration-none">@CommentDto.TotalLikes</span>
             </button>
-            <button class="btn btn-sm btn-outline-danger" @onclick="() => RateComment(false)">
-                <i class="bi bi-hand-thumbs-down"></i> <span>@CommentDto.TotalDislikes</span>
+            <button class="btn btn-link btn-sm p-0 text-danger" title="Dislike" @onclick="() => RateComment(false)">
+                <i class="bi bi-hand-thumbs-down"></i>
+                <span class="small text-decoration-none">@CommentDto.TotalDislikes</span>
             </button>
         </div>
     </div>
@@ -32,18 +37,87 @@
 @code {
 
     [Parameter] public CommentDTO CommentDto { get; set; } = default!;
+
     [Parameter] public EventCallback<(string username, int commentId)> SetReplyTo { get; set; }
+
     [Parameter] public HashSet<int> ExpandedReplies { get; set; } = new();
+
     [Parameter] public EventCallback<int> ToggleReplies { get; set; }
  
+    private bool? isLiked { get; set; } = null;
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(!firstRender) return;
+
+        var ratingRes = await ApiClient.GetAsync<RatingDTO>($"api/comment/rate/{CommentDto.CommentId}");
+        if (ratingRes.IsSuccess && ratingRes.Data != null )
+        {
+            if(ratingRes.Data.IsLike.HasValue)
+            {
+                isLiked = ratingRes.Data.IsLike;
+            }
+        }
+    }
     private void Toggle(int commentId)
     {
         ToggleReplies.InvokeAsync(commentId);
     }
-    private void RateComment(bool newValue)
+    private async Task RateComment(bool newValue)
     {
+       if(isLiked == newValue)
+       {
+            var res = await ApiClient.DeleteAsync($"api/comment/rate/{CommentDto.CommentId}");
+            if(res.IsSuccess)
+            {
+                if (newValue) CommentDto.TotalLikes--;
+                else CommentDto.TotalDislikes--;
+
+                isLiked = null;
+                StateHasChanged();
+            }
+            else
+            {
+                ToastService.ShowError("Failed to remove rating.");
+            }
+            return;
+       }
        
+        var updateRes = await ApiClient.PutAsync<RatingDTO, bool>($"api/comment/rate/{CommentDto.CommentId}", newValue);
+         if (updateRes.IsSuccess)
+         {
+                if (newValue)
+                {
+                    if( isLiked == false)
+                    {
+                        CommentDto.TotalDislikes--;
+                        CommentDto.TotalLikes++;
+                    }
+                    else if (isLiked == null)
+                    {
+                        CommentDto.TotalLikes++;
+                    }
+                }
+                else
+                {
+                    if (isLiked == true)
+                    {
+                        CommentDto.TotalLikes--;
+                        CommentDto.TotalDislikes++;
+                    }
+                    else if (isLiked == null)
+                    {
+                        CommentDto.TotalDislikes++;
+                    }
+                }
+                isLiked = newValue;
+                StateHasChanged();
+         }
+         else
+         {
+                ToastService.ShowError("Failed to update rating.");
+         }
+
     }
 
     private async Task ReplyTo()

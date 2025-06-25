@@ -21,10 +21,9 @@ namespace Anekdotify.Frontend.Components.Pages
 
         private static string JokeUrl(int id) => $"/editJoke/{id}";
 
-        protected override async Task OnAfterRenderAsync(bool firstRender)
+        protected override async Task OnInitializedAsync()
         {
-            
-            if (!firstRender) return;
+
             if (Joke == null)
             {
                 ToastService.ShowError("Joke not found");
@@ -37,7 +36,6 @@ namespace Anekdotify.Frontend.Components.Pages
                 if (resRate.Data.IsLike != null)
                 {
                     isLiked = resRate.Data.IsLike;
-                    StateHasChanged();
                 }
 
             }
@@ -45,14 +43,13 @@ namespace Anekdotify.Frontend.Components.Pages
             if (resSave.IsSuccess)
             {
                 isSaved = resSave.Data;
-                StateHasChanged();
             }
             else
             {
                 ToastService.ShowError("Failed to load joke rating");
             }
 
-            await base.OnAfterRenderAsync(firstRender);
+            await base.OnInitializedAsync();
         }
         private async Task OnSaveClick()
         {

@@ -11,4 +11,5 @@ public interface ICommentService
     Task<Comment> CreateCommentAsync(Comment comment);
     Task<Comment?> UpdateCommentAsync(int id, CommentUpdateDTO comment);
     Task<Comment?> DeleteCommentAsync(int id);
+    Task<bool> CommentExistsAsync(int id);
 }

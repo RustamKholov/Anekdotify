@@ -10,6 +10,11 @@ namespace Anekdotify.BL.Services;
 
 public class CommentService(ICommentRepository commentRepository, IDistributedCache cacheService) : ICommentService
 {
+    public async Task<bool> CommentExistsAsync(int id)
+    {
+        return await commentRepository.CommentExistsAsync(id);
+    }
+
     public async Task<Comment> CreateCommentAsync(Comment comment)
     {
         await cacheService.RemoveAsync($"comments_joke_{comment.JokeId}"); 

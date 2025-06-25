@@ -72,7 +72,7 @@ namespace Anekdotify.Api.Controllers
 
             if (setOperationResult.IsSuccess)
             {
-                return Ok(new RatingDTO { IsLike = isLike});
+                return Ok(new RatingDTO { IsLike = isLike });
             }
             if (setOperationResult.IsNotFound)
             {
