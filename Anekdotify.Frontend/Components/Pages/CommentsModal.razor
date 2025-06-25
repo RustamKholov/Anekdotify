@@ -43,59 +43,28 @@
         {
             @foreach (var comment in Comments)
             {
-                <div class="mb-3 border-bottom pb-2">
-                    <p class="fw-bold mb-1">@comment.Username</p>
-                    <span class="text-muted small ms-2">@GetTimeAgo(comment.CommentDate)</span>
-                    <p>@comment.CommentText</p>
 
-                    <div class="d-flex justify-content-end align-items-center gap-2 mt-1">
-                        <button class="btn btn-sm btn-dark" @onclick="() => SetReplyTo(comment.Username, comment.CommentId)">
-                            <i class="bi bi-reply"></i> Reply
-                        </button>
-                        <button class="btn btn-sm btn-outline-success" @onclick="() => LikeComment(comment.CommentId)">
-                            <i class="bi bi-hand-thumbs-up"></i> <span>@comment.TotalLikes</span>
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger" @onclick="() => DislikeComment(comment.CommentId)">
-                            <i class="bi bi-hand-thumbs-down"></i> <span>@comment.TotalDislikes</span>
-                        </button>
-                    </div>
+                <Comment CommentDto="@comment"
+                        SetReplyTo="SetReplyTo"
+                        ExpandedReplies="@ExpandedReplies"
+                        ToggleReplies="ToggleReplies"/> 
+                
 
-                    <button class="btn btn-sm btn-link p-0" @onclick="() => ToggleReplies(comment.CommentId)">
-                        <i class="bi @(ExpandedReplies.Contains(comment.CommentId) ? "bi-chevron-up" : "bi-chevron-down")"></i> Replies
-                    </button>
                     @if (ExpandedReplies.Contains(comment.CommentId))
                     {
+                        
                         <div class="mt-2 ms-3 border-start ps-2">
                             @{
                                 var flatReplies = FlattenReplies(comment.Replies);
-                                foreach (var reply in flatReplies)
+                                foreach (var (reply, parentId, parentUsername) in flatReplies)
                                 {
-                                    <div class="mb-2">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-
-                                                <span class="fw-light small">@reply.Username</span>
-                                                <span class="text-muted small ms-2">@GetTimeAgo(reply.CommentDate)</span>
-                                            </div>
-                                        </div>
-                                        <p class="small mb-1">@reply.CommentText</p>
-                                        <div class="d-flex justify-content-end align-items-center gap-2">
-                                            <button class="btn btn-sm btn-dark" @onclick="() => SetReplyTo(reply.Username, reply.CommentId)">
-                                                <i class="bi bi-reply"></i> Reply
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-success" @onclick="() => LikeComment(reply.CommentId)">
-                                                <i class="bi bi-hand-thumbs-up"></i> <span>@reply.TotalLikes</span>
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DislikeComment(reply.CommentId)">
-                                                <i class="bi bi-hand-thumbs-down"></i> <span>@reply.TotalDislikes</span>
-                                            </button>
-                                        </div>
-                                    </div>
+                                    <CommentReply ReplyToUsername="@parentUsername"
+                                                  Reply="@reply"
+                                                  SetReplyTo="SetReplyTo" />
                                 }
                             }
                         </div>
                     }
-                </div>
             }
         }
     </div>
@@ -145,10 +114,10 @@
 
 
 
-    private void SetReplyTo(string username, int commentId)
+    private void SetReplyTo((string username, int commentId) data)
     {
-        ReplyingToUsername = username;
-        CurrentReplyToCommentId = commentId;
+        ReplyingToUsername = data.username;
+        CurrentReplyToCommentId = data.commentId;
     }
 
     private void CancelReply()
@@ -176,6 +145,8 @@
         }
         NewCommentText = "";
         CurrentReplyToCommentId = 0;
+        ReplyingToUsername = null;
+        CancelReply();
         StateHasChanged();
     }
 
@@ -186,15 +157,18 @@
             await PostComment();
         }
     }
-
-    private void LikeComment(int commentId)
+    private List<(CommentDTO Reply, int? ParentCommentId, string? ParentUsername)> FlattenReplies(List<CommentDTO> replies, int? parentId = null, string? parentUsername = null)
     {
-        
-    }
-
-    private void DislikeComment(int commentId)
-    {
-        
+        var flat = new List<(CommentDTO, int?, string?)>();
+        foreach (var reply in replies.OrderBy(r => r.CommentDate))
+        {
+            flat.Add((reply, parentId, parentUsername));
+            if (reply.Replies != null && reply.Replies.Any())
+            {
+                flat.AddRange(FlattenReplies(reply.Replies, reply.CommentId, reply.Username));
+            }
+        }
+        return flat;
     }
 }
 
@@ -209,18 +183,5 @@
         if (span.TotalMinutes >= 1)
             return $"{(int)span.TotalMinutes} minute{(span.TotalMinutes >= 2 ? "s" : "")} ago";
         return "just now";
-    }
-
-    List<CommentDTO> FlattenReplies(List<CommentDTO> replies)
-    {
-        var flat = new List<CommentDTO>();
-        foreach (var reply in replies.OrderBy(r => r.CommentDate))
-        {
-
-            flat.Add(reply);
-            if (reply.Replies != null && reply.Replies.Any())
-                flat.AddRange(FlattenReplies(reply.Replies));
-        }
-        return flat;
     }
 }
