@@ -3,47 +3,62 @@
 @inject ApiClient ApiClient
 @inject IToastService Toast
 
-<h2 class="text-xl font-bold mb-4">Suggest a Joke</h2>
+<div class="d-flex flex-column flex-md-row gap-4 justify-content-center align-items-start" style="width:100%; max-width:1200px; margin:0 auto;">
+    <!-- Suggest Joke Card -->
+    <div class="card shadow-sm rounded-4 p-4 bg-white text-dark flex-fill" style="min-width:320px; max-width:420px;">
+        <h5 class="mb-3 text-center">Suggest a Joke</h5>
+        <EditForm Model="newJoke" OnValidSubmit="SubmitJoke">
+            <DataAnnotationsValidator />
+            <div class="mb-3">
+                <InputSelect @bind-Value="newJoke.ClassificationId" class="form-select">
+                    <option value="">Category</option>
+                    @if(classifications != null)
+                    {
+                        foreach (var c in classifications)
+                        {
+                            <option value="@c.ClassificationId">@c.Name</option>
+                        }
+                    }
+                    else
+                    {
+                        <option disabled>Loading categories...</option>
+                    }
+                </InputSelect>
+            </div>
+            <div class="mb-3">
+                <InputTextArea @bind-Value="newJoke.Text" class="form-control" rows="3" placeholder="Your joke..." />
+            </div>
+            <div class="d-grid">
+                <button class="btn btn-secondary" type="submit">Submit</button>
+            </div>
+        </EditForm>
+    </div>
 
-@if (classifications == null)
-{
-    <p>Loading categories...</p>
-}
-else
-{
-    <EditForm Model="newJoke" OnValidSubmit="SubmitJoke">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-
-        <div class="mb-4">
-            <label class="block font-semibold mb-1">Category</label>
-            <InputSelect @bind-Value="newJoke.ClassificationId" class="w-full p-2 rounded border">
-                <option value="">-- Select Category --</option>
-                @foreach (var c in classifications)
-                {
-                    <option value="@c.ClassificationId">@c.Name</option>
-                }
-            </InputSelect>
-        </div>
-
-        <div class="mb-4">
-            <label class="block font-semibold mb-1">Joke Text</label>
-            <InputTextArea @bind-Value="newJoke.Text" class="w-full p-2 rounded border" rows="5" />
-        </div>
-
-        <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Submit Joke</button>
-    </EditForm>
-}
-
-@if (suggestedJoke != null)
-{
-    <SuggestedJokeCard Joke="suggestedJoke" />
-}
+    <!-- Suggested Jokes Card -->
+    <div class="card shadow-sm rounded-4 p-4 bg-white text-dark flex-fill" style="min-width:320px; max-width:420px; max-height:70vh; overflow-y:auto;">
+        <h6 class="mb-3 text-center">Your Suggestions</h6>
+        @if (suggestedJokes == null)
+        {
+            <div class="text-muted text-center">Loading your suggestions...</div>
+        }
+        else if (!suggestedJokes.Any())
+        {
+            <div class="text-muted text-center">You haven't suggested any jokes yet.</div>
+        }
+        else
+        {
+            @foreach (var joke in suggestedJokes)
+            {
+                <SuggestedJokeCard Joke="joke" />
+            }
+        }
+    </div>
+</div>
 
 @code {
     private List<ClassificationDetailedDTO>? classifications;
     private JokeCreateDTO newJoke = new();
-    private SuggestedJokeDTO? suggestedJoke;
+    private List<SuggestedJokeDTO>? suggestedJokes;
 
     protected override async Task OnInitializedAsync()
     {
@@ -56,14 +71,21 @@ else
         {
             Toast.ShowError("Failed to load categories.");
         }
+        await LoadUserSuggestions();
     }
-
+    private async Task LoadUserSuggestions()
+    {
+        var res = await ApiClient.GetAsync<List<SuggestedJokeDTO>>("api/joke/suggested-by-me");
+        if (res.IsSuccess)
+            suggestedJokes = res.Data ?? new List<SuggestedJokeDTO>();
+        else
+            Toast.ShowError("Failed to load your suggestions.");
+    }
     private async Task SubmitJoke()
     {
         var response = await ApiClient.PostAsync<SuggestedJokeDTO, JokeCreateDTO>("api/joke/suggest", newJoke);
         if (response.IsSuccess)
         {
-            Toast.ShowSuccess("Joke submitted for review!");
             if (response.Data != null)
             {
                 var classificationName = classifications != null
@@ -73,13 +95,11 @@ else
                 {
                     response.Data.ClassificationName = classificationName;
                 }
-                suggestedJoke = response.Data;
             }
+            Toast.ShowSuccess("Joke submitted for review!");
             newJoke = new(); // reset form
+            await LoadUserSuggestions();
         }
-        else
-        {
-            Toast.ShowError("Failed to submit joke.");
-        }
+        StateHasChanged();
     }
 }

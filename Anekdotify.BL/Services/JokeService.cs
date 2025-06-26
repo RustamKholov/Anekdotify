@@ -89,6 +89,11 @@ public class JokeService(IJokeRepository jokeRepository, IJokeCacheService jokeC
         return await jokeRepository.GetRandomJokeAsync(viewedJokes);
     }
 
+    public async Task<List<JokeDTO>> GetSuggestedByMeJokes(string userId)
+    {
+        return await jokeRepository.GetSuggestedByMeJokes(userId);
+    }
+
     public async Task<bool> JokeExistsAsync(int id)
     {
         return await jokeRepository.JokeExistsAsync(id);
@@ -100,7 +105,7 @@ public class JokeService(IJokeRepository jokeRepository, IJokeCacheService jokeC
         await jokeCacheService.InvalidateJokeAsync(joke.JokeId);
         return new SuggestedJokeDTO
         {
-            Id = joke.JokeId,
+            JokeId = joke.JokeId,
             Text = joke.Text,
             ClassificationName = joke.Classification?.Name ?? "Unknown",
             Status = "Pending" 
