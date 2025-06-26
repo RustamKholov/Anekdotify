@@ -23,20 +23,19 @@
             <button class="btn btn-link btn-sm p-0 text-dark" title="Reply" @onclick="() => ReplyTo()">
                 <i class="bi bi-reply"></i>
             </button>
-            <button class="btn btn-link btn-sm p-0 text-success" title="Like" @onclick="() => RateComment(true)">
-                <i class="bi bi-hand-thumbs-up"></i>
-                <span class="small text-decoration-none">@Reply.TotalLikes</span>
+            <button class="btn btn-link btn-sm p-0 text-dark text-decoration-none" title="Like" @onclick="() => RateComment(true)">
+                <i class="bi @(isLiked == true ? "bi-hand-thumbs-up-fill" : "bi-hand-thumbs-up")"></i>
+                <span class="ms-1">@Reply.TotalLikes</span>
             </button>
-            <button class="btn btn-link btn-sm p-0 text-danger" title="Dislike" @onclick="() => RateComment(false)">
-                <i class="bi bi-hand-thumbs-down"></i>
-                <span class="small text-decoration-none">@Reply.TotalDislikes</span>
+            <button class="btn btn-link btn-sm p-0 text-dark text-decoration-none" title="Dislike" @onclick="() => RateComment(false)">
+                <i class="bi @(isLiked == false ? "bi-hand-thumbs-down-fill" : "bi-hand-thumbs-down")"></i>
+                <span class="ms-1">@Reply.TotalDislikes</span>
             </button>
         </div>
     </div>
 </div>
-<style>
-    button:focus { outline: none; box-shadow: none; }
-</style>
+
+
 @code {
 
     [Parameter] public string ReplyToUsername { get; set; } = default!;

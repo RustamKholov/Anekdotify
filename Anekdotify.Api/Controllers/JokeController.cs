@@ -14,7 +14,7 @@ namespace Anekdotify.Api.Controllers
 {
     [Route("api/joke")]
     [ApiController]
-    
+
     public class JokeController : ControllerBase
     {
         private readonly IJokeService _jokeService;
@@ -73,7 +73,7 @@ namespace Anekdotify.Api.Controllers
                 return Unauthorized("User not found.");
             }
 
-            if(user.LastJokeRetrievalDate.HasValue &&
+            if (user.LastJokeRetrievalDate.HasValue &&
                user.LastJokeRetrievalDate.Value.AddHours(24) > DateTime.UtcNow)
             {
                 if (!User.IsInRole("Admin") || !User.IsInRole("Moderator"))    // moderators and admins do not have this restriction
@@ -87,7 +87,7 @@ namespace Anekdotify.Api.Controllers
                 return Unauthorized("User ID not found in token claims.");
             }
             var viewedJokes = await _userViewedJokesService.GetViewedJokesAsync(userId);
-            
+
             var joke = await _jokeService.GetRandomJokeAsync(viewedJokes.Value ?? []);
             if (joke == null)
             {
@@ -98,7 +98,7 @@ namespace Anekdotify.Api.Controllers
             {
                 await _userViewedJokesService.AddViewedJokeAsync(userId, joke.JokeId);
             }
-            
+
             user.LastJokeRetrievalDate = DateTime.UtcNow;
             await _userManager.UpdateAsync(user);
 
@@ -126,7 +126,7 @@ namespace Anekdotify.Api.Controllers
                     return Ok(new IsActiveRandomResponse { IsActive = false, NextRandomJokeAvailableAt = jokeAvailableAt });
                 }
             }
-            return Ok(new IsActiveRandomResponse { IsActive = true, NextRandomJokeAvailableAt = DateTime.UtcNow});
+            return Ok(new IsActiveRandomResponse { IsActive = true, NextRandomJokeAvailableAt = DateTime.UtcNow });
         }
         [HttpGet]
         [Route("last-viewed")]
@@ -175,7 +175,7 @@ namespace Anekdotify.Api.Controllers
 
 
         [HttpPost]
-        [Authorize(Roles ="Admin, Moderator")]
+        [Authorize(Roles = "Admin, Moderator")]
         public async Task<IActionResult> CreateJokeAsync([FromBody] JokeCreateDTO jokeCreateDTO)
         {
             if (!ModelState.IsValid)
@@ -217,6 +217,26 @@ namespace Anekdotify.Api.Controllers
             jokeCreateDTO.SourceId = -4; // Set SourceId to -1 for suggested jokes
             var joke = await _jokeService.SuggestJokeAsync(jokeCreateDTO, userId);
             return Ok(joke);
+        }
+        [HttpGet]
+        [Route("suggested-by-me")]
+        public async Task<IActionResult> GetSuggestedByMeJokes()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User ID not found in token claims.");
+            }
+            var suggestedBM = await _jokeService.GetSuggestedByMeJokes(userId);
+            if (suggestedBM == null)
+            {
+                return NotFound("Suggested jokes not found");
+            }
+            return Ok(suggestedBM);
         }
 
         [HttpPut("{id:int}")]
@@ -273,7 +293,7 @@ namespace Anekdotify.Api.Controllers
                 return NotFound($"Joke with ID {jokeId} not found.");
             }
 
-            var isSaved = await _userSavedJokeService.IsJokeSavedByUserAsync(new SaveJokeDTO{JokeId = jokeId}, userId);
+            var isSaved = await _userSavedJokeService.IsJokeSavedByUserAsync(new SaveJokeDTO { JokeId = jokeId }, userId);
 
             return Ok(isSaved);
         }
