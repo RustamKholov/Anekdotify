@@ -1,7 +1,9 @@
 ﻿using System.Net;
 using Anekdotify.Frontend.Authentication;
 using Anekdotify.Frontend.Clients;
+using Anekdotify.Models.DTOs.Comments;
 using Anekdotify.Models.DTOs.Jokes;
+using Blazored.Toast.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 
@@ -16,6 +18,7 @@ namespace Anekdotify.Frontend.Components.Pages
         [Inject] public ApiClient? ApiClient { get; set; }
         [Inject] public AuthenticationStateProvider? AuthenticationStateProvider { get; set; }
         [Inject] public NavigationManager? NavigationManager { get; set; }
+        [Inject] public IToastService? ToastService { get; set; }
         protected override async Task OnInitializedAsync()
         {
             await LoadJokes();
@@ -72,6 +75,11 @@ namespace Anekdotify.Frontend.Components.Pages
             finally
             {
                 isLoading = false;
+                if (errorMessage != null)
+                {
+                    ToastService?.ShowError(errorMessage);
+                }
+                
             }
         }
     }
