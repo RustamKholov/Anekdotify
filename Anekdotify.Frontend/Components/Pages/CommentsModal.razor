@@ -3,28 +3,27 @@
 @inject ApiClient ApiClient
 @inject IToastService ToastService
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inject NavigationManager NavigationManager
-
+    
 <div class="collapse" id="collapse_comments_@JokeId">
     <div class="card card-body w-100 comments-modal-container" style="max-height:30vh;">
 
         <!-- Reply to info -->
-        @if (ReplyingToUsername != null)
+        @if (_replyingToUsername != null)
         {
             <div class="alert alert-info py-1 px-2 small mb-2">
-                Replying to <strong>@ReplyingToUsername</strong>
+                Replying to <strong>@_replyingToUsername</strong>
                 <button class="btn-close btn-sm float-end" @onclick="CancelReply"></button>
             </div>
         }
 
         <!-- Post comment (sticky) -->
         <div class="mb-3 sticky-top bg-white pt-2 pb-2" style="z-index:2;">
-            <label class="form-label fw-semibold mb-1">@CurrentUsername:</label>
+            <label class="form-label fw-semibold mb-1">@_currentUsername:</label>
             <EditForm Model="@this" OnValidSubmit="PostComment">
                 <div class="d-flex">
                     <InputText class="form-control me-2"
                             placeholder="Write a comment..."
-                            @bind-Value="NewCommentText" 
+                            @bind-Value="_newCommentText" 
                             />
                     <button class="btn btn-secondary" type="submit">Post</button>
                 </div>
@@ -48,16 +47,17 @@
 
                     <Comment CommentDto="@comment"
                             SetReplyTo="SetReplyTo"
-                            ExpandedReplies="@ExpandedReplies"
-                            ToggleReplies="ToggleReplies"/> 
+                            ExpandedReplies="@_expandedReplies"
+                            ToggleReplies="ToggleReplies"
+                            OnCommentDeleted="HandleCommentDeleted"/> 
                     
 
-                        @if (ExpandedReplies.Contains(comment.CommentId))
+                        @if (_expandedReplies.Contains(comment.CommentId))
                         {
                             <div class="mt-2 ms-3 border-start ps-2">
                                 @{
                                     var flatReplies = FlattenReplies(comment.Replies);
-                                    foreach (var (reply, parentId, parentUsername) in flatReplies)
+                                    foreach (var (reply, _, parentUsername) in flatReplies)
                                     {
                                         <CommentReply ReplyToUsername="@parentUsername"
                                                     Reply="@reply"
@@ -77,12 +77,12 @@
     [Parameter] public List<CommentDTO>? Comments { get; set; }
     [Parameter] public EventCallback<List<CommentDTO>> OnCommentsChanged { get; set; }
 
-    private HashSet<int> ExpandedReplies = new();
+    private readonly HashSet<int> _expandedReplies = new();
 
-    private string NewCommentText = "";
-    private string? ReplyingToUsername = null;
-    private string CurrentUsername = "Guest";
-    private int CurrentReplyToCommentId = 0;
+    private string _newCommentText = "";
+    private string? _replyingToUsername;
+    private string _currentUsername = "Guest";
+    private int _currentReplyToCommentId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -90,14 +90,14 @@
         var res = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         if (res.User.Identity?.IsAuthenticated == true)
         {
-            CurrentUsername = res.User.FindFirst(JwtRegisteredClaimNames.GivenName)?.Value!;
+            _currentUsername = res.User.FindFirst(JwtRegisteredClaimNames.GivenName)?.Value!;
         }
     }
 
     private void ToggleReplies(int commentId)
     {
-        if (!ExpandedReplies.Add(commentId))
-            ExpandedReplies.Remove(commentId);
+        if (!_expandedReplies.Add(commentId))
+            _expandedReplies.Remove(commentId);
     }
 
     private async Task<List<CommentDTO>> LoadComments(int jokeId)
@@ -114,17 +114,23 @@
         }
     }
 
+    private async Task HandleCommentDeleted(int commentId)
+    {
+        Comments = await LoadComments(JokeId);
+        await OnCommentsChanged.InvokeAsync(Comments);
+        StateHasChanged();
+    }
 
 
     private void SetReplyTo((string username, int commentId) data)
     {
-        ReplyingToUsername = data.username;
-        CurrentReplyToCommentId = data.commentId;
+        _replyingToUsername = data.username;
+        _currentReplyToCommentId = data.commentId;
     }
 
     private void CancelReply()
     {
-        ReplyingToUsername = null;
+        _replyingToUsername = null;
         StateHasChanged();
     }
 
@@ -132,10 +138,10 @@
     {
         var res = await ApiClient.PostAsync<CommentDTO, CommentCreateDTO>($"api/comments/{JokeId}", new CommentCreateDTO
             {
-                CommentText = NewCommentText,
-                ParentCommentId = CurrentReplyToCommentId
+                CommentText = _newCommentText,
+                ParentCommentId = _currentReplyToCommentId
             });
-        if (res.IsSuccess && res.Data != null)
+        if (res is { IsSuccess: true, Data: not null })
         {
             Comments = await LoadComments(JokeId);
             await OnCommentsChanged.InvokeAsync(Comments);
@@ -145,9 +151,9 @@
         {
             ToastService.ShowError("Failed to post comment");
         }
-        NewCommentText = "";
-        CurrentReplyToCommentId = 0;
-        ReplyingToUsername = null;
+        _newCommentText = "";
+        _currentReplyToCommentId = 0;
+        _replyingToUsername = null;
         CancelReply();
         StateHasChanged();
     }
@@ -158,25 +164,11 @@
         foreach (var reply in replies.OrderBy(r => r.CommentDate))
         {
             flat.Add((reply, parentId, parentUsername));
-            if (reply.Replies != null && reply.Replies.Any())
+            if (reply.Replies.Any())
             {
                 flat.AddRange(FlattenReplies(reply.Replies, reply.CommentId, reply.Username));
             }
         }
         return flat;
-    }
-}
-
-@functions {
-    string GetTimeAgo(DateTime date)
-    {
-        var span = DateTime.UtcNow - date;
-        if (span.TotalDays >= 1)
-            return $"{(int)span.TotalDays} day{(span.TotalDays >= 2 ? "s" : "")} ago";
-        if (span.TotalHours >= 1)
-            return $"{(int)span.TotalHours} hour{(span.TotalHours >= 2 ? "s" : "")} ago";
-        if (span.TotalMinutes >= 1)
-            return $"{(int)span.TotalMinutes} minute{(span.TotalMinutes >= 2 ? "s" : "")} ago";
-        return "just now";
     }
 }

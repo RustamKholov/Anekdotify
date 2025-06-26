@@ -1,8 +1,6 @@
 ﻿using Anekdotify.Frontend.Components.BaseComponents;
-using Anekdotify.Models.DTOs.Comments;
 using Anekdotify.Models.DTOs.JokeRating;
 using Anekdotify.Models.DTOs.Jokes;
-using Anekdotify.Models.Entities;
 using Microsoft.AspNetCore.Components;
 
 namespace Anekdotify.Frontend.Components.Pages
@@ -10,14 +8,13 @@ namespace Anekdotify.Frontend.Components.Pages
     public partial class JokeCard
     {
         [Parameter] public JokeDTO? Joke { get; set; }
-        public AppModal? Modal { get; set; }
+        private AppModal? Modal { get; set; }
 
-        public int? SelectedJokeId = null;
+        public int? SelectedJokeId;
 
-        private List<CommentDTO> comments = new List<CommentDTO>();
-        public int DeleteId { get; set; }
-        private bool? isLiked = null;
-        private bool? isSaved = null;
+        private int DeleteId { get; set; }
+        private bool? _isLiked;
+        private bool? _isSaved;
 
         private static string JokeUrl(int id) => $"/editJoke/{id}";
 
@@ -31,18 +28,14 @@ namespace Anekdotify.Frontend.Components.Pages
             }
 
             var resRate = await ApiClient.GetAsync<RatingDTO>($"api/joke/{Joke.JokeId}/rating");
-            if (resRate.IsSuccess && resRate.Data != null)
+            if (resRate is { IsSuccess: true, Data.IsLike: not null })
             {
-                if (resRate.Data.IsLike != null)
-                {
-                    isLiked = resRate.Data.IsLike;
-                }
-
+                _isLiked = resRate.Data.IsLike;
             }
             var resSave = await ApiClient.GetAsync<bool>($"api/joke/{Joke.JokeId}/is-saved");
             if (resSave.IsSuccess)
             {
-                isSaved = resSave.Data;
+                _isSaved = resSave.Data;
             }
             else
             {
@@ -59,12 +52,12 @@ namespace Anekdotify.Frontend.Components.Pages
                 return;
             }
 
-            if (isSaved == true)
+            if (_isSaved == true)
             {
                 var res = await ApiClient.DeleteAsync($"api/saved-jokes/{Joke.JokeId}");
                 if (res.IsSuccess)
                 {
-                    isSaved = false;
+                    _isSaved = false;
                     StateHasChanged();
                 }
                 else
@@ -77,7 +70,7 @@ namespace Anekdotify.Frontend.Components.Pages
                 var res = await ApiClient.PostAsync<bool, int>($"api/saved-jokes/{Joke.JokeId}", Joke.JokeId);
                 if (res.IsSuccess)
                 {
-                    isSaved = true;
+                    _isSaved = true;
                     StateHasChanged();
                 }
                 else
@@ -89,7 +82,7 @@ namespace Anekdotify.Frontend.Components.Pages
 
         private async Task OnRateClick(bool newValue)
         {
-            if (isLiked == newValue)
+            if (_isLiked == newValue)
             {
                 if (Joke == null)
                 {
@@ -102,7 +95,7 @@ namespace Anekdotify.Frontend.Components.Pages
                     if (newValue) Joke.TotalLikes--;
                     else Joke.TotalDislikes--;
 
-                    isLiked = null;
+                    _isLiked = null;
                     StateHasChanged();
                 }
                 else
@@ -122,24 +115,24 @@ namespace Anekdotify.Frontend.Components.Pages
             {
                 if (newValue)
                 {
-                    if (isLiked == false)
+                    if (_isLiked == false)
                     {
                         Joke.TotalDislikes--;
                         Joke.TotalLikes++;
                     }
-                    else if (isLiked == null) Joke.TotalLikes++;
+                    else if (_isLiked == null) Joke.TotalLikes++;
                 }
                 else
                 {
-                    if (isLiked == true)
+                    if (_isLiked == true)
                     {
                         Joke.TotalLikes--;
                         Joke.TotalDislikes++;
                     }
-                    else if (isLiked == null) Joke.TotalDislikes++;
+                    else if (_isLiked == null) Joke.TotalDislikes++;
                 }
 
-                isLiked = newValue;
+                _isLiked = newValue;
                 StateHasChanged();
             }
             else
@@ -158,11 +151,6 @@ namespace Anekdotify.Frontend.Components.Pages
                 NavigationManager.NavigateTo("/", true);
             }
             else ToastService.ShowError("Failed to delete");
-        }
-
-        private void CloseModal()
-        {
-            SelectedJokeId = null;
         }
     }
 }

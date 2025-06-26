@@ -15,6 +15,11 @@ public class CommentService(ICommentRepository commentRepository, IDistributedCa
         return await commentRepository.CommentExistsAsync(id);
     }
 
+    public async Task<bool> IsCommentOwnerAsync(int id, string userId)
+    {
+        return await commentRepository.IsCommentOwnerAsync(id, userId);
+    }
+
     public async Task<Comment> CreateCommentAsync(Comment comment)
     {
         await cacheService.RemoveAsync($"comments_joke_{comment.JokeId}"); 
