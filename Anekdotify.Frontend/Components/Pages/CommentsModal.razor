@@ -6,7 +6,7 @@
 @inject NavigationManager NavigationManager
 
 <div class="collapse" id="collapse_comments_@JokeId">
-    <div class="card card-body overflow-auto w-100" style="max-height: 50vh;">
+    <div class="card card-body w-100 comments-modal-container" style="max-height:30vh;">
 
         <!-- Reply to info -->
         @if (ReplyingToUsername != null)
@@ -17,8 +17,8 @@
             </div>
         }
 
-        <!-- Post comment -->
-        <div class="mb-3">
+        <!-- Post comment (sticky) -->
+        <div class="mb-3 sticky-top bg-white pt-2 pb-2" style="z-index:2;">
             <label class="form-label fw-semibold mb-1">@CurrentUsername:</label>
             <EditForm Model="@this" OnValidSubmit="PostComment">
                 <div class="d-flex">
@@ -32,41 +32,43 @@
         </div>
 
         <!-- Comments -->
-        @if (Comments == null)
-        {
-            <p class="text-muted">Loading comments...</p>
-        }
-        else if (!Comments.Any())
-        {
-            <p class="text-muted">No comments yet.</p>
-        }
-        else
-        {
-            @foreach (var comment in Comments)
+        <div class="overflow-auto" style="max-height:calc(75vh - 80px);">
+            @if (Comments == null)
             {
-
-                <Comment CommentDto="@comment"
-                        SetReplyTo="SetReplyTo"
-                        ExpandedReplies="@ExpandedReplies"
-                        ToggleReplies="ToggleReplies"/> 
-                
-
-                    @if (ExpandedReplies.Contains(comment.CommentId))
-                    {
-                        <div class="mt-2 ms-3 border-start ps-2">
-                            @{
-                                var flatReplies = FlattenReplies(comment.Replies);
-                                foreach (var (reply, parentId, parentUsername) in flatReplies)
-                                {
-                                    <CommentReply ReplyToUsername="@parentUsername"
-                                                  Reply="@reply"
-                                                  SetReplyTo="SetReplyTo" />
-                                }
-                            }
-                        </div>
-                    }
+                <p class="text-muted">Loading comments...</p>
             }
-        }
+            else if (!Comments.Any())
+            {
+                <p class="text-muted">No comments yet.</p>
+            }
+            else
+            {
+                @foreach (var comment in Comments)
+                {
+
+                    <Comment CommentDto="@comment"
+                            SetReplyTo="SetReplyTo"
+                            ExpandedReplies="@ExpandedReplies"
+                            ToggleReplies="ToggleReplies"/> 
+                    
+
+                        @if (ExpandedReplies.Contains(comment.CommentId))
+                        {
+                            <div class="mt-2 ms-3 border-start ps-2">
+                                @{
+                                    var flatReplies = FlattenReplies(comment.Replies);
+                                    foreach (var (reply, parentId, parentUsername) in flatReplies)
+                                    {
+                                        <CommentReply ReplyToUsername="@parentUsername"
+                                                    Reply="@reply"
+                                                    SetReplyTo="SetReplyTo" />
+                                    }
+                                }
+                            </div>
+                        }
+                }
+            }
+        </div>
     </div>
 </div>
 

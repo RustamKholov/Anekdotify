@@ -8,13 +8,11 @@
 @rendermode @(new InteractiveServerRenderMode(prerender:false))
 
 
-<div class="card shadow-sm rounded-4 mb-4 p-3"
-     style="w-100; height: 40vh; position: relative; overflow: hidden;" id="joke_card_@Joke?.JokeId">
+<div class="card shadow-sm rounded-4 mb-1 p-3"
+     style="w-100; height: 30vh; position: relative; overflow: auto;" id="joke_card_@Joke?.JokeId">
 
-    <!-- Save Icon -->
-    <button class="btn btn-sm btn-light position-absolute top-0 end-0 m-2" title="Save joke" @onclick="() => OnSaveClick()">
-        <i class="bi @(isSaved == false || isSaved == null ? "bi-bookmark" : "bi-bookmark-fill")"></i>
-    </button>
+    <!-- Badge -->
+    <span class="badge rounded-pill bg-light border text-muted position-absolute top-1 end-0 me-3">@((Joke != null) ? Joke.ClassificationName : "")</span>
 
     <!-- Admin Tools -->
     <AuthorizeView Roles="Admin, Moderator">
@@ -40,35 +38,34 @@
         <p class="card-text text-secondary fs-5">@((Joke != null) ? Joke.Text : "")</p>
     </div>
 
-    <!-- Joke Footer -->
-    <div class="d-flex justify-content-between align-items-center px-3 pb-2 small text-muted">
-        <span class="badge rounded-pill bg-light border text-muted me-2">@((Joke != null) ? Joke.ClassificationName : "")</span>
+</div>
 
-        <div class="d-flex align-items-center gap-2">
-            <button class="btn btn-sm @(isLiked == true ? "btn-success" : "btn-outline-success")"
+  <!-- Joke Footer -->
+
+<div class="d-flex justify-content-between align-items-center px-3 py-2" style="min-height:56px;">
+    <button class="btn btn-sm btn-light)"
             title="Like" @onclick="() => OnRateClick(true)">
-                <i class="bi bi-hand-thumbs-up"></i>
-                <span class="ms-1">@Joke?.TotalLikes</span>
-            </button>
-
-            <button class="btn btn-sm @(isLiked == false ? "btn-danger" : "btn-outline-danger")"
+        <i class="bi @(isLiked == true ? "bi-hand-thumbs-up-fill" : "bi-hand-thumbs-up")"></i>
+        <span class="ms-1">@Joke?.TotalLikes</span>
+    </button>
+    <button class="btn btn-sm btn-light)"
             title="Dislike" @onclick="() => OnRateClick(false)">
-                <i class="bi bi-hand-thumbs-down"></i>
-                <span class="ms-1">@Joke?.TotalDislikes</span>
-            </button>
-
-            <button class="btn btn-sm btn-outline-secondary d-flex align-items-center"
-            type="button" 
-            
+        <i class="bi @(isLiked == false ? "bi-hand-thumbs-down-fill" : "bi-hand-thumbs-down")"></i>
+        <span class="ms-1">@Joke?.TotalDislikes</span>
+    </button>
+    <button class="btn btn-sm btn-light"
+            title="Save joke" @onclick="OnSaveClick">
+        <i class="bi @(isSaved == true ? "bi-bookmark-fill" : "bi-bookmark")"></i>
+    </button>
+    <button class="btn btn-sm btn-light d-flex align-items-center"
+            type="button"
             data-bs-toggle="collapse"
-                    data-bs-target="#collapse_comments_@Joke?.JokeId"
-                    aria-expanded="false"
-                    aria-controls="collapse_comments_@Joke?.JokeId">
-                <i class="bi bi-chat-left-text"></i>
-                <span class="ms-1">@Joke?.Comments.Count</span>
-            </button>
-        </div>
-    </div>
+            data-bs-target="#collapse_comments_@Joke?.JokeId"
+            aria-expanded="false"
+            aria-controls="collapse_comments_@Joke?.JokeId">
+        <i class="bi bi-chat-right-dots"></i>
+        <span class="ms-1">@Joke?.Comments.Count</span>
+    </button>
 </div>
 
 <!-- Modal -->

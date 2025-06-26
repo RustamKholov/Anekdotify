@@ -53,7 +53,7 @@ namespace Anekdotify.Api.Controllers
             {
                 Token = token,
                 RefreshToken = refreshToken,
-                ExpiresIn = DateTimeOffset.UtcNow.AddMinutes(30).ToUnixTimeSeconds() // 1 hour expiration
+                ExpiresIn = DateTimeOffset.UtcNow.AddMinutes(30).ToUnixTimeSeconds() // 30minutes expiration
             };
 
             user.LastLoginDate = DateTime.UtcNow;
@@ -86,7 +86,7 @@ namespace Anekdotify.Api.Controllers
             {
                 Token = token,
                 RefreshToken = newRefreshToken,
-                ExpiresIn = DateTimeOffset.UtcNow.AddMinutes(30).ToUnixTimeSeconds() // 1 hour expiration
+                ExpiresIn = DateTimeOffset.UtcNow.AddMinutes(30).ToUnixTimeSeconds() // 30minutes expiration
             });
         }
 
