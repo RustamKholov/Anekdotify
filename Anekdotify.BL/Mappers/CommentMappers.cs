@@ -21,7 +21,7 @@ namespace Anekdotify.BL.Mappers
                 TotalDislikes = totalDislikes
             };
         }
-        public static Comment ToCommentFromCreateDTO(this CommentCreateDTO commentCreateDTO, int jokeId, string userId)
+        public static Comment ToCommentFromCreateDTO(this CommentCreateDTO? commentCreateDTO, int jokeId, string userId)
         {
             return new Comment
             {

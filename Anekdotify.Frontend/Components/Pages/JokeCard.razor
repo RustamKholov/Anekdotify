@@ -45,17 +45,17 @@
 <div class="d-flex justify-content-between align-items-center px-5 py-2" style="min-height:56px;">
     <button class="btn btn-sm btn-light"
             title="Like" @onclick="() => OnRateClick(true)">
-        <i class="bi @(isLiked == true ? "bi-hand-thumbs-up-fill" : "bi-hand-thumbs-up")"></i>
+        <i class="bi @(_isLiked == true ? "bi-hand-thumbs-up-fill" : "bi-hand-thumbs-up")"></i>
         <span class="ms-1">@Joke?.TotalLikes</span>
     </button>
     <button class="btn btn-sm btn-light"
             title="Dislike" @onclick="() => OnRateClick(false)">
-        <i class="bi @(isLiked == false ? "bi-hand-thumbs-down-fill" : "bi-hand-thumbs-down")"></i>
+        <i class="bi @(_isLiked == false ? "bi-hand-thumbs-down-fill" : "bi-hand-thumbs-down")"></i>
         <span class="ms-1">@Joke?.TotalDislikes</span>
     </button>
     <button class="btn btn-sm btn-light"
             title="Save joke" @onclick="OnSaveClick">
-        <i class="bi @(isSaved == true ? "bi-bookmark-fill" : "bi-bookmark")"></i>
+        <i class="bi @(_isSaved == true ? "bi-bookmark-fill" : "bi-bookmark")"></i>
     </button>
     <button class="btn btn-sm btn-light d-flex align-items-center"
             type="button"

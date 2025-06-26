@@ -12,6 +12,7 @@ namespace Anekdotify.BL.Interfaces.Repositories
         Task<Comment?> UpdateCommentAsync(int id, CommentUpdateDTO comment);
         Task<Comment?> DeleteCommentAsync(int id);
         Task<bool> CommentExistsAsync(int id);
+        Task<bool> IsCommentOwnerAsync(int id, string userId);
 
     }
 
