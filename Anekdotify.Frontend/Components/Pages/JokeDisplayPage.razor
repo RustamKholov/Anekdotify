@@ -4,17 +4,16 @@
 @inject ILocalStorageService LocalStorageService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-<div class="d-flex flex-row vh-100 w-100">
-
+<div class="d-flex flex-row">
     <div class="flex-grow-1">
         <div class="d-flex flex-column align-items-center">
 
             @if (joke != null)
             {
-                <div class="w-75">
+                <div class="w-75 w-md-75">
                     <div class="position-relative">
                         <JokeCard Joke="@joke" />
-                        <div class="d-flex flex-column align-items-center">
+                        <div class="d-flex flex-column align-items-center w-100">
                             <div style="height: 16px;"></div>
                             <GetJokeButton GetRandomJoke="GetRandomJoke" />
                             <div style="height: 32px;"></div>
@@ -31,7 +30,7 @@
                     <div class="position-relative">
 
                         <div class="card shadow-sm rounded-4 mb-4 p-3"
-                        style="w - 100; height: 35vh; position: relative; overflow: hidden;">
+                            style="w - 100; height: 35vh; position: relative; overflow: hidden;">
                             <div class="card-body d-flex justify-content-center align-items-center text-center">
                                 <div class="spinner-border" role="status">
                                     <span class="visually-hidden">Loading...</span>
@@ -53,7 +52,7 @@
                     <div class="position-relative">
 
                         <div class="card shadow-sm rounded-4 mb-4 p-3"
-                        style="w-100; height: 35vh; position: relative; overflow: hidden;">
+                            style="w-100; height: 35vh; position: relative; overflow: hidden;">
                             <div class="card-body d-flex justify-content-center align-items-center text-center">
                                 <p class="card-text text-secondary fs-5">Click the button below to get a random joke.</p>
                             </div>
@@ -62,7 +61,7 @@
                         <div class="d-flex flex-column align-items-center">
                             <div style="height: 16px;"></div>
                             <GetJokeButton GetRandomJoke="GetRandomJoke" />
-                        </div>    
+                        </div>
                     </div>
                 </div>
             }
