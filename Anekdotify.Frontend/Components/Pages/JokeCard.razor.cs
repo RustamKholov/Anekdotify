@@ -15,6 +15,12 @@ namespace Anekdotify.Frontend.Components.Pages
         private int DeleteId { get; set; }
         private bool? _isLiked;
         private bool? _isSaved;
+        private bool isFlipped = false;
+
+        private void ToggleFlip()
+        {
+            isFlipped = !isFlipped;
+        }
 
         private static string JokeUrl(int id) => $"/editJoke/{id}";
 
