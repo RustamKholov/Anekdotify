@@ -11,34 +11,35 @@
         </div>
         @if (PostedByCurrentUser)
         {
-            <button class="btn btn-link btn-sm p-0 text-danger text-decoration-none" 
-                    title="Delete comment" 
-                    @onclick="DeleteComment"
-                    @onclick:stopPropagation="true">
+            <button class="btn btn-link btn-sm p-0 text-danger text-decoration-none" title="Delete comment"
+                @onclick="DeleteComment" @onclick:stopPropagation="true">
                 <i class="bi bi-x-lg"></i>
             </button>
         }
 
     </div>
-    
+
     <div class="d-flex align-items-center">
         <p class="mb-1 mb-0 flex-grow-1">@CommentDto.CommentText</p>
         <div class="d-flex align-items-center gap-1 ms-2">
             <button class="btn btn-link btn-sm p-0 text-dark text-decoration-none" title="Reply" @onclick="ReplyTo">
                 <i class="bi bi-reply"></i>
             </button>
-            <button class="btn btn-link btn-sm p-0 text-dark text-decoration-none" title="Like" @onclick="() => RateComment(true)">
+            <button class="btn btn-link btn-sm p-0 text-dark text-decoration-none" title="Like"
+                @onclick="() => RateComment(true)">
                 <i class="bi @(IsLiked == true ? "bi-hand-thumbs-up-fill" : "bi-hand-thumbs-up")"></i>
                 <span class="ms-1">@CommentDto.TotalLikes</span>
             </button>
-            <button class="btn btn-link btn-sm p-0 text-dark text-decoration-none" title="Dislike" @onclick="() => RateComment(false)">
+            <button class="btn btn-link btn-sm p-0 text-dark text-decoration-none" title="Dislike"
+                @onclick="() => RateComment(false)">
                 <i class="bi @(IsLiked == false ? "bi-hand-thumbs-down-fill" : "bi-hand-thumbs-down")"></i>
                 <span class="ms-1">@CommentDto.TotalDislikes</span>
             </button>
         </div>
     </div>
 
-    <button class="btn btn-sm btn-link text-secondary px-0 ms-1" style="text-decoration: none;" @onclick="() => Toggle(CommentDto.CommentId)">
+    <button class="btn btn-sm btn-link text-secondary px-0 ms-1" style="text-decoration: none;"
+        @onclick="() => Toggle(CommentDto.CommentId)">
         <i class="bi @(ExpandedReplies.Contains(CommentDto.CommentId) ? "bi-chevron-up" : "bi-chevron-down")"></i>
         <span class="small">Replies</span>
     </button>
@@ -53,10 +54,10 @@
     [Parameter] public HashSet<int> ExpandedReplies { get; set; } = new();
 
     [Parameter] public EventCallback<int> ToggleReplies { get; set; }
-    
+
     [Parameter] public EventCallback<int> OnCommentDeleted { get; set; }
 
- 
+
     private bool? IsLiked { get; set; }
     private bool PostedByCurrentUser { get; set; }
 
@@ -65,18 +66,18 @@
     {
 
         var ratingRes = await ApiClient.GetAsync<RatingDTO>($"api/comment/rate/{CommentDto.CommentId}");
-        if (ratingRes is { IsSuccess: true, Data.IsLike: not null } )
+        if (ratingRes is { IsSuccess: true, Data.IsLike: not null })
         {
             IsLiked = ratingRes.Data.IsLike;
         }
 
-        var commentAuthorRes = await ApiClient.GetAsync<bool>($"api/comments/created-by-me/{CommentDto.CommentId}");
-        if (commentAuthorRes.IsSuccess )
+        var commentAuthorRes = await ApiClient.GetAsync<bool>($"api/comments/{CommentDto.CommentId}/created-by-me");
+        if (commentAuthorRes.IsSuccess)
         {
             PostedByCurrentUser = commentAuthorRes.Data;
         }
     }
-    
+
     private async Task DeleteComment()
     {
         if (!PostedByCurrentUser) return;
@@ -106,10 +107,10 @@
     }
     private async Task RateComment(bool newValue)
     {
-       if(IsLiked == newValue)
-       {
+        if (IsLiked == newValue)
+        {
             var res = await ApiClient.DeleteAsync($"api/comment/rate/{CommentDto.CommentId}");
-            if(res.IsSuccess)
+            if (res.IsSuccess)
             {
                 if (newValue) CommentDto.TotalLikes--;
                 else CommentDto.TotalDislikes--;
@@ -122,44 +123,44 @@
                 ToastService.ShowError("Failed to remove rating.");
             }
             return;
-       }
-       
+        }
+
         var updateRes = await ApiClient.PutAsync<RatingDTO, bool>($"api/comment/rate/{CommentDto.CommentId}", newValue);
-         if (updateRes.IsSuccess)
-         {
-                if (newValue)
+        if (updateRes.IsSuccess)
+        {
+            if (newValue)
+            {
+                switch (IsLiked)
                 {
-                    switch (IsLiked)
-                    {
-                        case false:
-                            CommentDto.TotalDislikes--;
-                            CommentDto.TotalLikes++;
-                            break;
-                        case null:
-                            CommentDto.TotalLikes++;
-                            break;
-                    }
+                    case false:
+                        CommentDto.TotalDislikes--;
+                        CommentDto.TotalLikes++;
+                        break;
+                    case null:
+                        CommentDto.TotalLikes++;
+                        break;
                 }
-                else
+            }
+            else
+            {
+                switch (IsLiked)
                 {
-                    switch (IsLiked)
-                    {
-                        case true:
-                            CommentDto.TotalLikes--;
-                            CommentDto.TotalDislikes++;
-                            break;
-                        case null:
-                            CommentDto.TotalDislikes++;
-                            break;
-                    }
+                    case true:
+                        CommentDto.TotalLikes--;
+                        CommentDto.TotalDislikes++;
+                        break;
+                    case null:
+                        CommentDto.TotalDislikes++;
+                        break;
                 }
-                IsLiked = newValue;
-                StateHasChanged();
-         }
-         else
-         {
-                ToastService.ShowError("Failed to update rating.");
-         }
+            }
+            IsLiked = newValue;
+            StateHasChanged();
+        }
+        else
+        {
+            ToastService.ShowError("Failed to update rating.");
+        }
 
     }
 

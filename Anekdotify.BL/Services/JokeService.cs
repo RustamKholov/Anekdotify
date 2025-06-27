@@ -80,8 +80,7 @@ public class JokeService(IJokeRepository jokeRepository, IJokeCacheService jokeC
 
     public async Task<List<JokeDTO>> GetJokesByIdsAsync(List<int> ids)
     {
-        var jokes = await jokeRepository.GetJokesByIdsAsync(ids);
-        return jokes;
+        return await jokeRepository.GetJokesByIdsAsync(ids);
     }
 
     public async Task<JokeDTO> GetRandomJokeAsync(List<int> viewedJokes)

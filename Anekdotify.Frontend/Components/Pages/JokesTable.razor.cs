@@ -79,8 +79,9 @@ namespace Anekdotify.Frontend.Components.Pages
                 {
                     ToastService?.ShowError(errorMessage);
                 }
-                
+
             }
         }
     }
+    
 }

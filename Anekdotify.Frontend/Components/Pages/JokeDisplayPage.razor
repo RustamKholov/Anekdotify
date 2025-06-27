@@ -19,7 +19,7 @@
                             <GetJokeButton GetRandomJoke="GetRandomJoke" />
                             <div style="height: 32px;"></div>
                             <div class="w-100">
-                                <CommentsModal Comments="@(joke.Comments)" JokeId="@joke.JokeId" OnCommentsChanged="UpdateComments" />
+                                <CommentsModal JokeId="@joke.JokeId" OnCommentsChanged="UpdateComments" />
                             </div>
                         </div>
                     </div>
