@@ -3,7 +3,7 @@
 @inject ApiClient ApiClient
 @inject IToastService ToastService
 @inject AuthenticationStateProvider AuthenticationStateProvider
-    
+
 <div class="collapse" id="collapse_comments_@JokeId">
     <div class="card card-body w-100 comments-modal-container" style="max-height:30vh;">
 
@@ -21,10 +21,8 @@
             <label class="form-label fw-semibold mb-1">@_currentUsername:</label>
             <EditForm Model="@this" OnValidSubmit="PostComment">
                 <div class="d-flex">
-                    <InputText class="form-control me-2"
-                            placeholder="Write a comment..."
-                            @bind-Value="_newCommentText" 
-                            />
+                    <InputText class="form-control me-2" placeholder="Write a comment..."
+                        @bind-Value="_newCommentText" />
                     <button class="btn btn-secondary" type="submit">Post</button>
                 </div>
             </EditForm>
@@ -45,27 +43,22 @@
                 @foreach (var comment in Comments)
                 {
 
-                    <Comment CommentDto="@comment"
-                            SetReplyTo="SetReplyTo"
-                            ExpandedReplies="@_expandedReplies"
-                            ToggleReplies="ToggleReplies"
-                            OnCommentDeleted="HandleCommentDeleted"/> 
-                    
+                    <Comment CommentDto="@comment" SetReplyTo="SetReplyTo" ExpandedReplies="@_expandedReplies"
+                        ToggleReplies="ToggleReplies" OnCommentDeleted="HandleCommentDeleted" />
 
-                        @if (_expandedReplies.Contains(comment.CommentId))
-                        {
-                            <div class="mt-2 ms-3 border-start ps-2">
-                                @{
-                                    var flatReplies = FlattenReplies(comment.Replies);
-                                    foreach (var (reply, _, parentUsername) in flatReplies)
-                                    {
-                                        <CommentReply ReplyToUsername="@parentUsername"
-                                                    Reply="@reply"
-                                                    SetReplyTo="SetReplyTo" />
-                                    }
+
+                    @if (_expandedReplies.Contains(comment.CommentId))
+                    {
+                        <div class="mt-2 ms-3 border-start ps-2">
+                            @{
+                                var flatReplies = FlattenReplies(comment.Replies);
+                                foreach (var (reply, _, parentUsername) in flatReplies)
+                                {
+                                    <CommentReply ReplyToUsername="@parentUsername" Reply="@reply" SetReplyTo="SetReplyTo" />
                                 }
-                            </div>
-                        }
+                            }
+                        </div>
+                    }
                 }
             }
         </div>
@@ -74,8 +67,8 @@
 
 @code {
     [Parameter] public int JokeId { get; set; }
-    [Parameter] public List<CommentDTO>? Comments { get; set; }
     [Parameter] public EventCallback<List<CommentDTO>> OnCommentsChanged { get; set; }
+    public List<CommentDTO>? Comments { get; set; }
 
     private readonly HashSet<int> _expandedReplies = new();
 
@@ -86,7 +79,9 @@
 
     protected override async Task OnInitializedAsync()
     {
+
         Comments = await LoadComments(JokeId);
+
         var res = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         if (res.User.Identity?.IsAuthenticated == true)
         {
@@ -137,10 +132,10 @@
     private async Task PostComment()
     {
         var res = await ApiClient.PostAsync<CommentDTO, CommentCreateDTO>($"api/comments/{JokeId}", new CommentCreateDTO
-            {
-                CommentText = _newCommentText,
-                ParentCommentId = _currentReplyToCommentId
-            });
+        {
+            CommentText = _newCommentText,
+            ParentCommentId = _currentReplyToCommentId
+        });
         if (res is { IsSuccess: true, Data: not null })
         {
             Comments = await LoadComments(JokeId);
@@ -158,7 +153,8 @@
         StateHasChanged();
     }
 
-    private List<(CommentDTO Reply, int? ParentCommentId, string? ParentUsername)> FlattenReplies(List<CommentDTO> replies, int? parentId = null, string? parentUsername = null)
+    private List<(CommentDTO Reply, int? ParentCommentId, string? ParentUsername)> FlattenReplies(List<CommentDTO> replies,
+    int? parentId = null, string? parentUsername = null)
     {
         var flat = new List<(CommentDTO, int?, string?)>();
         foreach (var reply in replies.OrderBy(r => r.CommentDate))

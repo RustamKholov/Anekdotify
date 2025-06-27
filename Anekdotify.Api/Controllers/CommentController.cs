@@ -3,12 +3,14 @@ using Anekdotify.BL.Helpers;
 using Anekdotify.BL.Interfaces.Services;
 using Anekdotify.BL.Mappers;
 using Anekdotify.Models.DTOs.Comments;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Anekdotify.Api.Controllers
 {
     [ApiController]
     [Route("api/comments")]
+    [Authorize]
     public class CommentController : ControllerBase
     {
         private readonly ICommentService _commentService;
@@ -63,7 +65,7 @@ namespace Anekdotify.Api.Controllers
 
         [HttpPost]
         [Route("{jokeId:int}")]
-        
+
         public async Task<IActionResult> CreateComment([FromRoute] int jokeId, [FromBody] CommentCreateDTO? commentCreateDto)
         {
             if (!ModelState.IsValid)
@@ -97,14 +99,14 @@ namespace Anekdotify.Api.Controllers
                     return BadRequest("Parent comment does not belong to the same joke");
                 }
             }
-            if(string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized("User ID not found in token claims.");
             }
             var comment = commentCreateDto.ToCommentFromCreateDTO(jokeId, userId);
             var createdComment = await _commentService.CreateCommentAsync(comment);
 
-            return Created(nameof(_commentService.CreateCommentAsync),createdComment.ToCommentDTO());
+            return Created(nameof(_commentService.CreateCommentAsync), createdComment.ToCommentDTO());
         }
 
         [HttpPut]
