@@ -44,7 +44,7 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
         {
             new IdentityRole
             {
-                Id = "1",  
+                Id = "1",
                 Name = "Admin",
                 NormalizedName = "ADMIN",
                 ConcurrencyStamp = Guid.NewGuid().ToString()
@@ -116,7 +116,7 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
 
             entity.HasIndex(cr => new { cr.CommentId, cr.Rating });
 
-            entity.Property(e => e.RatingDate).HasColumnType("datetime");
+            entity.Property(e => e.RatingDate).HasColumnType("timestamp with time zone");
 
             entity.HasOne(d => d.Comment).WithMany(p => p.CommentRatings)
                 .HasForeignKey(d => d.CommentId)
@@ -135,7 +135,7 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
 
             entity.HasIndex(e => e.JokeId, "IX_Comments_JokeId");
 
-            entity.Property(e => e.CommentDate).HasColumnType("datetime");
+            entity.Property(e => e.CommentDate).HasColumnType("timestamp with time zone");
 
             entity.HasOne(d => d.Joke).WithMany(p => p.Comments)
                 .HasForeignKey(d => d.JokeId)
@@ -153,7 +153,7 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
 
             entity.HasIndex(e => new { e.JokeId, e.UserId }, "UQ_UserJokeLike").IsUnique();
 
-            entity.Property(e => e.LikeDate).HasColumnType("datetime");
+            entity.Property(e => e.LikeDate).HasColumnType("timestamp with time zone");
 
             entity.HasOne(d => d.Joke).WithMany(p => p.JokeLikes)
                 .HasForeignKey(d => d.JokeId)
@@ -171,7 +171,7 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
             entity.HasKey(e => e.JokePartId);
 
             entity.Property(e => e.PartType).HasMaxLength(50);
-            entity.Property(e => e.SubmissionDate).HasColumnType("datetime");
+            entity.Property(e => e.SubmissionDate).HasColumnType("timestamp with time zone");
 
             entity.HasOne(d => d.AssociatedJoke).WithMany(p => p.JokeParts)
                 .HasForeignKey(d => d.AssociatedJokeId)
@@ -184,7 +184,7 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
             entity.HasKey(e => e.RatingId);
             entity.HasIndex(jr => new { jr.JokeId, jr.Rating });
 
-            entity.Property(e => e.RatingDate).HasColumnType("datetime");
+            entity.Property(e => e.RatingDate).HasColumnType("timestamp with time zone");
 
             entity.HasOne(d => d.Joke).WithMany(p => p.JokeRatings)
                 .HasForeignKey(d => d.JokeId)
@@ -201,13 +201,13 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
         {
             entity.HasKey(e => e.JokeId);
             entity.HasIndex(e => e.SubbmissionDate, "IX_Jokes_SubbmissionDate");
-            entity.Property(e => e.ApprovalDate).HasColumnType("datetime");
-            entity.Property(e => e.SubbmissionDate).HasColumnType("datetime");
+            entity.Property(e => e.ApprovalDate).HasColumnType("timestamp with time zone");
+            entity.Property(e => e.SubbmissionDate).HasColumnType("timestamp with time zone");
 
             entity.HasOne(d => d.Classification).WithMany(p => p.Jokes)
                 .HasForeignKey(d => d.ClassificationId)
                 .HasConstraintName("FK_Jokes_Classification");
-                
+
             entity.HasOne(d => d.Source).WithMany(p => p.Jokes)
                 .HasForeignKey(d => d.SourceId)
                 .HasConstraintName("FK_Jokes_Source");
@@ -216,9 +216,9 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
         modelBuilder.Entity<User>(entity =>
         {
             entity.Property(e => e.Email).HasMaxLength(100);
-            entity.Property(e => e.LastJokeRetrievalDate).HasColumnType("datetime");
-            entity.Property(e => e.LastLoginDate).HasColumnType("datetime");
-            entity.Property(e => e.RegistrationDate).HasColumnType("datetime");
+            entity.Property(e => e.LastJokeRetrievalDate).HasColumnType("timestamp with time zone");
+            entity.Property(e => e.LastLoginDate).HasColumnType("timestamp with time zone");
+            entity.Property(e => e.RegistrationDate).HasColumnType("timestamp with time zone");
         });
 
         modelBuilder.Entity<UserSavedJoke>(entity =>
@@ -227,7 +227,7 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
 
             entity.HasIndex(e => new { e.JokeId, e.UserId }, "IX_UserSavedJokes").IsUnique();
 
-            entity.Property(e => e.SavedDate).HasColumnType("datetime");
+            entity.Property(e => e.SavedDate).HasColumnType("timestamp with time zone");
 
             entity.HasOne(d => d.Joke).WithMany(p => p.UserSavedJokes)
                 .HasForeignKey(d => d.JokeId)
@@ -244,7 +244,7 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
         {
             entity.HasKey(e => e.UserViewedJokeId);
             entity.HasIndex(e => new { e.JokeId, e.UserId }, "IX_UserViewedJokes").IsUnique();
-            entity.Property(e => e.ViewedDate).HasColumnType("datetime");
+            entity.Property(e => e.ViewedDate).HasColumnType("timestamp with time zone");
             entity.HasOne(d => d.Joke).WithMany(p => p.UserViewedJokes)
                 .HasForeignKey(d => d.JokeId)
                 .OnDelete(DeleteBehavior.Cascade)
@@ -267,7 +267,7 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
         modelBuilder.Entity<SourceFetchedJoke>(entity =>
         {
             entity.HasKey(e => e.SourceFetchedJokeId);
-            entity.Property(e => e.FetchedDate).HasColumnType("datetime");
+            entity.Property(e => e.FetchedDate).HasColumnType("timestamp with time zone");
             entity.HasOne(d => d.Source).WithMany(p => p.SourceFetchedJokes)
                 .HasForeignKey(d => d.SourceId)
                 .OnDelete(DeleteBehavior.Cascade)
