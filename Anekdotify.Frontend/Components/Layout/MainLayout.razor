@@ -4,16 +4,13 @@
 <div class="d-flex flex-column vh-100 bg-white text-dark p-3">
     <NavMenu />
 
-    <main class="card shadow-lg rounded-4 p-1 p-md-3 bg-light text-dark d-flex flex-column"
+    <main
+        class="card shadow-lg rounded-4 p-1 p-md-3 bg-light text-dark d-flex flex-column justify-content-center align-items-center"
         style="height: 85vh; overflow-y: auto; overflow-x: hidden; width: 100%; margin: 0 auto;">
         @Body
     </main>
 </div>
 
-<BlazoredToasts Position="ToastPosition.TopCenter"
-                ShowCloseButton="true"
-                ShowProgressBar="true"
-                IconType="IconType.FontAwesome"
-                SuccessClass="success-toasts-override"
-                SuccessIcon="fa fa-thumbs-up"
-                ErrorIcon="fa fa-bug"/>
+<BlazoredToasts Position="ToastPosition.TopCenter" ShowCloseButton="true" ShowProgressBar="true"
+    IconType="IconType.FontAwesome" SuccessClass="success-toasts-override" SuccessIcon="fa fa-thumbs-up"
+    ErrorIcon="fa fa-bug" />
