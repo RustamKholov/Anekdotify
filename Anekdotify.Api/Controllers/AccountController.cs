@@ -32,7 +32,7 @@ namespace Anekdotify.Api.Controllers
                 return BadRequest(loginDTO);
             }
             // Accept camelCase by normalizing property names
-            User? user = await _userManager.Users.FirstOrDefaultAsync(u => u.UserName == loginDTO.Username.ToLower() || u.Email == loginDTO.Username.ToLower());
+            User? user = await _userManager.Users.FirstOrDefaultAsync(u => u.UserName == loginDTO.Username || u.Email == loginDTO.Username);
 
             if (user == null) return Unauthorized("Username not found and/or wrong password");
 
