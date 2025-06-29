@@ -8,6 +8,8 @@ namespace Anekdotify.Frontend.Components.Pages
     public partial class JokeCard
     {
         [Parameter] public JokeDTO? Joke { get; set; }
+        [Parameter] public EventCallback OnFirstFlip { get; set; }
+        [Parameter] public bool IsPlaceholder { get; set; }
         private AppModal? Modal { get; set; }
 
         public int? SelectedJokeId;
@@ -17,8 +19,12 @@ namespace Anekdotify.Frontend.Components.Pages
         private bool? _isSaved;
         private bool isFlipped = false;
 
-        private void ToggleFlip()
+        private async Task HandleFlip()
         {
+            if (!isFlipped && IsPlaceholder && OnFirstFlip.HasDelegate)
+            {
+                await OnFirstFlip.InvokeAsync();
+            }
             isFlipped = !isFlipped;
         }
 
