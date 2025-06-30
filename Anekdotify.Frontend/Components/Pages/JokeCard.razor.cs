@@ -1,4 +1,5 @@
 ﻿using Anekdotify.Frontend.Components.BaseComponents;
+using Anekdotify.Models.DTOs.Comments;
 using Anekdotify.Models.DTOs.JokeRating;
 using Anekdotify.Models.DTOs.Jokes;
 using Microsoft.AspNetCore.Components;
@@ -7,9 +8,9 @@ namespace Anekdotify.Frontend.Components.Pages
 {
     public partial class JokeCard
     {
-        [Parameter] public JokeDTO? Joke { get; set; }
+        [Parameter] public required JokeDTO Joke { get; set; }
         [Parameter] public EventCallback OnFirstFlip { get; set; }
-        [Parameter] public bool IsPlaceholder { get; set; }
+        [Parameter] public bool IsFlipped { get; set; } = false;
         private AppModal? Modal { get; set; }
 
         public int? SelectedJokeId;
@@ -17,28 +18,20 @@ namespace Anekdotify.Frontend.Components.Pages
         private int DeleteId { get; set; }
         private bool? _isLiked;
         private bool? _isSaved;
-        private bool isFlipped = false;
 
         private async Task HandleFlip()
         {
-            if (!isFlipped && IsPlaceholder && OnFirstFlip.HasDelegate)
+            if (!IsFlipped && OnFirstFlip.HasDelegate)
             {
                 await OnFirstFlip.InvokeAsync();
             }
-            isFlipped = !isFlipped;
+            IsFlipped = !IsFlipped;
         }
 
         private static string JokeUrl(int id) => $"/editJoke/{id}";
 
         protected override async Task OnInitializedAsync()
         {
-
-            if (Joke == null)
-            {
-                ToastService.ShowError("Joke not found");
-                return;
-            }
-
             var resRate = await ApiClient.GetAsync<RatingDTO>($"api/joke/{Joke.JokeId}/rating");
             if (resRate is { IsSuccess: true, Data.IsLike: not null })
             {
@@ -58,12 +51,6 @@ namespace Anekdotify.Frontend.Components.Pages
         }
         private async Task OnSaveClick()
         {
-            if (Joke == null)
-            {
-                ToastService.ShowError("Joke not found");
-                return;
-            }
-
             if (_isSaved == true)
             {
                 var res = await ApiClient.DeleteAsync($"api/saved-jokes/{Joke.JokeId}");
@@ -96,11 +83,6 @@ namespace Anekdotify.Frontend.Components.Pages
         {
             if (_isLiked == newValue)
             {
-                if (Joke == null)
-                {
-                    ToastService.ShowError("Joke not found");
-                    return;
-                }
                 var res = await ApiClient.DeleteAsync($"api/joke/{Joke.JokeId}/rating/delete");
                 if (res.IsSuccess)
                 {
@@ -117,11 +99,6 @@ namespace Anekdotify.Frontend.Components.Pages
                 return;
             }
 
-            if (Joke == null)
-            {
-                ToastService.ShowError("Joke not found");
-                return;
-            }
             var updateRes = await ApiClient.PutAsync<RatingDTO, bool>($"api/joke/{Joke.JokeId}/rating", newValue);
             if (updateRes.IsSuccess)
             {
@@ -164,5 +141,27 @@ namespace Anekdotify.Frontend.Components.Pages
             }
             else ToastService.ShowError("Failed to delete");
         }
+
+        private int CommentsCount()
+        {
+            return Joke?.Comments == null ? 0 : CountCommentsRecursive(Joke.Comments);
+        }
+
+        private static int CountCommentsRecursive(List<CommentDTO> comments)
+        {
+            var count = 0;
+            foreach (var comment in comments)
+            {
+                count++;
+                bool? any = comment.Replies.Count != 0;
+
+                if (any == true)
+                {
+                    count += CountCommentsRecursive(comment.Replies);
+                }
+            }
+            return count;
+        }
+
     }
 }

@@ -5,7 +5,7 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 <div class="collapse" id="collapse_comments_@JokeId">
-    <div class="card card-body w-100 comments-modal-container" style="max-height:30vh;">
+    <div class="comments-modal-container card card-body w-100 comments-modal-container" style="max-height:30vh;">
 
         <!-- Reply to info -->
         @if (_replyingToUsername != null)
@@ -19,7 +19,7 @@
         <!-- Post comment (sticky) -->
         <div class="mb-3 sticky-top bg-white pt-2 pb-2" style="z-index:2;">
             <label class="form-label fw-semibold mb-1">@_currentUsername:</label>
-            <EditForm Model="@this" OnValidSubmit="PostComment">
+            <EditForm Model="@Create" OnValidSubmit="PostComment">
                 <div class="d-flex">
                     <InputText class="form-control me-2" placeholder="Write a comment..."
                         @bind-Value="_newCommentText" />
@@ -68,7 +68,8 @@
 @code {
     [Parameter] public int JokeId { get; set; }
     [Parameter] public EventCallback<List<CommentDTO>> OnCommentsChanged { get; set; }
-    public List<CommentDTO>? Comments { get; set; }
+    private List<CommentDTO>? Comments { get; set; }
+    private CommentCreateDTO Create { get; set; } = new CommentCreateDTO();
 
     private readonly HashSet<int> _expandedReplies = new();
 

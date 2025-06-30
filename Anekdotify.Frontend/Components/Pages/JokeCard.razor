@@ -1,7 +1,4 @@
-﻿@using Anekdotify.Common
-@using Anekdotify.Frontend.Components.BaseComponents
-@using Anekdotify.Models.DTOs.JokeRating
-@using Microsoft.AspNetCore.Mvc
+﻿@using Anekdotify.Frontend.Components.BaseComponents
 @inject NavigationManager NavigationManager
 @inject ApiClient ApiClient
 @inject IToastService ToastService
@@ -10,58 +7,44 @@
 
 
 <div class="joke-card-flip-container" @onclick="HandleFlip">
-    <div class="joke-card-flip @(isFlipped ? "flipped" : "")">
-        @if (IsPlaceholder)
-        {
-            <div class="joke-card-front d-flex flex-column justify-content-center align-items-center">
-                <span class="text-muted">Click to get your daily joke!</span>
-            </div>
-            <div class="joke-card-back d-flex flex-column justify-content-center align-items-center">
-                <div class="spinner-border text-secondary mb-2" role="status" style="width: 2.5rem; height: 2.5rem;">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <span class="text-muted">Fetching joke...</span>
-            </div>
-        }
-        else
-        {
+    <div class="joke-card-flip @(IsFlipped ? "flipped" : "")">
+        
             <!-- Front Side -->
             <div class="joke-card-front">
                 <div class="mb-2">
-                    <span class="badge bg-light text-dark border">@Joke?.SourceName</span>
+                    <span class="badge bg-light text-dark border">@Joke.SourceName</span>
                 </div>
-                <div class="mt-auto small text-muted">Click to flip back</div>
+                <h1><i class="bi bi-fingerprint"></i></h1>
             </div>
 
             <!-- Back Side -->
             <div class="joke-card-back">
-                <span class="badge bg-secondary mb-2">@Joke?.ClassificationName</span>
-                <div class="joke-card-text">@Joke?.Text</div>
+                <span class="badge bg-secondary mb-2">@Joke.ClassificationName</span>
+                <div class="joke-card-text">@Joke.Text</div>
 
                 <div class="joke-card-actions mt-auto d-flex justify-content-evenly align-items-center w-100">
                     <button class="btn btn-sm btn-light p-1" title="Like" @onclick:stopPropagation="true"
                         @onclick="() => OnRateClick(true)">
                         <i class="bi @(_isLiked == true ? "bi-hand-thumbs-up-fill" : "bi-hand-thumbs-up")"></i>
-                        <span class="ms-1">@Joke?.TotalLikes</span>
+                        <span class="ms-1">@Joke.TotalLikes</span>
                     </button>
                     <button class="btn btn-sm btn-light p-1" title="Dislike" @onclick:stopPropagation="true"
                         @onclick="() => OnRateClick(false)">
                         <i class="bi @(_isLiked == false ? "bi-hand-thumbs-down-fill" : "bi-hand-thumbs-down")"></i>
-                        <span class="ms-1">@Joke?.TotalDislikes</span>
+                        <span class="ms-1">@Joke.TotalDislikes</span>
                     </button>
                     <button class="btn btn-sm btn-light p-1" title="Save joke" @onclick:stopPropagation="true"
                         @onclick="OnSaveClick">
                         <i class="bi @(_isSaved == true ? "bi-bookmark-fill" : "bi-bookmark")"></i>
                     </button>
                     <button class="btn btn-sm btn-light p-1 d-flex align-items-center" @onclick:stopPropagation="true"
-                        type="button" data-bs-toggle="collapse" data-bs-target="#collapse_comments_@Joke?.JokeId"
-                        aria-expanded="false" aria-controls="collapse_comments_@Joke?.JokeId">
+                        type="button" data-bs-toggle="collapse"
+                        aria-expanded="false">
                         <i class="bi bi-chat-right-dots"></i>
-                        <span class="ms-1">@Joke?.Comments.Count</span>
+                        <span class="ms-1">@CommentsCount()</span>
                     </button>
                 </div>
             </div>
-        }
     </div>
 </div>
 <!-- Admin Tools -->
@@ -69,15 +52,12 @@
     <Authorized>
         <div class="card-header bg-transparent border-bottom-0 d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center">
-                @if (Joke != null)
-                {
-                    <a class="btn btn-outline-secondary btn-sm me-2" href="@JokeUrl(Joke.JokeId)" title="Edit">
-                        <i class="bi bi-pencil"></i>
-                    </a>
-                    <button class="btn btn-outline-danger" @onclick="() => { DeleteId = Joke.JokeId; Modal?.Show(); }">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                }
+                <a class="btn btn-outline-secondary btn-sm me-2" href="@JokeUrl(Joke.JokeId)" title="Edit">
+                    <i class="bi bi-pencil"></i>
+                </a>
+                <button class="btn btn-outline-danger" @onclick="() => { DeleteId = Joke.JokeId; Modal?.Show(); }">
+                    <i class="bi bi-trash"></i>
+                </button>
             </div>
         </div>
     </Authorized>
@@ -92,47 +72,8 @@
         <p class="text-danger">This action cannot be undone.</p>
     </Body>
     <Footer>
-        <button class="btn btn-secondary" @onclick="() => { if (Modal != null) Modal.Close(); }">Cancel</button>
+        <button class="btn btn-secondary" @onclick="() => { Modal?.Close(); }">Cancel</button>
         <button class="btn btn-danger" @onclick="async () => await HandleDelete()">Delete</button>
     </Footer>
 </AppModal>
 
-
-@* 
-<div class="card shadow-sm rounded-4 mb-1 p-3 w-100" style=" height: 30vh; position: relative; overflow: auto;"
-    id="joke_card_@Joke?.JokeId">
-
-    <!-- Badge -->
-    <span class="badge rounded-pill bg-light border text-muted position-absolute top-1 end-0 me-3">@((Joke != null) ?
-                Joke.ClassificationName : "")</span>
-
-    
-
-    <!-- Joke Content -->
-    <div class="card-body d-flex flex-column justify-content-center align-items-center text-center">
-        <p class="card-text text-secondary fs-5">@((Joke != null) ? Joke.Text : "")</p>
-    </div>
-
-</div>
-
-<!-- Joke Footer -->
-
-<div class="d-flex justify-content-between align-items-center px-5 py-2" style="min-height:56px;">
-    <button class="btn btn-sm btn-light w-md-auto" title="Like" @onclick="() => OnRateClick(true)">
-        <i class="bi @(_isLiked == true ? "bi-hand-thumbs-up-fill" : "bi-hand-thumbs-up")"></i>
-        <span class="ms-1">@Joke?.TotalLikes</span>
-    </button>
-    <button class="btn btn-sm btn-light" title="Dislike" @onclick="() => OnRateClick(false)">
-        <i class="bi @(_isLiked == false ? "bi-hand-thumbs-down-fill" : "bi-hand-thumbs-down")"></i>
-        <span class="ms-1">@Joke?.TotalDislikes</span>
-    </button>
-    <button class="btn btn-sm btn-light" title="Save joke" @onclick="OnSaveClick">
-        <i class="bi @(_isSaved == true ? "bi-bookmark-fill" : "bi-bookmark")"></i>
-    </button>
-    <button class="btn btn-sm btn-light d-flex align-items-center" type="button" data-bs-toggle="collapse"
-        data-bs-target="#collapse_comments_@Joke?.JokeId" aria-expanded="false"
-        aria-controls="collapse_comments_@Joke?.JokeId">
-        <i class="bi bi-chat-right-dots"></i>
-        <span class="ms-1">@Joke?.Comments.Count</span>
-    </button>
-</div>*@
