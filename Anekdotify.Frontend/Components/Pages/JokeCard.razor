@@ -8,43 +8,43 @@
 
 <div class="joke-card-flip-container" @onclick="HandleFlip">
     <div class="joke-card-flip @(IsFlipped ? "flipped" : "")">
-        
-            <!-- Front Side -->
-            <div class="joke-card-front">
-                <div class="mb-2">
-                    <span class="badge bg-light text-dark border">@Joke.SourceName</span>
-                </div>
-                <h1><i class="bi bi-fingerprint"></i></h1>
-            </div>
 
-            <!-- Back Side -->
-            <div class="joke-card-back">
-                <span class="badge bg-secondary mb-2">@Joke.ClassificationName</span>
-                <div class="joke-card-text">@Joke.Text</div>
-
-                <div class="joke-card-actions mt-auto d-flex justify-content-evenly align-items-center w-100">
-                    <button class="btn btn-sm btn-light p-1" title="Like" @onclick:stopPropagation="true"
-                        @onclick="() => OnRateClick(true)">
-                        <i class="bi @(_isLiked == true ? "bi-hand-thumbs-up-fill" : "bi-hand-thumbs-up")"></i>
-                        <span class="ms-1">@Joke.TotalLikes</span>
-                    </button>
-                    <button class="btn btn-sm btn-light p-1" title="Dislike" @onclick:stopPropagation="true"
-                        @onclick="() => OnRateClick(false)">
-                        <i class="bi @(_isLiked == false ? "bi-hand-thumbs-down-fill" : "bi-hand-thumbs-down")"></i>
-                        <span class="ms-1">@Joke.TotalDislikes</span>
-                    </button>
-                    <button class="btn btn-sm btn-light p-1" title="Save joke" @onclick:stopPropagation="true"
-                        @onclick="OnSaveClick">
-                        <i class="bi @(_isSaved == true ? "bi-bookmark-fill" : "bi-bookmark")"></i>
-                    </button>
-                    <button class="btn btn-sm btn-light p-1 d-flex align-items-center" @onclick:stopPropagation="true"
-                        type="button" data-bs-toggle="collapse"
-                        aria-expanded="false">
-                        <i class="bi bi-chat-right-dots"></i>
-                        <span class="ms-1">@CommentsCount()</span>
-                    </button>
-                </div>
+        <!-- Front Side -->
+        <div class="joke-card-front">
+            <div class="mb-2">
+                <span class="badge bg-light text-dark border">@Joke.SourceName</span>
             </div>
+            <h1><i class="bi bi-fingerprint"></i></h1>
+        </div>
+
+        <!-- Back Side -->
+        <div class="joke-card-back">
+            <span class="badge bg-secondary mb-2">@Joke.ClassificationName</span>
+            <div class="joke-card-text">@Joke.Text</div>
+
+            <div class="joke-card-actions mt-auto d-flex justify-content-evenly align-items-center w-100">
+                <button class="btn btn-sm btn-light p-1" title="Like" @onclick:stopPropagation="true"
+                    @onclick="() => OnRateClick(true)">
+                    <i class="bi @(_isLiked == true ? "bi-hand-thumbs-up-fill" : "bi-hand-thumbs-up")"></i>
+                    <span class="ms-1">@Joke.TotalLikes</span>
+                </button>
+                <button class="btn btn-sm btn-light p-1" title="Dislike" @onclick:stopPropagation="true"
+                    @onclick="() => OnRateClick(false)">
+                    <i class="bi @(_isLiked == false ? "bi-hand-thumbs-down-fill" : "bi-hand-thumbs-down")"></i>
+                    <span class="ms-1">@Joke.TotalDislikes</span>
+                </button>
+                <button class="btn btn-sm btn-light p-1" title="Save joke" @onclick:stopPropagation="true"
+                    @onclick="OnSaveClick">
+                    <i class="bi @(_isSaved == true ? "bi-bookmark-fill" : "bi-bookmark")"></i>
+                </button>
+                <button class="btn btn-sm btn-light p-1 d-flex align-items-center" @onclick:stopPropagation="true"
+                    type="button" data-bs-toggle="collapse" data-bs-target="#collapse_comments_@Joke.JokeId"
+                    aria-expanded="false" aria-controls="collapse_comments_@Joke.JokeId">
+                    <i class="bi bi-chat-right-dots"></i>
+                    <span class="ms-1">@CommentsCount()</span>
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 <!-- Admin Tools -->
@@ -76,4 +76,3 @@
         <button class="btn btn-danger" @onclick="async () => await HandleDelete()">Delete</button>
     </Footer>
 </AppModal>
-
