@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Anekdotify.BL.Interfaces.Services;
 using Anekdotify.Models.DTOs.CommentRating;
 using Anekdotify.Models.DTOs.JokeRating;
@@ -65,22 +61,22 @@ namespace Anekdotify.Api.Controllers
             {
                 return NotFound($"Comment not found");
             }
-            var commentRatingDTO = new CommentRatingDTO
+            var commentRatingDto = new CommentRatingDTO
             {
                 CommentId = commentId,
                 IsLike = isLike
             };
 
-            var setOperationResult = await _commentRatingService.SetCommentRatingAsync(commentRatingDTO, userId);
+            var setOperationResult = await _commentRatingService.SetCommentRatingAsync(commentRatingDto, userId);
             if (setOperationResult.IsSuccess)
             {
-                return Ok(new RatingDTO { IsLike = isLike });
+                return Ok(new RatingDto { IsLike = isLike });
             }
             if (setOperationResult.IsNotFound)
             {
                 return NotFound(setOperationResult.ErrorMessage);
             }
-            return Ok(new RatingDTO { IsLike = isLike });
+            return Ok(new RatingDto { IsLike = isLike });
         }
 
         [HttpDelete]

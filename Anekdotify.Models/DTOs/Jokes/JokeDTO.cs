@@ -2,7 +2,7 @@ using Anekdotify.Models.DTOs.Comments;
 
 namespace Anekdotify.Models.DTOs.Jokes
 {
-    public class JokeDTO
+    public class JokeDto
     {
         public int JokeId { get; set; }
 
@@ -16,6 +16,6 @@ namespace Anekdotify.Models.DTOs.Jokes
 
         public int? ClassificationId { get; set; }
         public string? ClassificationName { get; set; }
-        public List<CommentDTO> Comments { get; set; } = new List<CommentDTO>();
+        public List<CommentDto> Comments { get; set; } = new List<CommentDto>();
     }
 }

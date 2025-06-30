@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Anekdotify.BL.Interfaces.Repositories;
 using Anekdotify.BL.Interfaces.Services;
 using Anekdotify.Common;
@@ -12,7 +8,7 @@ namespace Anekdotify.BL.Services
 {
     public class CommentRatingService(ICommentRatingRepository commentRatingRepository) : ICommentRatingService
     {
-        public async Task<OperationResult<RatingDTO>> GetCommentRatingByUserAsync(int commentId, string userId)
+        public async Task<OperationResult<RatingDto>> GetCommentRatingByUserAsync(int commentId, string userId)
         {
             return await commentRatingRepository.GetCommentRatingByUserAsync(commentId, userId);
         }
@@ -22,9 +18,9 @@ namespace Anekdotify.BL.Services
             return await commentRatingRepository.RemoveCommentRatingAsync(commentId, userId);
         }
 
-        public async Task<OperationResult<RatingDTO>> SetCommentRatingAsync(CommentRatingDTO commentRatingDTO, string userId)
+        public async Task<OperationResult<RatingDto>> SetCommentRatingAsync(CommentRatingDTO commentRatingDto, string userId)
         {
-            return await commentRatingRepository.SetCommentRatingAsync(commentRatingDTO, userId);
+            return await commentRatingRepository.SetCommentRatingAsync(commentRatingDto, userId);
         }
     }
 }

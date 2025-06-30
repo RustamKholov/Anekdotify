@@ -9,77 +9,80 @@ namespace Anekdotify.BL.Repositories
 {
     public class JokeRatingsRepository : IJokeRatingsRepository
     {
-        public readonly ApplicationDBContext _context;
+        public readonly ApplicationDBContext Context;
         public JokeRatingsRepository(ApplicationDBContext context)
         {
-            _context = context;
+            Context = context;
         }
-        public async Task<OperationResult<RatingDTO>> GetJokeRatingByUserAsync(int jokeId, string userId)
+        public async Task<OperationResult<RatingDto>> GetJokeRatingByUserAsync(int jokeId, string userId)
         {
-            var rating = await _context.JokeRatings.FirstOrDefaultAsync(jr => jr.JokeId == jokeId && jr.UserId == userId);
+            var rating = await Context.JokeRatings.FirstOrDefaultAsync(jr => jr.JokeId == jokeId && jr.UserId == userId);
             if (rating == null)
             {
-                return OperationResult<RatingDTO>.Success(new RatingDTO { IsLike = null });
+                return OperationResult<RatingDto>.Success(new RatingDto { IsLike = null });
             }
-            return OperationResult<RatingDTO>.Success(new RatingDTO { IsLike = rating.Rating });
+            return OperationResult<RatingDto>.Success(new RatingDto { IsLike = rating.Rating });
         }
 
         public async Task<OperationResult> RemoveJokeRatingAsync(int jokeId, string userId)
         {
-            var existingRating = await _context.JokeRatings
+            var existingRating = await Context.JokeRatings
                                    .FirstOrDefaultAsync(jr => jr.JokeId == jokeId && jr.UserId == userId);
 
             if (existingRating != null)
             {
-                _context.JokeRatings.Remove(existingRating);
+                Context.JokeRatings.Remove(existingRating);
             }
             else
             {
                 return OperationResult.NotFound("Rating not found to remove.");
             }
-            await _context.SaveChangesAsync();
+            await Context.SaveChangesAsync();
             return OperationResult.Success();
         }
 
-        public async Task<OperationResult<RatingDTO>> SetJokeRatingAsync(JokeRatingDTO jokeRatingDTO, string userId)
+        public async Task<OperationResult<RatingDto>> SetJokeRatingAsync(JokeRatingDto jokeRatingDto, string userId)
         {
-            var existingRating = await _context.JokeRatings
-                .FirstOrDefaultAsync(jr => jr.JokeId == jokeRatingDTO.JokeId && jr.UserId == userId);
+            var existingRating = await Context.JokeRatings
+                .FirstOrDefaultAsync(jr => jr.JokeId == jokeRatingDto.JokeId && jr.UserId == userId);
 
             
-            if (!jokeRatingDTO.IsLike.HasValue)
+            if (!jokeRatingDto.IsLike.HasValue)
             {
                 if (existingRating == null)
-                    return OperationResult<RatingDTO>.NotFound(new RatingDTO { }, "Rating not found to remove.");
+                    return OperationResult<RatingDto>.NotFound(new RatingDto
+                    {
+                        IsLike = null
+                    }, "Rating not found to remove.");
 
-                _context.JokeRatings.Remove(existingRating);
-                await _context.SaveChangesAsync();
-                return OperationResult<RatingDTO>.Success(new RatingDTO { IsLike = null });
+                Context.JokeRatings.Remove(existingRating);
+                await Context.SaveChangesAsync();
+                return OperationResult<RatingDto>.Success(new RatingDto { IsLike = null });
             }
 
             
-            if (existingRating != null && existingRating.Rating == jokeRatingDTO.IsLike.Value)
+            if (existingRating != null && existingRating.Rating == jokeRatingDto.IsLike.Value)
             {
-                return OperationResult<RatingDTO>.Success(new RatingDTO { IsLike = existingRating.Rating });
+                return OperationResult<RatingDto>.Success(new RatingDto { IsLike = existingRating.Rating });
             }
 
             if (existingRating == null)
             {
                 var newRating = new JokeRating
                 {
-                    JokeId = jokeRatingDTO.JokeId,
+                    JokeId = jokeRatingDto.JokeId,
                     UserId = userId,
-                    Rating = jokeRatingDTO.IsLike.Value
+                    Rating = jokeRatingDto.IsLike.Value
                 };
-                await _context.JokeRatings.AddAsync(newRating);
+                await Context.JokeRatings.AddAsync(newRating);
             }
             else
             {
-                existingRating.Rating = jokeRatingDTO.IsLike.Value;
+                existingRating.Rating = jokeRatingDto.IsLike.Value;
             }
 
-            await _context.SaveChangesAsync();
-            return OperationResult<RatingDTO>.Success(new RatingDTO { IsLike = jokeRatingDTO.IsLike });
+            await Context.SaveChangesAsync();
+            return OperationResult<RatingDto>.Success(new RatingDto { IsLike = jokeRatingDto.IsLike });
         }
     }
 }

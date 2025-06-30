@@ -1,6 +1,4 @@
 ﻿using Anekdotify.Common;
-using Anekdotify.Models.DTOs.Jokes;
-using Anekdotify.Models.Entities;
 
 namespace Anekdotify.BL.Interfaces.Repositories
 {

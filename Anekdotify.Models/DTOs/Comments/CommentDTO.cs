@@ -1,6 +1,6 @@
 namespace Anekdotify.Models.DTOs.Comments
 {
-    public class CommentDTO
+    public class CommentDto
     {
         public int CommentId { get; set; }
         public string CommentText { get; set; } = string.Empty;
@@ -9,7 +9,7 @@ namespace Anekdotify.Models.DTOs.Comments
         public string Username { get; set; } = string.Empty;
         public int? ParentCommentId { get; set; }
 
-        public List<CommentDTO> Replies { get; set; } = new List<CommentDTO>();
+        public List<CommentDto> Replies { get; set; } = new List<CommentDto>();
 
         public int TotalLikes { get; set; }
 

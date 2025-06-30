@@ -1,0 +1,161 @@
+﻿@page "/profile"
+
+@inject ApiClient ApiClient
+
+@attribute [Authorize]
+
+<PageTitle>Profile - Anekdotify</PageTitle>
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- User Profile Information -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-circle me-2"></i>
+                        User Profile
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (_userProfile != null)
+                    {
+                        <div class="text-center mb-3">
+                            <div class="avatar-circle bg-secondary text-white mb-3">
+                                <span class="h3">@GetUserInitials(_userProfile.Username)</span>
+                            </div>
+                            <h5 class="card-title">@_userProfile.Username</h5>
+                            <p class="text-muted">@_userProfile.Email</p>
+                        </div>
+                        
+                        <hr />
+                        
+                        <div class="profile-info">
+                            <div class="row mb-2">
+                                <div class="col-6 text-muted">Joined:</div>
+                                <div class="col-6">@_userProfile.CreatedAt.ToString("MMM yyyy")</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-6 text-muted">Role:</div>
+                                <div class="col-6">
+                                    <span class="badge bg-secondary">@_userProfile.Role</span>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-6 text-muted">Status:</div>
+                                <div class="col-6">
+                                    <span class="badge bg-secondary">Active</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center">
+                            <div class="spinner-border text-secondary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Loading profile...</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- User Statistics -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Your Statistics
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (_statistics != null)
+                    {
+                        <div class="row">
+                            <div class="col-md-6 col-lg-3 mb-3">
+                                <div class="stat-card bg-light p-3 rounded text-center">
+                                    <i class="fas fa-laugh-beam text-secondary fs-2 mb-2"></i>
+                                    <h3 class="text-secondary mb-1">@_statistics.TotalJokes</h3>
+                                    <p class="text-muted mb-0">Jokes Submitted</p>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 col-lg-3 mb-3">
+                                <div class="stat-card bg-light p-3 rounded text-center">
+                                    <i class="fas fa-thumbs-up text-secondary fs-2 mb-2"></i>
+                                    <h3 class="text-secondary mb-1">@_statistics.TotalUpvotes</h3>
+                                    <p class="text-muted mb-0">Upvotes Received</p>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 col-lg-3 mb-3">
+                                <div class="stat-card bg-light p-3 rounded text-center">
+                                    <i class="fas fa-comments text-info fs-2 mb-2"></i>
+                                    <h3 class="text-info mb-1">@_statistics.TotalComments</h3>
+                                    <p class="text-muted mb-0">Comments Made</p>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 col-lg-3 mb-3">
+                                <div class="stat-card bg-light p-3 rounded text-center">
+                                    <i class="fas fa-trophy text-secondary fs-2 mb-2"></i>
+                                    <h3 class="text-secondary mb-1">@GetUserRank()</h3>
+                                    <p class="text-muted mb-0">User Rank</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="mt-4">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <i class="fas fa-history me-2"></i>
+                                Recent Activity
+                            </h5>
+                            
+                            @if (_recentJokes != null && _recentJokes.Any())
+                            {
+                                <div class="list-group">
+                                    @foreach (var joke in _recentJokes.Take(5))
+                                    {
+                                        <div class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">
+                                                    <i class="fas fa-laugh me-2 text-secondary"></i>
+                                                    Joke submitted
+                                                </h6>
+                                                <small class="text-muted">@joke.SubmissionDate.ToString("MMM dd, yyyy")</small>
+                                            </div>
+                                            <p class="mb-1 text-truncate">@joke.Text</p>
+                                            <small class="text-muted">
+                                                @joke.LikeCount upvotes • @joke.CommentCount comments
+                                            </small>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center text-muted py-3">
+                                    <i class="fas fa-inbox fs-1 mb-3"></i>
+                                    <p>No recent activity yet. Start sharing some jokes!</p>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center">
+                            <div class="spinner-border text-secondary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Loading statistics...</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

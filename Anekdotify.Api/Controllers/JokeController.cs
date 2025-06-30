@@ -37,12 +37,8 @@ namespace Anekdotify.Api.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var jokeDTOs = await _jokeService.GetAllJokesAsync(query);
-            if (jokeDTOs == null)
-            {
-                return NotFound("No jokes found.");
-            }
-            return Ok(jokeDTOs);
+            var jokeDtOs = await _jokeService.GetAllJokesAsync(query);
+            return Ok(jokeDtOs);
         }
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetJokeById([FromRoute] int id)
@@ -89,10 +85,6 @@ namespace Anekdotify.Api.Controllers
             var viewedJokes = await _userViewedJokesService.GetViewedJokesAsync(userId);
 
             var joke = await _jokeService.GetRandomJokeAsync(viewedJokes.Value ?? []);
-            if (joke == null)
-            {
-                return NotFound("No jokes found.");
-            }
 
             if (!User.IsInRole("Admin") || !User.IsInRole("Moderator"))
             {
@@ -176,13 +168,13 @@ namespace Anekdotify.Api.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin, Moderator")]
-        public async Task<IActionResult> CreateJokeAsync([FromBody] JokeCreateDTO jokeCreateDTO)
+        public async Task<IActionResult> CreateJokeAsync([FromBody] JokeCreateDto? jokeCreateDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            if (jokeCreateDTO == null || string.IsNullOrWhiteSpace(jokeCreateDTO.Text))
+            if (jokeCreateDto == null || string.IsNullOrWhiteSpace(jokeCreateDto.Text))
             {
                 return BadRequest("Joke content cannot be empty.");
             }
@@ -193,19 +185,19 @@ namespace Anekdotify.Api.Controllers
             {
                 return Unauthorized("User ID not found in token claims.");
             }
-            var joke = await _jokeService.CreateJokeAsync(jokeCreateDTO, userId);
+            var joke = await _jokeService.CreateJokeAsync(jokeCreateDto, userId);
 
-            return CreatedAtAction(nameof(GetJokeById), new { id = joke.JokeId }, joke.ToJokeDTO());
+            return CreatedAtAction(nameof(GetJokeById), new { id = joke.JokeId }, joke.ToJokeDto());
         }
         [HttpPost]
         [Route("suggest")]
-        public async Task<IActionResult> SuggestJokeAsync([FromBody] JokeCreateDTO jokeCreateDTO)
+        public async Task<IActionResult> SuggestJokeAsync([FromBody] JokeCreateDto? jokeCreateDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            if (jokeCreateDTO == null || string.IsNullOrWhiteSpace(jokeCreateDTO.Text))
+            if (jokeCreateDto == null || string.IsNullOrWhiteSpace(jokeCreateDto.Text))
             {
                 return BadRequest("Joke content cannot be empty.");
             }
@@ -214,8 +206,8 @@ namespace Anekdotify.Api.Controllers
             {
                 return Unauthorized("User ID not found in token claims.");
             }
-            jokeCreateDTO.SourceId = -4; // Set SourceId to -1 for suggested jokes
-            var joke = await _jokeService.SuggestJokeAsync(jokeCreateDTO, userId);
+            jokeCreateDto.SourceId = -4; // Set SourceId to -1 for suggested jokes
+            var joke = await _jokeService.SuggestJokeAsync(jokeCreateDto, userId);
             return Ok(joke);
         }
         [HttpGet]
@@ -231,23 +223,19 @@ namespace Anekdotify.Api.Controllers
             {
                 return Unauthorized("User ID not found in token claims.");
             }
-            var suggestedBM = await _jokeService.GetSuggestedByMeJokes(userId);
-            if (suggestedBM == null)
-            {
-                return NotFound("Suggested jokes not found");
-            }
-            return Ok(suggestedBM);
+            var suggestedBm = await _jokeService.GetSuggestedByMeJokes(userId);
+            return Ok(suggestedBm);
         }
 
         [HttpPut("{id:int}")]
         [Authorize(Roles = "Admin, Moderator")]
-        public async Task<IActionResult> UpdateJokeAsync([FromRoute] int id, [FromBody] JokeUpdateDTO jokeUpdateDTO)
+        public async Task<IActionResult> UpdateJokeAsync([FromRoute] int id, [FromBody] JokeUpdateDto? jokeUpdateDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            if (jokeUpdateDTO == null)
+            if (jokeUpdateDto == null)
             {
                 return BadRequest("Joke content cannot be empty.");
             }
@@ -256,8 +244,8 @@ namespace Anekdotify.Api.Controllers
             {
                 return NotFound($"Joke with ID {id} not found.");
             }
-            var jokeDTO = await _jokeService.UpdateJokeAsync(id, jokeUpdateDTO);
-            return Ok(jokeDTO);
+            var jokeDto = await _jokeService.UpdateJokeAsync(id, jokeUpdateDto);
+            return Ok(jokeDto);
         }
 
         [HttpDelete("{id:int}")]
@@ -293,9 +281,10 @@ namespace Anekdotify.Api.Controllers
                 return NotFound($"Joke with ID {jokeId} not found.");
             }
 
-            var isSaved = await _userSavedJokeService.IsJokeSavedByUserAsync(new SaveJokeDTO { JokeId = jokeId }, userId);
+            var isSaved = await _userSavedJokeService.IsJokeSavedByUserAsync(new SaveJokeDto { JokeId = jokeId }, userId);
 
             return Ok(isSaved);
         }
+        
     }
 }

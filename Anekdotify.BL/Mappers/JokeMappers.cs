@@ -6,14 +6,14 @@ namespace Anekdotify.BL.Mappers
 {
     public static class JokeMappers
     {
-        public static JokeDTO ToJokeDTO(this Joke joke)
+        public static JokeDto ToJokeDto(this Joke joke)
         {
             if (joke == null)
             {
                 throw new ArgumentNullException(nameof(joke), "Joke cannot be null.");
             }
 
-            return new JokeDTO
+            return new JokeDto
             {
                 JokeId = joke.JokeId,
                 Text = joke.Text,
@@ -24,44 +24,44 @@ namespace Anekdotify.BL.Mappers
                 ClassificationName = joke.Classification?.Name,
                 TotalLikes = joke.JokeRatings.Count(jr => jr.Rating),
                 TotalDislikes = joke.JokeRatings.Count(jr => !jr.Rating),
-                Comments = joke.Comments.Select(c => c.ToCommentDTO()).ToList().BuildHierarchicalComments()
+                Comments = joke.Comments.Select(c => c.ToCommentDto()).ToList().BuildHierarchicalComments()
             };
         }
-        public static Joke ToJokeFromCreateDTO(this JokeCreateDTO jokeCreateDTO, string userId)
+        public static Joke ToJokeFromCreateDto(this JokeCreateDto? jokeCreateDto, string userId)
         {
-            if (jokeCreateDTO == null)
+            if (jokeCreateDto == null)
             {
-                throw new ArgumentNullException(nameof(jokeCreateDTO), "JokeCreateDTO cannot be null.");
+                throw new ArgumentNullException(nameof(jokeCreateDto), "JokeCreateDTO cannot be null.");
             }
 
             return new Joke
             {
-                Text = jokeCreateDTO.Text,
-                ClassificationId = jokeCreateDTO.ClassificationId,
-                SourceId = jokeCreateDTO.SourceId ?? 0,
+                Text = jokeCreateDto.Text,
+                ClassificationId = jokeCreateDto.ClassificationId,
+                SourceId = jokeCreateDto.SourceId ?? 0,
                 SubbmitedByUserId = userId
             };
         }
-        public static Joke UpdateJokeFromJokeDTO(this Joke jokeModel, JokeUpdateDTO jokeUpdateDTO)
+        public static Joke UpdateJokeFromJokeDto(this Joke jokeModel, JokeUpdateDto? jokeUpdateDto)
         {
-            if (!string.IsNullOrWhiteSpace(jokeUpdateDTO.Text))
+            if (!string.IsNullOrWhiteSpace(jokeUpdateDto?.Text))
             {
-                jokeModel.Text = jokeUpdateDTO.Text;
+                jokeModel.Text = jokeUpdateDto.Text;
             }
-            if (jokeUpdateDTO.ClassificationId != null)
+            if (jokeUpdateDto?.ClassificationId != null)
             {
-                jokeModel.ClassificationId = jokeUpdateDTO.ClassificationId;
+                jokeModel.ClassificationId = jokeUpdateDto.ClassificationId;
             }
             return jokeModel;
         }
 
-        public static JokeDTO ToDTOFromPreviewDTO(this JokePreviewDTO jokePreview)
+        public static JokeDto ToDtoFromPreviewDto(this JokePreviewDto jokePreview)
         {
             if (jokePreview == null)
             {
                 throw new ArgumentNullException(nameof(jokePreview), "JokePreviewDTO cannot be null.");
             }
-            return new JokeDTO
+            return new JokeDto
             {
                 JokeId = jokePreview.JokeId,
                 Text = jokePreview.Text,
@@ -70,26 +70,26 @@ namespace Anekdotify.BL.Mappers
                 TotalLikes = jokePreview.LikeCount,
                 TotalDislikes = jokePreview.DislikeCount,
                 SourceName = jokePreview.Source,
-                Comments = new List<CommentDTO>(jokePreview.CommentCount)
+                Comments = new List<CommentDto>(jokePreview.CommentCount)
             };
         }
-        public static JokePreviewDTO ToPreviewDTOFromDTO(this JokeDTO jokeDTO)
+        public static JokePreviewDto ToPreviewDtoFromDto(this JokeDto jokeDto)
         {
-            return new JokePreviewDTO
+            return new JokePreviewDto
             {
-                JokeId = jokeDTO.JokeId,
-                Text = jokeDTO.Text,
-                SubmissionDate = jokeDTO.SubmissionDate,
-                ClassificationName = jokeDTO.ClassificationName ?? "Unknown", 
-                LikeCount  = jokeDTO.TotalLikes,
-                DislikeCount = jokeDTO.TotalDislikes,
-                CommentCount = jokeDTO.Comments.Count,
-                Source = jokeDTO.SourceName ?? "Unknown"
+                JokeId = jokeDto.JokeId,
+                Text = jokeDto.Text,
+                SubmissionDate = jokeDto.SubmissionDate,
+                ClassificationName = jokeDto.ClassificationName ?? "Unknown", 
+                LikeCount  = jokeDto.TotalLikes,
+                DislikeCount = jokeDto.TotalDislikes,
+                CommentCount = jokeDto.Comments.Count,
+                Source = jokeDto.SourceName ?? "Unknown"
             };
         }
-        public static JokePreviewDTO ToPreviewFromJoke (this Joke joke)
+        public static JokePreviewDto ToPreviewFromJoke (this Joke joke)
         {
-            return new JokePreviewDTO
+            return new JokePreviewDto
             {
                 JokeId = joke.JokeId,
                 Text = joke.Text,

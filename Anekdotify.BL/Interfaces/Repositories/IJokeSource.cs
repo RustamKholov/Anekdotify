@@ -9,6 +9,6 @@ namespace Anekdotify.BL.Interfaces.Repositories
 {
     public interface IJokeSource
     {
-        Task<JokeCreateDTO?> GetJokeAsync();
+        Task<JokeCreateDto?> GetJokeAsync();
     }
 }

@@ -1,6 +1,6 @@
 namespace Anekdotify.Models.DTOs.Accounts
 {
-    public class NewUserDTO
+    public class NewUserDto
     {
         public string UserName { get; set; } = null!;
         public string Email { get; set; } = null!;

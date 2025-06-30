@@ -1,4 +1,4 @@
-﻿
+﻿@page "/suggest"
 @using Anekdotify.Models.DTOs.Classification
 @inject ApiClient ApiClient
 @inject IToastService Toast
@@ -9,14 +9,14 @@
     <div class="card shadow-sm rounded-4 p-4 bg-white text-dark flex-fill w-100"
         style="min-width:260px; max-width:420px;">
         <h5 class="mb-3 text-center">Suggest a Joke</h5>
-        <EditForm Model="newJoke" OnValidSubmit="SubmitJoke">
+        <EditForm Model="_newJoke" OnValidSubmit="SubmitJoke">
             <DataAnnotationsValidator />
             <div class="mb-3">
-                <InputSelect @bind-Value="newJoke.ClassificationId" class="form-select">
+                <InputSelect @bind-Value="_newJoke.ClassificationId" class="form-select">
                     <option value="">Category</option>
-                    @if(classifications != null)
+                    @if(_classifications != null)
                     {
-                        foreach (var c in classifications)
+                        foreach (var c in _classifications)
                         {
                             <option value="@c.ClassificationId">@c.Name</option>
                         }
@@ -28,7 +28,7 @@
                 </InputSelect>
             </div>
             <div class="mb-3">
-                <InputTextArea @bind-Value="newJoke.Text" class="form-control" rows="3" placeholder="Your joke..." />
+                <InputTextArea @bind-Value="_newJoke.Text" class="form-control" rows="3" placeholder="Your joke..." />
             </div>
             <div class="d-grid">
                 <button class="btn btn-secondary" type="submit">Submit</button>
@@ -40,17 +40,17 @@
     <div class="card shadow-sm rounded-4 p-4 bg-white text-dark flex-fill w-100"
         style="min-width:260px; max-width:420px; max-height:70vh; overflow-y:auto;">
         <h6 class="mb-3 text-center">Your Suggestions</h6>
-        @if (suggestedJokes == null)
+        @if (_suggestedJokes == null)
         {
             <div class="text-muted text-center">Loading your suggestions...</div>
         }
-        else if (!suggestedJokes.Any())
+        else if (!_suggestedJokes.Any())
         {
             <div class="text-muted text-center">You haven't suggested any jokes yet.</div>
         }
         else
         {
-            @foreach (var joke in suggestedJokes)
+            @foreach (var joke in _suggestedJokes)
             {
                 <SuggestedJokeCard Joke="joke" />
             }
@@ -59,16 +59,16 @@
 </div>
 
 @code {
-    private List<ClassificationDetailedDTO>? classifications;
-    private JokeCreateDTO newJoke = new();
-    private List<SuggestedJokeDTO>? suggestedJokes;
+    private List<ClassificationDetailedDto>? _classifications;
+    private JokeCreateDto _newJoke = new();
+    private List<SuggestedJokeDto>? _suggestedJokes;
 
     protected override async Task OnInitializedAsync()
     {
-        var res = await ApiClient.GetAsync<List<ClassificationDetailedDTO>>("api/classification");
+        var res = await ApiClient.GetAsync<List<ClassificationDetailedDto>>("api/classification");
         if (res.IsSuccess)
         {
-            classifications = res.Data ?? new List<ClassificationDetailedDTO>();
+            _classifications = res.Data ?? new List<ClassificationDetailedDto>();
         }
         else
         {
@@ -78,21 +78,21 @@
     }
     private async Task LoadUserSuggestions()
     {
-        var res = await ApiClient.GetAsync<List<SuggestedJokeDTO>>("api/joke/suggested-by-me");
+        var res = await ApiClient.GetAsync<List<SuggestedJokeDto>>("api/joke/suggested-by-me");
         if (res.IsSuccess)
-            suggestedJokes = res.Data ?? new List<SuggestedJokeDTO>();
+            _suggestedJokes = res.Data ?? new List<SuggestedJokeDto>();
         else
             Toast.ShowError("Failed to load your suggestions.");
     }
     private async Task SubmitJoke()
     {
-        var response = await ApiClient.PostAsync<SuggestedJokeDTO, JokeCreateDTO>("api/joke/suggest", newJoke);
+        var response = await ApiClient.PostAsync<SuggestedJokeDto, JokeCreateDto>("api/joke/suggest", _newJoke);
         if (response.IsSuccess)
         {
             if (response.Data != null)
             {
-                var classificationName = classifications != null
-                    ? classifications.FirstOrDefault(c => c.ClassificationId == newJoke.ClassificationId)?.Name
+                var classificationName = _classifications != null
+                    ? _classifications.FirstOrDefault(c => c.ClassificationId == _newJoke.ClassificationId)?.Name
                     : null;
                 if (classificationName != null)
                 {
@@ -100,7 +100,7 @@
                 }
             }
             Toast.ShowSuccess("Joke submitted for review!");
-            newJoke = new(); // reset form
+            _newJoke = new(); // reset form
             await LoadUserSuggestions();
         }
         StateHasChanged();

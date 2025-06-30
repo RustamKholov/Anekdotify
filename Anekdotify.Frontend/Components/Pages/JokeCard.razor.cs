@@ -8,9 +8,9 @@ namespace Anekdotify.Frontend.Components.Pages
 {
     public partial class JokeCard
     {
-        [Parameter] public required JokeDTO Joke { get; set; }
+        [Parameter] public required JokeDto Joke { get; set; }
         [Parameter] public EventCallback OnFirstFlip { get; set; }
-        [Parameter] public bool IsFlipped { get; set; } = false;
+        [Parameter] public bool IsFlipped { get; set; }
         private AppModal? Modal { get; set; }
 
         public int? SelectedJokeId;
@@ -32,7 +32,7 @@ namespace Anekdotify.Frontend.Components.Pages
 
         protected override async Task OnInitializedAsync()
         {
-            var resRate = await ApiClient.GetAsync<RatingDTO>($"api/joke/{Joke.JokeId}/rating");
+            var resRate = await ApiClient.GetAsync<RatingDto>($"api/joke/{Joke.JokeId}/rating");
             if (resRate is { IsSuccess: true, Data.IsLike: not null })
             {
                 _isLiked = resRate.Data.IsLike;
@@ -99,7 +99,7 @@ namespace Anekdotify.Frontend.Components.Pages
                 return;
             }
 
-            var updateRes = await ApiClient.PutAsync<RatingDTO, bool>($"api/joke/{Joke.JokeId}/rating", newValue);
+            var updateRes = await ApiClient.PutAsync<RatingDto, bool>($"api/joke/{Joke.JokeId}/rating", newValue);
             if (updateRes.IsSuccess)
             {
                 if (newValue)
@@ -144,10 +144,10 @@ namespace Anekdotify.Frontend.Components.Pages
 
         private int CommentsCount()
         {
-            return Joke?.Comments == null ? 0 : CountCommentsRecursive(Joke.Comments);
+            return CountCommentsRecursive(Joke.Comments);
         }
 
-        private static int CountCommentsRecursive(List<CommentDTO> comments)
+        private static int CountCommentsRecursive(List<CommentDto> comments)
         {
             var count = 0;
             foreach (var comment in comments)

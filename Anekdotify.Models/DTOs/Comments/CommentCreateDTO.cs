@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Anekdotify.Models.DTOs.Comments
 {
-    public class CommentCreateDTO
+    public class CommentCreateDto
     {
 
         [Required]

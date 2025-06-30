@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Anekdotify.BL.Interfaces.Repositories;
+﻿using Anekdotify.BL.Interfaces.Repositories;
 using Anekdotify.BL.Interfaces.Services;
 using Anekdotify.Models.DTOs.Jokes;
 using Anekdotify.Models.Entities;
@@ -25,7 +20,7 @@ namespace Anekdotify.BL.Repositories
             _classifficationService = classifficationService;
             _sourceFetchedService = sourceFetchedService;
         }
-        public async Task<JokeCreateDTO?> GetJokeAsync()
+        public async Task<JokeCreateDto?> GetJokeAsync()
         {
             if (_fetchedJokes.Count == 0)
             {
@@ -78,7 +73,7 @@ namespace Anekdotify.BL.Repositories
             await _sourceFetchedService.AddSourceFetchedJokeAsync(1, parsed.Id ?? 0);
             _fetchedJokes.Add(parsed.Id ?? 0);
             
-            return new JokeCreateDTO
+            return new JokeCreateDto
                 {
                     Text = isTwoParted 
                         ? $"{parsed.Setup ?? string.Empty}\n{parsed.Delivery ?? string.Empty}" 

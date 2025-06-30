@@ -1,10 +1,9 @@
 ﻿@inject ApiClient ApiClient
 @inject IToastService ToastService
-@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 
-    @if (isActive)
+    @if (IsActive)
     {
     <button class="btn btn-secondary btn-lg w-md-auto" @onclick="GetAJoke">Get Daily Joke</button>
     }
@@ -15,13 +14,13 @@
         </button>
 
         <div class="mt-2 small text-muted text-center">
-            <i class="bi bi-clock"></i> Next joke after @RandomJokeAvalibleAt.ToString("g")
+            <i class="bi bi-clock"></i> Next joke after @_randomJokeAvalibleAt.ToString("g")
         </div>
     }
 
 @code {
-    public bool isActive = true;
-    private DateTime RandomJokeAvalibleAt = DateTime.Now;
+    public bool IsActive = true;
+    private DateTime _randomJokeAvalibleAt = DateTime.Now;
 
     [Parameter]
     public Func<Task>? GetRandomJoke { get; set; }
@@ -31,8 +30,8 @@
         var isActiveRes = await ApiClient.GetAsync<IsActiveRandomResponse>("api/joke/random/isActive");
         if (isActiveRes.IsSuccess && isActiveRes.Data != null)
         {
-            isActive = isActiveRes.Data.IsActive;
-            RandomJokeAvalibleAt = isActiveRes.Data.NextRandomJokeAvailableAt;
+            IsActive = isActiveRes.Data.IsActive;
+            _randomJokeAvalibleAt = isActiveRes.Data.NextRandomJokeAvailableAt;
         }
         else
         {
@@ -47,8 +46,8 @@
             var isActiveRes = await ApiClient.GetAsync<IsActiveRandomResponse>("api/joke/random/isActive");
             if (isActiveRes.IsSuccess && isActiveRes.Data != null)
             {
-                isActive = isActiveRes.Data.IsActive;
-                RandomJokeAvalibleAt = isActiveRes.Data.NextRandomJokeAvailableAt;
+                IsActive = isActiveRes.Data.IsActive;
+                _randomJokeAvalibleAt = isActiveRes.Data.NextRandomJokeAvailableAt;
                 NavigationManager.Refresh();
             }
             else

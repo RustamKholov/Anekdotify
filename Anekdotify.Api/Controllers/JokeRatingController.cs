@@ -62,23 +62,23 @@ namespace Anekdotify.Api.Controllers
                 return NotFound($"Joke with ID {jokeId} not found.");
             }
 
-            var jokeRatingDTO = new JokeRatingDTO
+            var jokeRatingDto = new JokeRatingDto
             {
                 JokeId = jokeId,
                 IsLike = isLike
             };
 
-            var setOperationResult = await _jokeRatingsService.SetJokeRatingAsync(jokeRatingDTO, userId);
+            var setOperationResult = await _jokeRatingsService.SetJokeRatingAsync(jokeRatingDto, userId);
 
             if (setOperationResult.IsSuccess)
             {
-                return Ok(new RatingDTO { IsLike = isLike });
+                return Ok(new RatingDto { IsLike = isLike });
             }
             if (setOperationResult.IsNotFound)
             {
                 return NotFound(setOperationResult.ErrorMessage);
             }
-            return Ok(new RatingDTO { IsLike = isLike });
+            return Ok(new RatingDto { IsLike = isLike });
         }
         [HttpDelete]
         [Route("{jokeId:int}/rating/delete")]

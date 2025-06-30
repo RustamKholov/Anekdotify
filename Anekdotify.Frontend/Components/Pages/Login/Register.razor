@@ -51,7 +51,7 @@
 
 
 @code {
-    private RegisterDTO registerModel = new RegisterDTO();
+    private RegisterDto registerModel = new RegisterDto();
     [Inject] 
     private IToastService? ToastService { get; set; }
     private bool isLoading = false;
@@ -61,7 +61,7 @@
         try
         {
             isLoading = true;
-            var response = await ApiClient.PostAsync<RegisterResponseModel, RegisterDTO>("api/account/register", registerModel);
+            var response = await ApiClient.PostAsync<RegisterResponseModel, RegisterDto>("api/account/register", registerModel);
 
             if (response == null || response.Data == null)
             {
@@ -89,7 +89,7 @@
             {
                 ToastService?.ShowError("Registration failed. Please check your credentials.");
             }
-            registerModel = new RegisterDTO();
+            registerModel = new RegisterDto();
         }
         catch (Exception e)
         {

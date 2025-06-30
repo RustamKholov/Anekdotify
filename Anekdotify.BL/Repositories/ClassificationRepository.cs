@@ -36,20 +36,20 @@ namespace Anekdotify.BL.Repositories
             return OperationResult.Success();
         }
 
-        public async Task<OperationResult<List<ClassificationDetailedDTO>>> GetAllClassificationsAsync()
+        public async Task<OperationResult<List<ClassificationDetailedDto>>> GetAllClassificationsAsync()
         {
-            var classifications = await _context.Classifications.Select(cl => cl.ToDetailedDTO()).ToListAsync();
-            return OperationResult<List<ClassificationDetailedDTO>>.Success(classifications);
+            var classifications = await _context.Classifications.Select(cl => cl.ToDetailedDto()).ToListAsync();
+            return OperationResult<List<ClassificationDetailedDto>>.Success(classifications);
         }
 
-        public async Task<OperationResult<ClassificationDTO>> GetClassificationByIdAsync(int classificationId)
+        public async Task<OperationResult<ClassificationDto>> GetClassificationByIdAsync(int classificationId)
         {
             var existingClassification = await _context.Classifications.FirstOrDefaultAsync(cl => cl.ClassificationId == classificationId);
             if (existingClassification == null)
             {
-                return OperationResult<ClassificationDTO>.NotFound(new ClassificationDTO { ClassificationName = "NotFound" }, "Classification not found");
+                return OperationResult<ClassificationDto>.NotFound(new ClassificationDto { ClassificationName = "NotFound" }, "Classification not found");
             }
-            return OperationResult<ClassificationDTO>.Success(existingClassification.ToDTO());
+            return OperationResult<ClassificationDto>.Success(existingClassification.ToDto());
         }
 
         public async Task<OperationResult<Classification>> GetClassificationByNameAsync(string classificationName)
@@ -67,16 +67,16 @@ namespace Anekdotify.BL.Repositories
             return await _context.Classifications.AnyAsync(cl => cl.Name.ToLower() == classificationName.ToLower());
         }
 
-        public async Task<OperationResult<ClassificationDTO>> UpdateClassificationAsync(int classificationId, string classificationName)
+        public async Task<OperationResult<ClassificationDto>> UpdateClassificationAsync(int classificationId, string classificationName)
         {
             var existingClassification = await _context.Classifications.FirstOrDefaultAsync(cl => cl.ClassificationId == classificationId);
             if (existingClassification == null)
             {
-                return OperationResult<ClassificationDTO>.NotFound(new ClassificationDTO { ClassificationName = "NotFound" }, "Classification not found");
+                return OperationResult<ClassificationDto>.NotFound(new ClassificationDto { ClassificationName = "NotFound" }, "Classification not found");
             }
             existingClassification.Name = classificationName;
             await _context.SaveChangesAsync();
-            return OperationResult<ClassificationDTO>.Success(existingClassification.ToDTO());
+            return OperationResult<ClassificationDto>.Success(existingClassification.ToDto());
         }
     }
 }

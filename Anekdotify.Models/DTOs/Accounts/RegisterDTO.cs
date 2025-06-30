@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Anekdotify.Models.DTOs.Accounts
 {
-    public class RegisterDTO
+    public class RegisterDto
     {
         [Required]
         public string? Username { get; set; }

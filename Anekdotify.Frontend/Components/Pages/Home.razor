@@ -1,12 +1,5 @@
 ﻿@page "/"
-@using Anekdotify.Frontend.Components.Pages.Login
-@using Blazored.LocalStorage
-@using System.Security.Claims
 @rendermode RenderMode.InteractiveServer
-@inject IToastService ToastService
-@inject AuthenticationStateProvider AuthenticationStateProvider
-@inject NavigationManager NavigationManager
-@inject ILocalStorageService LocalStorageService
 
 <AuthorizeView>
     <NotAuthorized>

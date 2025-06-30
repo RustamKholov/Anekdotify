@@ -5,16 +5,16 @@ namespace Anekdotify.BL.Mappers
 {
     public static class ClassificationMapper
     {
-        public static ClassificationDTO ToDTO(this Classification classification)
+        public static ClassificationDto ToDto(this Classification classification)
         {
-            return new ClassificationDTO
+            return new ClassificationDto
             {
                 ClassificationName = classification.Name
             };
         }
-        public static ClassificationDetailedDTO ToDetailedDTO(this Classification classification)
+        public static ClassificationDetailedDto ToDetailedDto(this Classification classification)
         {
-            return new ClassificationDetailedDTO
+            return new ClassificationDetailedDto
             {
                 ClassificationId = classification.ClassificationId,
                 Name = classification.Name

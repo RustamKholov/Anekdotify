@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using Anekdotify.Frontend.Authentication;
 using Anekdotify.Frontend.Clients;
-using Anekdotify.Models.DTOs.Comments;
 using Anekdotify.Models.DTOs.Jokes;
 using Blazored.Toast.Services;
 using Microsoft.AspNetCore.Components;
@@ -11,9 +10,9 @@ namespace Anekdotify.Frontend.Components.Pages
 {
     public partial class JokesTable
     {
-        private List<JokeDTO> jokes = new List<JokeDTO>();
-        private bool isLoading = true;
-        private string? errorMessage = null;
+        private List<JokeDto> _jokes = new List<JokeDto>();
+        private bool _isLoading = true;
+        private string? _errorMessage;
 
         [Inject] public ApiClient? ApiClient { get; set; }
         [Inject] public AuthenticationStateProvider? AuthenticationStateProvider { get; set; }
@@ -25,9 +24,9 @@ namespace Anekdotify.Frontend.Components.Pages
         }
         private async Task LoadJokes()
         {
-            isLoading = true;
-            errorMessage = null;
-            jokes = new List<JokeDTO>();
+            _isLoading = true;
+            _errorMessage = null;
+            _jokes = new List<JokeDto>();
             StateHasChanged();
 
             try
@@ -41,27 +40,27 @@ namespace Anekdotify.Frontend.Components.Pages
                     {
                         if (ApiClient != null)
                         {
-                            var response = await ApiClient.GetAsync<List<JokeDTO>>("api/saved-jokes");
-                            jokes = response?.Data ?? new List<JokeDTO>();
+                            var response = await ApiClient.GetAsync<List<JokeDto>>("api/saved-jokes");
+                            _jokes = response.Data ?? new List<JokeDto>();
                         }
                         else
                         {
-                            errorMessage = "API client is not available.";
+                            _errorMessage = "API client is not available.";
                         }
                     }
                     else
                     {
-                        errorMessage = "You need to be logged in to view jokes.";
+                        _errorMessage = "You need to be logged in to view jokes.";
                     }
                 }
                 else
                 {
-                    errorMessage = "Authentication provider is not available.";
+                    _errorMessage = "Authentication provider is not available.";
                 }
             }
             catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized || ex.StatusCode == HttpStatusCode.Forbidden)
             {
-                errorMessage = "Access denied. Please log in.";
+                _errorMessage = "Access denied. Please log in.";
                 if (NavigationManager != null)
                 {
                     NavigationManager.NavigateTo("/login", forceLoad: true);
@@ -69,15 +68,15 @@ namespace Anekdotify.Frontend.Components.Pages
             }
             catch (Exception ex)
             {
-                errorMessage = $"Failed to load jokes: {ex.Message}";
+                _errorMessage = $"Failed to load jokes: {ex.Message}";
                 Console.WriteLine($"Error loading jokes: {ex}");
             }
             finally
             {
-                isLoading = false;
-                if (errorMessage != null)
+                _isLoading = false;
+                if (_errorMessage != null)
                 {
-                    ToastService?.ShowError(errorMessage);
+                    ToastService?.ShowError(_errorMessage);
                 }
 
             }

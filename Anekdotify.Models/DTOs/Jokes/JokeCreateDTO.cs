@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Anekdotify.Models.DTOs.Jokes
 {
-    public class JokeCreateDTO
+    public class JokeCreateDto
     {
         [Required]
         [MinLength(5, ErrorMessage = "Content must be 5> characters")]

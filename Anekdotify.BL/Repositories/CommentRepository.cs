@@ -45,11 +45,12 @@ namespace Anekdotify.BL.Repositories
             return comment;
         }
 
-        public async Task<List<CommentDTO>> GetAllCommentsAsync(CommentsQueryObject query)
+        public async Task<List<CommentDto>> GetAllCommentsAsync(CommentsQueryObject query)
         {
             var baseQuery = _context.Comments
                 .AsNoTracking()
-                .Where(c => query.JokeId == null || c.JokeId == query.JokeId);
+                .Where(c => (query.JokeId == null || c.JokeId == query.JokeId) && 
+                            (query.UserId == null || c.UserId == query.UserId));
 
             baseQuery = query.ByDescending
                 ? baseQuery.OrderByDescending(c => c.CommentDate)
@@ -58,7 +59,7 @@ namespace Anekdotify.BL.Repositories
             var pagedComments = await baseQuery
                 .Skip((query.PageNumber - 1) * query.PageSize)
                 .Take(query.PageSize)
-                .Select(c => new CommentDTO
+                .Select(c => new CommentDto
                 {
                     JokeId = c.JokeId,
                     CommentId = c.CommentId,
@@ -81,14 +82,14 @@ namespace Anekdotify.BL.Repositories
             return await _context.Comments.FirstOrDefaultAsync(c => c.CommentId == id);
         }
 
-        public async Task<Comment?> UpdateCommentAsync(int id, CommentUpdateDTO commentUpdateDTO)
+        public async Task<Comment?> UpdateCommentAsync(int id, CommentUpdateDto commentUpdateDto)
         {
             var existingComment = await _context.Comments.FindAsync(id);
             if (existingComment == null)
             {
                 return null;
             }
-            existingComment.CommentText = commentUpdateDTO.CommentText;
+            existingComment.CommentText = commentUpdateDto.CommentText;
             await _context.SaveChangesAsync();
             return existingComment;
         }

@@ -29,7 +29,7 @@ public class CustomAuthStateProvider(ProtectedLocalStorage protectedLocalStorage
     {
         await protectedLocalStorage.SetAsync("sessionState", loginResponse);
         ClaimsIdentity identity;
-        if (!string.IsNullOrEmpty(loginResponse?.Token))
+        if (!string.IsNullOrEmpty(loginResponse.Token))
         {
             identity = GetClaimsIdentity(loginResponse.Token);
         }

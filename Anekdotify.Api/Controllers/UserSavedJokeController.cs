@@ -44,11 +44,11 @@ namespace Anekdotify.Api.Controllers
             }
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
-            var saveJokeDTO = new SaveJokeDTO
+            var saveJokeDto = new SaveJokeDto
             {
                 JokeId = jokeId
             };
-            var result = await _userSavedJokeService.SaveJokeAsync(saveJokeDTO, userId);
+            var result = await _userSavedJokeService.SaveJokeAsync(saveJokeDto, userId);
 
             if (result.IsSuccess) return Ok(true);
 
@@ -68,15 +68,11 @@ namespace Anekdotify.Api.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-            if (userId == null)
-            {
-                return NotFound("User not found");
-            }
-            var saveJokeDTO = new SaveJokeDTO
+            var saveJokeDto = new SaveJokeDto
             {
                 JokeId = jokeId
             };
-            var result = await _userSavedJokeService.RemoveSavedJokeAsync(saveJokeDTO, userId);
+            var result = await _userSavedJokeService.RemoveSavedJokeAsync(saveJokeDto, userId);
 
             if (result.IsNotFound)
             {
@@ -84,7 +80,7 @@ namespace Anekdotify.Api.Controllers
             }
             if (result.IsSuccess)
             {
-                return Ok(new { Deleted = true, saveJokeDTO.JokeId });
+                return Ok(new { Deleted = true, saveJokeDto.JokeId });
             }
             return BadRequest(result.ErrorMessage);
         }
