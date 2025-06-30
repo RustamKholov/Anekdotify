@@ -13,15 +13,17 @@ else if (errorMessage != null)
     <p class="text-danger">Error: @errorMessage</p>
     <button class="btn btn-primary" @onclick="LoadJokes">Try Again</button>
 }
-else if (jokes != null && jokes.Any())
+else if (jokes.Any())
 {
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 w-100"
         style=" min-height: 75vh;">
         @foreach (var joke in jokes)
         {
             <div class="col">
-                <JokeCard Joke="@joke"/>
-                <CommentsModal JokeId="@joke.JokeId"/>
+                <JokeCard Joke="@joke" IsFlipped="@true"/>
+                <div class="joke-card-comments">
+                    <CommentsModal JokeId="@joke.JokeId"/>
+                </div>
             </div>
         }
     </div>

@@ -1,51 +1,178 @@
-﻿@using Anekdotify.Frontend.Components.BaseComponents
+﻿@using System.Net
 @inject ApiClient ApiClient
-@inject IToastService ToastService
-@inject ILocalStorageService LocalStorageService
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@using System.Timers
 
-<div class="d-flex justify-content-center align-items-center w-100 h-100" style="min-height: 60vh;">
-    <div style="max-width: 420px; width: 100%;">
-        <div class="position-relative">
-            <JokeCard Joke="@joke" OnFirstFlip="OnFirstFlipAsync" IsPlaceholder="@(joke == null)" />
-            <div class="w-100">
-                @if (joke != null)
-                {
-                    <CommentsModal JokeId="@joke.JokeId" OnCommentsChanged="UpdateComments" />
-                }
-            </div>
+
+@if (_isLoading)
+{
+    <div class="text-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
         </div>
     </div>
+}
+else
+{
+    <div class="d-flex justify-content-center align-items-center w-100 h-100" style="min-height: 60vh;">
+    <div style="max-width: 420px; width: 100%;" class="position-relative">
+
+        @if (_showingPreviousJoke)
+        {
+            <button class="btn btn-outline-secondary position-absolute top-0 start-0 mb-3" 
+                    style="z-index: 100;" 
+                    @onclick="ReturnToTimer">
+                <i class="bi bi-arrow-left"></i> Back
+            </button>
+        }
+        
+        @if (_isJokeAvailable || _showingPreviousJoke)
+        {
+            <div class="invitation-container" @onclick="OnFlipAsync">
+                <div class="invitation-content @(IsFlipped ? "flipped" : "")">
+                    <div class="content-front d-flex align-items-center justify-content-center">
+                        <div class="text-center p-4">
+                            <i class="bi bi-emoji-smile fs-1 mb-3"></i>
+                            <h3>@(_showingPreviousJoke ? "Yesterday's Joke" : "Your Daily Joke is Ready!")</h3>
+                            <p class="text-muted mt-3">Tap to reveal @(_showingPreviousJoke ? "previous" : "today's")</p>
+                            @if (!_showingPreviousJoke)
+                            {
+                                <div class="mt-4">
+                                    <span class="badge bg-success">New</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="content-back">
+                        @if (_currentJoke != null)
+                        {
+                            <JokeCard Joke="@_currentJoke" />
+                            <div class="joke-card-comments">
+                                <CommentsModal JokeId="@_currentJoke.JokeId" OnCommentsChanged="UpdateComments" />
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="invitation-container not-available">
+                    <div class="invitation-content text-center p-4">
+                        <i class="bi bi-clock-history fs-1 mb-3 text-secondary"></i>
+                        <h3>Next Joke in @_timeUntilNextJoke</h3>
+                        <p class="text-muted mt-3">Come back tomorrow!</p>
+                        
+                        @if (_previousJokeAvailable)
+                        {
+                            <button class="btn btn-outline-secondary mt-4" @onclick="ShowPreviousJoke">
+                                <i class="bi bi-arrow-left"></i> See Yesterday's Joke
+                            </button>
+                        }
+                    </div>
+            </div>
+        }
+    </div>
 </div>
+}
+
+
 
 @code {
+    private bool IsFlipped { get; set; }
+    private bool _isJokeAvailable;
+    private bool _previousJokeAvailable;
+    private bool _showingPreviousJoke;
+    private JokeDTO? _currentJoke;
+    private string _timeUntilNextJoke = "";
+    private bool _isLoading = true;
 
-    private JokeDTO? joke;
 
-    private async Task OnFirstFlipAsync()
+    protected override async Task OnInitializedAsync()
     {
-        if (joke == null)
+        _isLoading = true;
+        try
         {
-            var result = await ApiClient.GetAsync<JokeDTO>("api/joke/random");
-            if (result.IsSuccess && result.Data != null)
+            if (AuthenticationStateProvider is CustomAuthStateProvider customAuthStateProvider)
             {
-                joke = result.Data;
-                StateHasChanged();
-            }
-            else
-            {
-                ToastService.ShowError(result.ErrorMessage ?? "Failed to fetch joke.");
+                var authState = await customAuthStateProvider.GetAuthenticationStateAsync();
+                var user = authState.User;
+
+                if (user.Identity?.IsAuthenticated == true)
+                {
+                    var newRandomAvalibleRes = await ApiClient.GetAsync<IsActiveRandomResponse>("api/joke/random/isActive");
+                    _isJokeAvailable = newRandomAvalibleRes.Data?.IsActive ?? false;
+
+                    var isPreviousActualResult = await ApiClient.GetAsync<bool>("api/joke/last-viewed/isActual");
+                    _previousJokeAvailable = isPreviousActualResult?.Data ?? false;
+
+                    UpdateTimeUntilNextJoke();
+
+                    var timer = new Timer(1000);
+                    timer.Elapsed += (_, _) => UpdateTimeUntilNextJoke();
+                    timer.Start();
+                }
             }
         }
+        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized || ex.StatusCode == HttpStatusCode.Forbidden)
+        {
+            NavigationManager?.NavigateTo("/login", forceLoad: true);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task OnFlipAsync()
+    {
+        if (!IsFlipped)
+        {
+            var result = await ApiClient.GetAsync<JokeDTO>("api/joke/random");
+            if (result is { IsSuccess: true, Data: not null })
+            {
+                _currentJoke = result.Data;
+            }
+            
+        }
+        IsFlipped = !IsFlipped;
+    }
+    
+    private void UpdateTimeUntilNextJoke()
+    {
+        var now = DateTime.Now;
+        var tomorrow = DateTime.Today.AddDays(1);
+        var timeSpan = tomorrow - now;
+        _timeUntilNextJoke = $"{timeSpan.Hours}h {timeSpan.Minutes}m";
+        StateHasChanged();
     }
 
 
     private void UpdateComments(List<CommentDTO> comments)
     {
-        if (joke != null)
+        if (_currentJoke != null) _currentJoke.Comments = comments;
+        StateHasChanged();
+    }
+    
+    private async Task ShowPreviousJoke()
+    {
+        var result = await ApiClient.GetAsync<JokeDTO>("api/joke/last-viewed");
+        if (result is { IsSuccess: true, Data: not null })
         {
-            joke.Comments = comments;
+            _currentJoke = result.Data;
+            _showingPreviousJoke = true;
+            IsFlipped = false;
             StateHasChanged();
         }
+
     }
+    private void ReturnToTimer()
+    {
+        _showingPreviousJoke = false;
+        _currentJoke = null;
+        IsFlipped = false;
+        StateHasChanged();
+    }
+    
 }
