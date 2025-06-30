@@ -6,7 +6,6 @@ using Anekdotify.Models.DTOs.Comments;
 using Anekdotify.Models.DTOs.Jokes;
 using Anekdotify.Models.Entities;
 using Microsoft.EntityFrameworkCore;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Anekdotify.BL.Repositories
 {
@@ -17,7 +16,7 @@ namespace Anekdotify.BL.Repositories
         {
             _context = context;
         }
-        public async Task<List<JokeDTO>> GetAllJokesAsync(JokesQueryObject query)
+        public async Task<List<JokeDto>> GetAllJokesAsync(JokesQueryObject query)
         {
             var skip = (query.PageNumber - 1) * query.PageSize;
 
@@ -72,7 +71,7 @@ namespace Anekdotify.BL.Repositories
                     .GroupBy(c => c.JokeId)
                     .ToDictionary(
                         g => g.Key,
-                        g => g.Select(c => new CommentDTO
+                        g => g.Select(c => new CommentDto
                         {
                             JokeId = c.JokeId,
                             CommentId = c.CommentId,
@@ -85,7 +84,7 @@ namespace Anekdotify.BL.Repositories
                         }).ToList()
                     );
 
-            var jokeDTOs = baseJokes.Select(j => new JokeDTO
+            var jokeDtOs = baseJokes.Select(j => new JokeDto
             {
                 JokeId = j.JokeId,
                 Text = j.Text,
@@ -95,14 +94,14 @@ namespace Anekdotify.BL.Repositories
                 SourceId = j.SourceId,
                 TotalLikes = ratings.FirstOrDefault(r => r.JokeId == j.JokeId)?.Likes ?? 0,
                 TotalDislikes = ratings.FirstOrDefault(r => r.JokeId == j.JokeId)?.Dislikes ?? 0,
-                Comments = groupedCommentsDict.TryGetValue(j.JokeId, out List<CommentDTO>? jokeComments)
+                Comments = groupedCommentsDict.TryGetValue(j.JokeId, out List<CommentDto>? jokeComments)
                     ? jokeComments.BuildHierarchicalComments()
-                    : new List<CommentDTO>()
+                    : new List<CommentDto>()
             }).ToList();
 
-            return jokeDTOs;
+            return jokeDtOs;
         }
-        public async Task<JokeDTO?> GetJokeByIdAsync(int jokeId)
+        public async Task<JokeDto?> GetJokeByIdAsync(int jokeId)
         {
             var baseJoke = await _context.Jokes
                 .AsNoTracking()
@@ -149,7 +148,7 @@ namespace Anekdotify.BL.Repositories
                 })
                 .ToListAsync();
 
-            var groupedComments = comments.Select(c => new CommentDTO
+            var groupedComments = comments.Select(c => new CommentDto
             {
                 JokeId = c.JokeId,
                 CommentId = c.CommentId,
@@ -161,7 +160,7 @@ namespace Anekdotify.BL.Repositories
                 TotalDislikes = c.Ratings.Count(r => !r.Rating)
             }).ToList();
 
-            var jokeDTO = new JokeDTO
+            var jokeDto = new JokeDto
             {
                 JokeId = baseJoke.JokeId,
                 Text = baseJoke.Text,
@@ -174,34 +173,34 @@ namespace Anekdotify.BL.Repositories
                 Comments = groupedComments.BuildHierarchicalComments()
             };
 
-            return jokeDTO;
+            return jokeDto;
         }
-        public async Task<Joke> CreateJokeAsync(JokeCreateDTO jokeCreateDTO, string userId)
+        public async Task<Joke> CreateJokeAsync(JokeCreateDto? jokeCreateDto, string userId)
         {
-            if (jokeCreateDTO == null || string.IsNullOrWhiteSpace(jokeCreateDTO.Text))
+            if (jokeCreateDto == null || string.IsNullOrWhiteSpace(jokeCreateDto.Text))
             {
                 throw new ArgumentException("Joke content cannot be empty.");
             }
 
-            var joke = jokeCreateDTO.ToJokeFromCreateDTO(userId);
+            var joke = jokeCreateDto.ToJokeFromCreateDto(userId);
 
             var res = await _context.Jokes.AddAsync(joke);
             await _context.SaveChangesAsync();
 
             return res.Entity;
         }
-        public async Task<Joke> UpdateJokeAsync(int id, JokeUpdateDTO jokeUpdateDTO)
+        public async Task<Joke> UpdateJokeAsync(int id, JokeUpdateDto? jokeUpdateDto)
         {
             var joke = await _context.Jokes.FindAsync(id);
             if (joke == null)
             {
                 throw new KeyNotFoundException($"Joke with ID {id} not found.");
             }
-            if (jokeUpdateDTO == null)
+            if (jokeUpdateDto == null)
             {
                 throw new ArgumentException("Joke update cannot be empty.");
             }
-            joke = joke.UpdateJokeFromJokeDTO(jokeUpdateDTO);
+            joke = joke.UpdateJokeFromJokeDto(jokeUpdateDto);
             _context.Jokes.Update(joke);
             await _context.SaveChangesAsync();
             return joke;
@@ -231,7 +230,7 @@ namespace Anekdotify.BL.Repositories
             return await _context.Jokes.AnyAsync(j => j.JokeId == jokeId);
         }
 
-        public async Task<JokeDTO> GetRandomJokeAsync(List<int> viewedJokes)
+        public async Task<JokeDto> GetRandomJokeAsync(List<int> viewedJokes)
         {
 
             var jokeIds = await _context.Jokes.Where(j => j.SourceId != -4).Select(j => j.JokeId).ToListAsync();
@@ -243,7 +242,7 @@ namespace Anekdotify.BL.Repositories
 
             var random = new Random();
             var randomIndex = random.Next(0, jokeIds.Count);
-            if (viewedJokes != null && viewedJokes.Count > 0)
+            if (viewedJokes is { Count: > 0 })
             {
 
                 jokeIds = jokeIds.Where(id => !viewedJokes.Contains(id)).ToList();
@@ -259,11 +258,12 @@ namespace Anekdotify.BL.Repositories
             return await GetJokeByIdAsync(randomJokeId) ?? throw new KeyNotFoundException($"Joke with ID {randomJokeId} not found.");
         }
 
-        public async Task<List<JokeDTO>> GetJokesByIdsAsync(List<int> ids)
+        public async Task<List<JokeDto>> GetJokesByIdsAsync(List<int> ids)
         {
+            var ids1 = ids;
             var baseJokes = await _context.Jokes
                 .AsNoTracking()
-                .Where(j => ids.Contains(j.JokeId))
+                .Where(j => ids1.Contains(j.JokeId))
                 .OrderByDescending(j => j.SubbmissionDate)
                 .Select(j => new
                 {
@@ -307,7 +307,7 @@ namespace Anekdotify.BL.Repositories
                     .GroupBy(c => c.JokeId)
                     .ToDictionary(
                         g => g.Key,
-                        g => g.Select(c => new CommentDTO
+                        g => g.Select(c => new CommentDto
                         {
                             JokeId = c.JokeId,
                             CommentId = c.CommentId,
@@ -320,7 +320,7 @@ namespace Anekdotify.BL.Repositories
                         }).ToList()
                     );
 
-            var jokeDTOs = baseJokes.Select(j => new JokeDTO
+            var jokeDtOs = baseJokes.Select(j => new JokeDto
             {
                 JokeId = j.JokeId,
                 Text = j.Text,
@@ -330,94 +330,35 @@ namespace Anekdotify.BL.Repositories
                 SourceId = j.SourceId,
                 TotalLikes = ratings.FirstOrDefault(r => r.JokeId == j.JokeId)?.Likes ?? 0,
                 TotalDislikes = ratings.FirstOrDefault(r => r.JokeId == j.JokeId)?.Dislikes ?? 0,
-                Comments = groupedCommentsDict.TryGetValue(j.JokeId, out List<CommentDTO>? jokeComments)
+                Comments = groupedCommentsDict.TryGetValue(j.JokeId, out List<CommentDto>? jokeComments)
                     ? jokeComments.BuildHierarchicalComments()
-                    : new List<CommentDTO>()
+                    : new List<CommentDto>()
             }).ToList();
 
-            return jokeDTOs;
+            return jokeDtOs;
         }
 
-        public async Task<List<JokeDTO>> GetSuggestedByMeJokes(string userId)
+        public async Task<List<JokePreviewDto>> GetSuggestedByMeJokes(string userId)
         {
-
-            var baseJokes = await _context.Jokes
+            var result = await _context.Jokes
                 .AsNoTracking()
                 .Where(j => j.SourceId == -4 && j.SubbmitedByUserId == userId)
                 .OrderByDescending(j => j.SubbmissionDate)
-                .Select(j => new
+                .Select(j => new JokePreviewDto
                 {
-                    j.JokeId,
-                    j.Text,
-                    ClassificationName = j.Classification != null ? j.Classification.Name : null,
-                    j.ClassificationId,
-                    SourceName = j.Source != null ? j.Source.SourceName : null,
-                    j.SourceId
+                    JokeId = j.JokeId,
+                    Text = j.Text,
+                    ClassificationName = j.Classification != null ? j.Classification.Name : "Unknown",
+                    Source = j.Source != null ? j.Source.SourceName : "Unknown",
+                    IsApproved = j.IsApproved,
+                    LikeCount = j.JokeRatings.Count(r => r.Rating),
+                    DislikeCount = j.JokeRatings.Count(r => !r.Rating),
+                    CommentCount = j.Comments.Count(),
+                    SubmissionDate = j.SubbmissionDate
                 })
                 .ToListAsync();
 
-            var jokeIds = baseJokes.Select(j => j.JokeId).ToList();
-
-            var ratings = await _context.JokeRatings
-                .AsNoTracking()
-                .Where(r => jokeIds.Contains(r.JokeId))
-                .GroupBy(r => r.JokeId)
-                .Select(g => new
-                {
-                    JokeId = g.Key,
-                    Likes = g.Count(r => r.Rating),
-                    Dislikes = g.Count(r => !r.Rating)
-                })
-                .ToListAsync();
-
-            var comments = await _context.Comments
-                .AsNoTracking()
-                .Where(c => jokeIds.Contains(c.JokeId))
-                .Select(c => new
-                {
-                    c.JokeId,
-                    c.CommentText,
-                    Username = c.User.UserName,
-                    c.CommentId,
-                    c.CommentDate,
-                    Ratings = c.CommentRatings,
-                    c.ParentCommentId
-                })
-                .ToListAsync();
-
-            var groupedCommentsDict = comments
-                    .GroupBy(c => c.JokeId)
-                    .ToDictionary(
-                        g => g.Key,
-                        g => g.Select(c => new CommentDTO
-                        {
-                            JokeId = c.JokeId,
-                            CommentId = c.CommentId,
-                            ParentCommentId = c.ParentCommentId,
-                            CommentDate = c.CommentDate,
-                            CommentText = c.CommentText,
-                            Username = c.Username ?? "Unknown",
-                            TotalLikes = c.Ratings.Count(r => r.Rating),
-                            TotalDislikes = c.Ratings.Count(r => !r.Rating)
-                        }).ToList()
-                    );
-
-            var jokeDTOs = baseJokes.Select(j => new JokeDTO
-            {
-                JokeId = j.JokeId,
-                Text = j.Text,
-                ClassificationName = j.ClassificationName ?? "Unknown",
-                ClassificationId = j.ClassificationId,
-                SourceName = j.SourceName ?? "Unknown",
-                SourceId = j.SourceId,
-                TotalLikes = ratings.FirstOrDefault(r => r.JokeId == j.JokeId)?.Likes ?? 0,
-                TotalDislikes = ratings.FirstOrDefault(r => r.JokeId == j.JokeId)?.Dislikes ?? 0,
-                Comments = groupedCommentsDict.TryGetValue(j.JokeId, out List<CommentDTO>? jokeComments)
-                    ? jokeComments.BuildHierarchicalComments()
-                    : new List<CommentDTO>()
-            }).ToList();
-
-            return jokeDTOs;
+            return result;
         }
     }
 }

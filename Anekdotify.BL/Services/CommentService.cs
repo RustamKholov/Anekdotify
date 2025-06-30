@@ -40,13 +40,13 @@ public class CommentService(ICommentRepository commentRepository, IDistributedCa
         return comment;
     }
 
-    public async Task<List<CommentDTO>> GetAllCommentsAsync(CommentsQueryObject query)
+    public async Task<List<CommentDto>> GetAllCommentsAsync(CommentsQueryObject query)
     {
         var cacheValue = await cacheService.GetStringAsync($"comments_joke_{query.JokeId}");
 
         if (cacheValue != null)
         {
-            return JsonConvert.DeserializeObject<List<CommentDTO>>(cacheValue) ?? new List<CommentDTO>();
+            return JsonConvert.DeserializeObject<List<CommentDto>>(cacheValue) ?? new List<CommentDto>();
         }
         var comments = await commentRepository.GetAllCommentsAsync(query);
 
@@ -75,9 +75,9 @@ public class CommentService(ICommentRepository commentRepository, IDistributedCa
         return comment;
     }
 
-    public async Task<Comment?> UpdateCommentAsync(int id, CommentUpdateDTO commentUpdateDTO)
+    public async Task<Comment?> UpdateCommentAsync(int id, CommentUpdateDto commentUpdateDto)
     {
-        var comment = await commentRepository.UpdateCommentAsync(id, commentUpdateDTO);
+        var comment = await commentRepository.UpdateCommentAsync(id, commentUpdateDto);
 
         if (comment == null)
         {

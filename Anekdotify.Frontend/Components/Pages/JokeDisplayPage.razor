@@ -84,7 +84,7 @@ else
     private bool _isJokeAvailable;
     private bool _previousJokeAvailable;
     private bool _showingPreviousJoke;
-    private JokeDTO? _currentJoke;
+    private JokeDto? _currentJoke;
     private string _timeUntilNextJoke = "";
     private bool _isLoading = true;
 
@@ -105,7 +105,7 @@ else
                     _isJokeAvailable = newRandomAvalibleRes.Data?.IsActive ?? false;
 
                     var isPreviousActualResult = await ApiClient.GetAsync<bool>("api/joke/last-viewed/isActual");
-                    _previousJokeAvailable = isPreviousActualResult?.Data ?? false;
+                    _previousJokeAvailable = isPreviousActualResult.Data;
 
                     UpdateTimeUntilNextJoke();
 
@@ -129,7 +129,7 @@ else
     {
         if (!IsFlipped)
         {
-            var result = await ApiClient.GetAsync<JokeDTO>("api/joke/random");
+            var result = await ApiClient.GetAsync<JokeDto>("api/joke/random");
             if (result is { IsSuccess: true, Data: not null })
             {
                 _currentJoke = result.Data;
@@ -149,7 +149,7 @@ else
     }
 
 
-    private void UpdateComments(List<CommentDTO> comments)
+    private void UpdateComments(List<CommentDto> comments)
     {
         if (_currentJoke != null) _currentJoke.Comments = comments;
         StateHasChanged();
@@ -157,7 +157,7 @@ else
     
     private async Task ShowPreviousJoke()
     {
-        var result = await ApiClient.GetAsync<JokeDTO>("api/joke/last-viewed");
+        var result = await ApiClient.GetAsync<JokeDto>("api/joke/last-viewed");
         if (result is { IsSuccess: true, Data: not null })
         {
             _currentJoke = result.Data;

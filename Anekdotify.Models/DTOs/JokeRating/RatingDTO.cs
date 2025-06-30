@@ -1,6 +1,6 @@
 namespace Anekdotify.Models.DTOs.JokeRating
 {
-    public class RatingDTO
+    public class RatingDto
     {
         public bool? IsLike { get; set; }
     }

@@ -67,9 +67,9 @@
 
 @code {
     [Parameter] public int JokeId { get; set; }
-    [Parameter] public EventCallback<List<CommentDTO>> OnCommentsChanged { get; set; }
-    private List<CommentDTO>? Comments { get; set; }
-    private CommentCreateDTO Create { get; set; } = new CommentCreateDTO();
+    [Parameter] public EventCallback<List<CommentDto>> OnCommentsChanged { get; set; }
+    private List<CommentDto>? Comments { get; set; }
+    private CommentCreateDto Create { get; set; } = new CommentCreateDto();
 
     private readonly HashSet<int> _expandedReplies = new();
 
@@ -96,17 +96,17 @@
             _expandedReplies.Remove(commentId);
     }
 
-    private async Task<List<CommentDTO>> LoadComments(int jokeId)
+    private async Task<List<CommentDto>> LoadComments(int jokeId)
     {
-        var res = await ApiClient.GetAsync<List<CommentDTO>>($"api/comments?JokeId={jokeId}");
+        var res = await ApiClient.GetAsync<List<CommentDto>>($"api/comments?JokeId={jokeId}");
         if (res.IsSuccess)
         {
-            return res.Data ?? new List<CommentDTO>();
+            return res.Data ?? new List<CommentDto>();
         }
         else
         {
             ToastService.ShowError("Failed to load comments");
-            return new List<CommentDTO>();
+            return new List<CommentDto>();
         }
     }
 
@@ -132,7 +132,7 @@
 
     private async Task PostComment()
     {
-        var res = await ApiClient.PostAsync<CommentDTO, CommentCreateDTO>($"api/comments/{JokeId}", new CommentCreateDTO
+        var res = await ApiClient.PostAsync<CommentDto, CommentCreateDto>($"api/comments/{JokeId}", new CommentCreateDto
         {
             CommentText = _newCommentText,
             ParentCommentId = _currentReplyToCommentId
@@ -154,10 +154,10 @@
         StateHasChanged();
     }
 
-    private List<(CommentDTO Reply, int? ParentCommentId, string? ParentUsername)> FlattenReplies(List<CommentDTO> replies,
+    private List<(CommentDto Reply, int? ParentCommentId, string? ParentUsername)> FlattenReplies(List<CommentDto> replies,
     int? parentId = null, string? parentUsername = null)
     {
-        var flat = new List<(CommentDTO, int?, string?)>();
+        var flat = new List<(CommentDto, int?, string?)>();
         foreach (var reply in replies.OrderBy(r => r.CommentDate))
         {
             flat.Add((reply, parentId, parentUsername));

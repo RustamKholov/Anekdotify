@@ -1,8 +1,6 @@
 ﻿using Anekdotify.BL.Interfaces.Repositories;
-using Anekdotify.BL.Mappers;
 using Anekdotify.Common;
 using Anekdotify.Database.Data;
-using Anekdotify.Models.DTOs.Jokes;
 using Anekdotify.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,9 +9,9 @@ namespace Anekdotify.BL.Repositories
     public class UserViewedJokesRepository : IUserViewedJokesRepository
     {
         private readonly ApplicationDBContext _context;
-        public UserViewedJokesRepository(ApplicationDBContext applicationDBContext)
+        public UserViewedJokesRepository(ApplicationDBContext applicationDbContext)
         {
-            _context = applicationDBContext;
+            _context = applicationDbContext;
         }
 
         public async Task<OperationResult> AddViewedJokeAsync(string userId, int jokeId)

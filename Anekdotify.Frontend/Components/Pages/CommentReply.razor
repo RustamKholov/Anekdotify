@@ -24,11 +24,11 @@
                 <i class="bi bi-reply"></i>
             </button>
             <button class="btn btn-link btn-sm p-0 text-dark text-decoration-none" title="Like" @onclick="() => RateComment(true)">
-                <i class="bi @(isLiked == true ? "bi-hand-thumbs-up-fill" : "bi-hand-thumbs-up")"></i>
+                <i class="bi @(IsLiked == true ? "bi-hand-thumbs-up-fill" : "bi-hand-thumbs-up")"></i>
                 <span class="ms-1">@Reply.TotalLikes</span>
             </button>
             <button class="btn btn-link btn-sm p-0 text-dark text-decoration-none" title="Dislike" @onclick="() => RateComment(false)">
-                <i class="bi @(isLiked == false ? "bi-hand-thumbs-down-fill" : "bi-hand-thumbs-down")"></i>
+                <i class="bi @(IsLiked == false ? "bi-hand-thumbs-down-fill" : "bi-hand-thumbs-down")"></i>
                 <span class="ms-1">@Reply.TotalDislikes</span>
             </button>
         </div>
@@ -39,21 +39,21 @@
 @code {
 
     [Parameter] public string ReplyToUsername { get; set; } = default!;
-    [Parameter] public CommentDTO Reply { get; set; } = default!;
+    [Parameter] public CommentDto Reply { get; set; } = default!;
     [Parameter] public EventCallback<(string username, int commentId)> SetReplyTo { get; set; }
 
-    private bool? isLiked { get; set; } = null;
+    private bool? IsLiked { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
 
-        var ratingRes = await ApiClient.GetAsync<RatingDTO>($"api/comment/rate/{Reply.CommentId}");
+        var ratingRes = await ApiClient.GetAsync<RatingDto>($"api/comment/rate/{Reply.CommentId}");
         if (ratingRes.IsSuccess)
         {
             if(ratingRes.Data != null && ratingRes.Data.IsLike.HasValue)
             {
-                isLiked = ratingRes.Data.IsLike;
+                IsLiked = ratingRes.Data.IsLike;
             }
         }
         else
@@ -67,7 +67,7 @@
     }
     private async Task RateComment(bool newValue)
     {
-       if(isLiked == newValue)
+       if(IsLiked == newValue)
        {
             var res = await ApiClient.DeleteAsync($"api/comment/rate/{Reply.CommentId}");
             if(res.IsSuccess)
@@ -75,7 +75,7 @@
                 if (newValue) Reply.TotalLikes--;
                 else Reply.TotalDislikes--;
 
-                isLiked = null;
+                IsLiked = null;
                 StateHasChanged();
             }
             else
@@ -85,34 +85,34 @@
             return;
        }
        
-        var updateRes = await ApiClient.PutAsync<RatingDTO, bool>($"api/comment/rate/{Reply.CommentId}", newValue);
+        var updateRes = await ApiClient.PutAsync<RatingDto, bool>($"api/comment/rate/{Reply.CommentId}", newValue);
          if (updateRes.IsSuccess)
          {
                 if (newValue)
                 {
-                    if( isLiked == false)
+                    if( IsLiked == false)
                     {
                         Reply.TotalDislikes--;
                         Reply.TotalLikes++;
                     }
-                    else if (isLiked == null)
+                    else if (IsLiked == null)
                     {
                         Reply.TotalLikes++;
                     }
                 }
                 else
                 {
-                    if (isLiked == true)
+                    if (IsLiked == true)
                     {
                         Reply.TotalLikes--;
                         Reply.TotalDislikes++;
                     }
-                    else if (isLiked == null)
+                    else if (IsLiked == null)
                     {
                         Reply.TotalDislikes++;
                     }
                 }
-                isLiked = newValue;
+                IsLiked = newValue;
                 StateHasChanged();
          }
          else

@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Anekdotify.Models.DTOs.Jokes
+﻿namespace Anekdotify.Models.DTOs.Jokes
 {
-    public class SuggestedJokeDTO
+    public class SuggestedJokeDto
     {
         public int JokeId { get; set; }
         public string Text { get; set; } = string.Empty;

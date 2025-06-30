@@ -1,6 +1,6 @@
 ﻿@rendermode RenderMode.InteractiveServer
 
-@if (isLoading)
+@if (_isLoading)
 {
     <div class="text-center">
         <div class="spinner-border" role="status">
@@ -8,16 +8,16 @@
         </div>
     </div>
 }
-else if (errorMessage != null)
+else if (_errorMessage != null)
 {
-    <p class="text-danger">Error: @errorMessage</p>
+    <p class="text-danger">Error: @_errorMessage</p>
     <button class="btn btn-primary" @onclick="LoadJokes">Try Again</button>
 }
-else if (jokes.Any())
+else if (_jokes.Any())
 {
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 w-100"
         style=" min-height: 75vh;">
-        @foreach (var joke in jokes)
+        @foreach (var joke in _jokes)
         {
             <div class="col">
                 <JokeCard Joke="@joke" IsFlipped="@true"/>

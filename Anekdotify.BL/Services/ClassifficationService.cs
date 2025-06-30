@@ -18,12 +18,12 @@ public class ClassifficationService(IClassificationRepository classificationRepo
         return await classificationRepository.DeleteClassificationAsync(classificationId);
     }
 
-    public async Task<OperationResult<List<ClassificationDetailedDTO>>> GetAllClassificationsAsync()
+    public async Task<OperationResult<List<ClassificationDetailedDto>>> GetAllClassificationsAsync()
     {
         return await classificationRepository.GetAllClassificationsAsync();
     }
 
-    public async Task<OperationResult<ClassificationDTO>> GetClassificationByIdAsync(int classificationId)
+    public async Task<OperationResult<ClassificationDto>> GetClassificationByIdAsync(int classificationId)
     {
         return await classificationRepository.GetClassificationByIdAsync(classificationId);
     }
@@ -38,7 +38,7 @@ public class ClassifficationService(IClassificationRepository classificationRepo
         return await classificationRepository.IsExistingAsync(classificationName);
     }
 
-    public async Task<OperationResult<ClassificationDTO>> UpdateClassificationAsync(int classificationId, string classificationName)
+    public async Task<OperationResult<ClassificationDto>> UpdateClassificationAsync(int classificationId, string classificationName)
     {
         return await classificationRepository.UpdateClassificationAsync(classificationId, classificationName);
     }

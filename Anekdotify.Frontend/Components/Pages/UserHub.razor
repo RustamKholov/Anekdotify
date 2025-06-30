@@ -1,33 +1,207 @@
-﻿@page "/profile"
+﻿@page "/hub"
 @inject NavigationManager NavigationManager
+@inject ApiClient ApiClient
+@inject IToastService ToastService
 
-<div class="w-100" style="min-height: 85vh;">
-    <h4 class="mb-4 text-center">User Hub</h4>
+<PageTitle>User Hub - Anekdotify</PageTitle>
 
-    <ul class="nav nav-tabs mb-3" id="userHubTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="saved-tab" data-bs-toggle="tab" data-bs-target="#saved" type="button" role="tab">Saved</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="suggest-tab" data-bs-toggle="tab" data-bs-target="#suggest" type="button" role="tab">Suggest</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab">Profile</button>
-        </li>
-    </ul>
-
-    <div class="tab-content p-3 bg-white overflow-auto w-100" style="min-height: 73vh;" id="userHubTabContent">
-        <div class="tab-pane fade show active " id="saved" role="tabpanel">
-            <JokesTable></JokesTable>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-secondary">
+                    <i class="fas fa-user-cog me-2"></i>
+                    User Hub
+                </h2>
+                <nav aria-label="User Hub Navigation">
+                    <div class="btn-group" role="group">
+                        <a href="/profile" class="btn btn-outline-secondary">
+                            <i class="fas fa-user me-2"></i>
+                            Profile
+                        </a>
+                        <a href="/suggest" class="btn btn-outline-secondary">
+                            <i class="fas fa-plus-circle me-2"></i>
+                            Submit Joke
+                        </a>
+                    </div>
+                </nav>
+            </div>
         </div>
+    </div>
 
-        <div class="tab-pane fade" id="suggest" role="tabpanel">
-            <Suggest></Suggest>
+    <!-- Quick Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card border-secondary">
+                <div class="card-body text-center">
+                    <i class="fas fa-laugh-beam text-secondary fs-2 mb-2"></i>
+                    <h4 class="text-secondary">@(_userJokes?.Count() ?? 0)</h4>
+                    <p class="text-muted mb-0">Your Jokes</p>
+                </div>
+            </div>
         </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card border-secondary">
+                <div class="card-body text-center">
+                    <i class="fas fa-thumbs-up text-secondary fs-2 mb-2"></i>
+                    <h4 class="text-secondary">@(_userJokes?.Sum(j => j.LikeCount) ?? 0)</h4>
+                    <p class="text-muted mb-0">Total Upvotes</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card border-secondary">
+                <div class="card-body text-center">
+                    <i class="fas fa-comments text-secondary fs-2 mb-2"></i>
+                    <h4 class="text-secondary">@(_userJokes?.Sum(j => j.CommentCount) ?? 0)</h4>
+                    <p class="text-muted mb-0">Total Comments</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        <div class="tab-pane fade" id="profile" role="tabpanel">
-            <!-- personal info -->
-            <p class="text-muted">Profile details and settings. (Coming soon)</p>
+    <!-- User's Jokes Management -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h4 class="mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Your Jokes
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (_isLoading)
+                    {
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-secondary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Loading your jokes...</p>
+                        </div>
+                    }
+                    else if (_userJokes != null && _userJokes.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Joke</th>
+                                        <th class="text-center">Status</th>
+                                        <th class="text-center">Likes</th>
+                                        <th class="text-center">Comments</th>
+                                        <th class="text-center">Created</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var joke in _userJokes.OrderByDescending(j => j.SubmissionDate))
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="joke-content">
+                                                    @((MarkupString)joke.Text.Substring(0, Math.Min(joke.Text.Length, 100)))
+                                                    @if (joke.Text.Length > 100)
+                                                    {
+                                                        <span class="text-muted">...</span>
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                @if (joke.IsApproved)
+                                                {
+                                                    <span class="badge bg-secondary">Approved</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">Pending</span>
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-light text-dark">@joke.LikeCount</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-light text-dark">@joke.CommentCount</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <small class="text-muted">@joke.SubmissionDate.ToString("MMM dd, yyyy")</small>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <button class="btn btn-outline-secondary btn-sm" 
+                                                            @onclick="() => ViewJoke(joke.JokeId)"
+                                                            title="View Joke">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    @if (!joke.IsApproved)
+                                                    {
+                                                        <button class="btn btn-outline-secondary btn-sm" 
+                                                                @onclick="() => EditJoke(joke.JokeId)"
+                                                                title="Edit Joke">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-laugh-wink text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
+                            <h5 class="mt-3 text-muted">No jokes yet!</h5>
+                            <p class="text-muted">Start sharing your humor with the world.</p>
+                            <a href="/suggest" class="btn btn-secondary">
+                                <i class="fas fa-plus-circle me-2"></i>
+                                Submit Your First Joke
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+
+@code {
+    private List<JokePreviewDto>? _userJokes;
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserJokes();
+    }
+
+    private async Task LoadUserJokes()
+    {
+        try
+        {
+            _isLoading = true;
+            var savedRes = await ApiClient.GetAsync<List<JokePreviewDto>>("api/posted-jokes");
+            _userJokes = savedRes.Data;
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error loading user jokes: {ex.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void ViewJoke(int jokeId)
+    {
+        NavigationManager.NavigateTo($"/joke/{jokeId}");
+    }
+
+    private void EditJoke(int jokeId)
+    {
+        NavigationManager.NavigateTo($"/suggest?edit={jokeId}");
+    }
+}

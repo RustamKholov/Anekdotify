@@ -43,7 +43,7 @@ namespace Anekdotify.Api.Controllers
             {
                 return NotFound($"Commnet with id {id} not found");
             }
-            return Ok(comment.ToCommentDTO());
+            return Ok(comment.ToCommentDto());
         }
 
         [HttpGet]
@@ -66,7 +66,7 @@ namespace Anekdotify.Api.Controllers
         [HttpPost]
         [Route("{jokeId:int}")]
 
-        public async Task<IActionResult> CreateComment([FromRoute] int jokeId, [FromBody] CommentCreateDTO? commentCreateDto)
+        public async Task<IActionResult> CreateComment([FromRoute] int jokeId, [FromBody] CommentCreateDto? commentCreateDto)
         {
             if (!ModelState.IsValid)
             {
@@ -103,16 +103,16 @@ namespace Anekdotify.Api.Controllers
             {
                 return Unauthorized("User ID not found in token claims.");
             }
-            var comment = commentCreateDto.ToCommentFromCreateDTO(jokeId, userId);
+            var comment = commentCreateDto.ToCommentFromCreateDto(jokeId, userId);
             var createdComment = await _commentService.CreateCommentAsync(comment);
 
-            return Created(nameof(_commentService.CreateCommentAsync), createdComment.ToCommentDTO());
+            return Created(nameof(_commentService.CreateCommentAsync), createdComment.ToCommentDto());
         }
 
         [HttpPut]
         [Route("{id:int}")]
 
-        public async Task<IActionResult> UpdateComment([FromRoute] int id, [FromBody] CommentUpdateDTO commentUpdateDto)
+        public async Task<IActionResult> UpdateComment([FromRoute] int id, [FromBody] CommentUpdateDto commentUpdateDto)
         {
             if (!ModelState.IsValid)
             {
@@ -123,7 +123,7 @@ namespace Anekdotify.Api.Controllers
             {
                 return NotFound($"Comment with id {id} not found");
             }
-            return Ok(comment.ToCommentDTO());
+            return Ok(comment.ToCommentDto());
         }
 
         [HttpDelete]
@@ -140,6 +140,29 @@ namespace Anekdotify.Api.Controllers
                 return NotFound($"Commnet not found");
             }
             return Ok(comment);
+        }
+
+        [HttpGet]
+        [Route("all-my-comments")]
+        public async Task<IActionResult> GetAllMyComments([FromQuery] CommentsQueryObject query)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User ID not found in token claims.");
+            }
+            
+            if (query.UserId == null || query.UserId != userId)
+            {
+                return BadRequest("Incorrect user ID");
+            }
+            var commentsDto = await _commentService.GetAllCommentsAsync(query);
+            return Ok(commentsDto);
         }
     }
 }

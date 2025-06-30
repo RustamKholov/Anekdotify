@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Anekdotify.BL.Interfaces.Services;
-using Anekdotify.Models.DTOs.SaveJoke;
+﻿using Anekdotify.BL.Interfaces.Services;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace Anekdotify.BL.Services

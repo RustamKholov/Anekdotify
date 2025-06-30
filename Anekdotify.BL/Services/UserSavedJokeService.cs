@@ -1,23 +1,21 @@
 using Anekdotify.BL.Interfaces.Repositories;
 using Anekdotify.BL.Interfaces.Services;
-using Anekdotify.BL.Mappers;
 using Anekdotify.Common;
 using Anekdotify.Models.DTOs.Jokes;
 using Anekdotify.Models.DTOs.SaveJoke;
-using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
 
 namespace Anekdotify.BL.Services;
 
 public class UserSavedJokeService(IUserSavedJokeRepository userSavedJokeRepository, IJokeService jokeService, IJokeCacheService jokecacheService) : IUserSavedJokeService
 {
-    public async Task<List<JokeDTO>> GetSavedJokesForUserAsync(string userId)
+    public async Task<List<JokeDto>> GetSavedJokesForUserAsync(string userId)
     {
         var cacheKey = $"saved_jokes_{userId}";
         var cacheValue = await jokecacheService.GetStringAsync(cacheKey);
         if (cacheValue != null)
         {
-            return JsonConvert.DeserializeObject<List<JokeDTO>>(cacheValue) ?? new List<JokeDTO>();
+            return JsonConvert.DeserializeObject<List<JokeDto>>(cacheValue) ?? new List<JokeDto>();
         }
         var savedJokesIds = await userSavedJokeRepository.GetSavedJokesForUserAsync(userId);
 
@@ -28,9 +26,9 @@ public class UserSavedJokeService(IUserSavedJokeRepository userSavedJokeReposito
         return savedJokes;
     }
 
-    public async Task<bool> IsJokeSavedByUserAsync(SaveJokeDTO saveJokeDTO, string userId)
+    public async Task<bool> IsJokeSavedByUserAsync(SaveJokeDto saveJokeDto, string userId)
     {
-        var cacheKey = $"is_joke_saved_{saveJokeDTO.JokeId}_{userId}";
+        var cacheKey = $"is_joke_saved_{saveJokeDto.JokeId}_{userId}";
         var cacheValue = await jokecacheService.GetStringAsync(cacheKey);
 
         if (cacheValue != null)
@@ -38,24 +36,24 @@ public class UserSavedJokeService(IUserSavedJokeRepository userSavedJokeReposito
             return bool.Parse(cacheValue);
         }
 
-        var isSaved = await userSavedJokeRepository.IsJokeSavedByUserAsync(saveJokeDTO, userId);
+        var isSaved = await userSavedJokeRepository.IsJokeSavedByUserAsync(saveJokeDto, userId);
 
         await jokecacheService.SetStringAsync(cacheKey, isSaved.ToString());
         return isSaved;
     }
 
-    public async Task<OperationResult> RemoveSavedJokeAsync(SaveJokeDTO saveJokeDTO, string userId)
+    public async Task<OperationResult> RemoveSavedJokeAsync(SaveJokeDto saveJokeDto, string userId)
     {
 
-        await jokecacheService.InvalidateSavedJokesAsync(saveJokeDTO.JokeId, userId);
+        await jokecacheService.InvalidateSavedJokesAsync(saveJokeDto.JokeId, userId);
 
-        return await userSavedJokeRepository.RemoveSavedJokeAsync(saveJokeDTO, userId);
+        return await userSavedJokeRepository.RemoveSavedJokeAsync(saveJokeDto, userId);
     }
 
-    public async Task<OperationResult> SaveJokeAsync(SaveJokeDTO saveJokeDTO, string userId)
+    public async Task<OperationResult> SaveJokeAsync(SaveJokeDto saveJokeDto, string userId)
     {
-        await jokecacheService.InvalidateSavedJokesAsync(saveJokeDTO.JokeId, userId);
+        await jokecacheService.InvalidateSavedJokesAsync(saveJokeDto.JokeId, userId);
 
-        return await userSavedJokeRepository.SaveJokeAsync(saveJokeDTO, userId);
+        return await userSavedJokeRepository.SaveJokeAsync(saveJokeDto, userId);
     }
 }

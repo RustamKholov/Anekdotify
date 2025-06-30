@@ -5,42 +5,42 @@ namespace Anekdotify.BL.Mappers
 {
     public static class CommentMappers
     {
-        public static CommentDTO ToCommentDTO(this Comment commentModel)
+        public static CommentDto ToCommentDto(this Comment commentModel)
         {
-            int totalLikes = commentModel.CommentRatings?.Count(cr => cr.Rating) ?? 0;
-            int totalDislikes = commentModel.CommentRatings?.Count(cr => !cr.Rating) ?? 0;
-            return new CommentDTO
+            int totalLikes = commentModel.CommentRatings.Count(cr => cr.Rating);
+            int totalDislikes = commentModel.CommentRatings.Count(cr => !cr.Rating);
+            return new CommentDto
             {
                 CommentId = commentModel.CommentId,
                 CommentText = commentModel.CommentText,
                 CommentDate = commentModel.CommentDate,
                 JokeId = commentModel.JokeId,
-                Username = commentModel.User?.UserName ?? "Unknown Username",
+                Username = commentModel.User.UserName ?? "Unknown Username",
                 ParentCommentId = commentModel.ParentCommentId,
                 TotalLikes = totalLikes,
                 TotalDislikes = totalDislikes
             };
         }
-        public static Comment ToCommentFromCreateDTO(this CommentCreateDTO commentCreateDTO, int jokeId, string userId)
+        public static Comment ToCommentFromCreateDto(this CommentCreateDto commentCreateDto, int jokeId, string userId)
         {
             return new Comment
             {
-                CommentText = commentCreateDTO.CommentText,
+                CommentText = commentCreateDto.CommentText,
                 JokeId = jokeId,
                 UserId = userId,
-                ParentCommentId = commentCreateDTO.ParentCommentId
+                ParentCommentId = commentCreateDto.ParentCommentId
             };
         }
 
-        public static List<CommentDTO> BuildHierarchicalComments(this List<CommentDTO> flatComments)
+        public static List<CommentDto> BuildHierarchicalComments(this List<CommentDto> flatComments)
         {
-            var allCommentsDTOs = flatComments.ToDictionary(dto => dto.CommentId);
+            var allCommentsDtOs = flatComments.ToDictionary(dto => dto.CommentId);
 
-            var rootComments = new List<CommentDTO>();
+            var rootComments = new List<CommentDto>();
 
-            foreach (var dto in allCommentsDTOs.Values)
+            foreach (var dto in allCommentsDtOs.Values)
             {
-                if (dto.ParentCommentId.HasValue && allCommentsDTOs.TryGetValue(dto.ParentCommentId.Value, out var parentDto))
+                if (dto.ParentCommentId.HasValue && allCommentsDtOs.TryGetValue(dto.ParentCommentId.Value, out var parentDto))
                 {
                     parentDto.Replies.Add(dto);
                 }

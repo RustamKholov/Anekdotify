@@ -2,6 +2,7 @@ using Anekdotify.BL.Interfaces.Services;
 using Anekdotify.Models.DTOs.Accounts;
 using Anekdotify.Models.Entities;
 using Anekdotify.Models.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +16,7 @@ namespace Anekdotify.Api.Controllers
         private readonly ITokenService _tokenService;
         private readonly SignInManager<User> _signInManager;
         private readonly IAccountService _accountService;
+
         public AccountController(UserManager<User> userManager, ITokenService tokenService,
             SignInManager<User> signInManager, IAccountService accountService)
         {
@@ -25,22 +27,24 @@ namespace Anekdotify.Api.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(loginDTO);
+                return BadRequest(loginDto);
             }
+
             // Accept camelCase by normalizing property names
-            User? user = await _userManager.Users.FirstOrDefaultAsync(u => u.UserName == loginDTO.Username || u.Email == loginDTO.Username);
+            User? user = await _userManager.Users.FirstOrDefaultAsync(u =>
+                u.UserName == loginDto.Username || u.Email == loginDto.Username);
 
             if (user == null) return Unauthorized("Username not found and/or wrong password");
 
-            var result = await _signInManager.CheckPasswordSignInAsync(user, loginDTO.Password, false);
+            var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
 
             if (!result.Succeeded) return Unauthorized("Username not found and/or wrong password");
 
-            var token = _tokenService.CreateToken(user, isRefreshToken:false);
+            var token = _tokenService.CreateToken(user, isRefreshToken: false);
             var refreshToken = _tokenService.CreateToken(user, isRefreshToken: true);
 
             await _accountService.AddRefreshToken(new RefreshToken
@@ -61,6 +65,7 @@ namespace Anekdotify.Api.Controllers
 
             return Ok(loginResponse);
         }
+
         [HttpGet("loginByRefreshToken")]
         public async Task<ActionResult<LoginResponseModel>> LoginByRefreshToken([FromQuery] string refreshToken)
         {
@@ -92,7 +97,7 @@ namespace Anekdotify.Api.Controllers
 
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDTO registerDTO)
+        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
             try
             {
@@ -100,13 +105,14 @@ namespace Anekdotify.Api.Controllers
                 {
                     return BadRequest(ModelState);
                 }
+
                 var user = new User
                 {
-                    UserName = registerDTO.Username,
-                    Email = registerDTO.Email
+                    UserName = registerDto.Username,
+                    Email = registerDto.Email
                 };
 
-                if (string.IsNullOrEmpty(registerDTO.Password))
+                if (string.IsNullOrEmpty(registerDto.Password))
                 {
                     ModelState.AddModelError("Password", "Password is required.");
                     return BadRequest(ModelState);
@@ -117,7 +123,7 @@ namespace Anekdotify.Api.Controllers
                     return BadRequest("User already exists");
 
 
-                var createUser = await _userManager.CreateAsync(user, registerDTO.Password);
+                var createUser = await _userManager.CreateAsync(user, registerDto.Password);
                 if (createUser.Succeeded)
                 {
                     var roleResult = await _userManager.AddToRoleAsync(user, "User");
@@ -152,5 +158,29 @@ namespace Anekdotify.Api.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("profile")]
+        [Authorize]
+        public async Task<IActionResult> GetProfile()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized("User not found.");
+            }
+
+            return Ok(new UserDto
+            {
+                Username = user.UserName,
+                CreatedAt = user.RegistrationDate,
+                Email = user.Email,
+                Role = _userManager.GetRolesAsync(user).Result.FirstOrDefault()
+            });
+        }
     }
 }

@@ -46,7 +46,7 @@
 
 
 @code {
-    private LoginDTO loginModel = new LoginDTO();
+    private LoginDto loginModel = new LoginDto();
     [Inject] 
     private IToastService? ToastService { get; set; }
 
@@ -57,7 +57,7 @@
         try
         {
             isLoading = true;
-            var response = await ApiClient.PostAsync<LoginResponseModel, LoginDTO>("api/account/login", loginModel);
+            var response = await ApiClient.PostAsync<LoginResponseModel, LoginDto>("api/account/login", loginModel);
             if (response.IsSuccess && response.Data != null)
             {
                 await ((CustomAuthStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(response.Data);
@@ -67,7 +67,7 @@
             {
                 ToastService?.ShowError("Login failed. Please check your credentials.");
             }
-            loginModel = new LoginDTO();
+            loginModel = new LoginDto();
         }
         catch (Exception e)
         {

@@ -6,15 +6,15 @@ namespace Anekdotify.BL.Interfaces.Repositories
 {
     public interface IJokeRepository
     {
-        Task<List<JokeDTO>> GetAllJokesAsync(JokesQueryObject query);
-        Task<List<JokeDTO>> GetJokesByIdsAsync(List<int> ids);
-        Task<JokeDTO?> GetJokeByIdAsync(int id);
-        Task<Joke> CreateJokeAsync(JokeCreateDTO jokeCreateDTO, string userId);
-        Task<Joke> UpdateJokeAsync(int id, JokeUpdateDTO jokeUpdateDTO);
-        Task<List<JokeDTO>> GetSuggestedByMeJokes(string userId);
+        Task<List<JokeDto>> GetAllJokesAsync(JokesQueryObject query);
+        Task<List<JokeDto>> GetJokesByIdsAsync(List<int> ids);
+        Task<JokeDto?> GetJokeByIdAsync(int id);
+        Task<Joke> CreateJokeAsync(JokeCreateDto? jokeCreateDto, string userId);
+        Task<Joke> UpdateJokeAsync(int id, JokeUpdateDto? jokeUpdateDto);
+        Task<List<JokePreviewDto>> GetSuggestedByMeJokes(string userId);
         Task<Joke> DeleteJokeAsync(int id);
         Task<List<Comment>> GetCommentsByJokeIdAsync(int jokeId);
         Task<bool> JokeExistsAsync(int id);
-        Task<JokeDTO> GetRandomJokeAsync(List<int> viewedJokes);
+        Task<JokeDto> GetRandomJokeAsync(List<int> viewedJokes);
     }
 }

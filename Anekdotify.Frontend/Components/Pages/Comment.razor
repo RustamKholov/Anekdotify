@@ -47,7 +47,7 @@
 
 @code {
 
-    [Parameter] public CommentDTO CommentDto { get; set; } = null!;
+    [Parameter] public CommentDto CommentDto { get; set; } = null!;
 
     [Parameter] public EventCallback<(string username, int commentId)> SetReplyTo { get; set; }
 
@@ -65,7 +65,7 @@
     protected override async Task OnInitializedAsync()
     {
 
-        var ratingRes = await ApiClient.GetAsync<RatingDTO>($"api/comment/rate/{CommentDto.CommentId}");
+        var ratingRes = await ApiClient.GetAsync<RatingDto>($"api/comment/rate/{CommentDto.CommentId}");
         if (ratingRes is { IsSuccess: true, Data.IsLike: not null })
         {
             IsLiked = ratingRes.Data.IsLike;
@@ -125,7 +125,7 @@
             return;
         }
 
-        var updateRes = await ApiClient.PutAsync<RatingDTO, bool>($"api/comment/rate/{CommentDto.CommentId}", newValue);
+        var updateRes = await ApiClient.PutAsync<RatingDto, bool>($"api/comment/rate/{CommentDto.CommentId}", newValue);
         if (updateRes.IsSuccess)
         {
             if (newValue)

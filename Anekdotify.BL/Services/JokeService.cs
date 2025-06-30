@@ -3,16 +3,15 @@ using Anekdotify.BL.Interfaces.Repositories;
 using Anekdotify.BL.Interfaces.Services;
 using Anekdotify.Models.DTOs.Jokes;
 using Anekdotify.Models.Entities;
-using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
 
 namespace Anekdotify.BL.Services;
 
 public class JokeService(IJokeRepository jokeRepository, IJokeCacheService jokeCacheService ) : IJokeService
 {
-    public async Task<Joke> CreateJokeAsync(JokeCreateDTO jokeCreateDTO, string userId)
+    public async Task<Joke> CreateJokeAsync(JokeCreateDto? jokeCreateDto, string userId)
     {
-        var joke = await jokeRepository.CreateJokeAsync(jokeCreateDTO, userId);
+        var joke = await jokeRepository.CreateJokeAsync(jokeCreateDto, userId);
 
         await jokeCacheService.RemoveAsync("list_jokes");
 
@@ -29,14 +28,14 @@ public class JokeService(IJokeRepository jokeRepository, IJokeCacheService jokeC
         return joke;
     }
 
-    public async Task<List<JokeDTO>> GetAllJokesAsync(JokesQueryObject query)
+    public async Task<List<JokeDto>> GetAllJokesAsync(JokesQueryObject query)
     {
         var cacheKey = $"jokes_page{query.PageNumber}_size{query.PageSize}_sort{query.ByDescending}";
 
         var cached = await jokeCacheService.GetStringAsync(cacheKey);
         if (cached != null)
         {
-            return JsonConvert.DeserializeObject<List<JokeDTO>>(cached) ?? new List<JokeDTO>();
+            return JsonConvert.DeserializeObject<List<JokeDto>>(cached) ?? new List<JokeDto>();
         }
 
         var jokes = await jokeRepository.GetAllJokesAsync(query);
@@ -63,12 +62,12 @@ public class JokeService(IJokeRepository jokeRepository, IJokeCacheService jokeC
         return comments;
     }
 
-    public async Task<JokeDTO?> GetJokeByIdAsync(int id)
+    public async Task<JokeDto?> GetJokeByIdAsync(int id)
     {
         var cacheValue = await jokeCacheService.GetStringAsync($"joke_{id}");
         if (cacheValue != null)
         {
-            return JsonConvert.DeserializeObject<JokeDTO>(cacheValue);
+            return JsonConvert.DeserializeObject<JokeDto>(cacheValue);
         }
         var joke = await jokeRepository.GetJokeByIdAsync(id);
         if (joke != null)
@@ -78,17 +77,17 @@ public class JokeService(IJokeRepository jokeRepository, IJokeCacheService jokeC
         return joke;
     }
 
-    public async Task<List<JokeDTO>> GetJokesByIdsAsync(List<int> ids)
+    public async Task<List<JokeDto>> GetJokesByIdsAsync(List<int> ids)
     {
         return await jokeRepository.GetJokesByIdsAsync(ids);
     }
 
-    public async Task<JokeDTO> GetRandomJokeAsync(List<int> viewedJokes)
+    public async Task<JokeDto> GetRandomJokeAsync(List<int> viewedJokes)
     {
         return await jokeRepository.GetRandomJokeAsync(viewedJokes);
     }
 
-    public async Task<List<JokeDTO>> GetSuggestedByMeJokes(string userId)
+    public async Task<List<JokePreviewDto>> GetSuggestedByMeJokes(string userId)
     {
         return await jokeRepository.GetSuggestedByMeJokes(userId);
     }
@@ -98,11 +97,11 @@ public class JokeService(IJokeRepository jokeRepository, IJokeCacheService jokeC
         return await jokeRepository.JokeExistsAsync(id);
     }
 
-    public async Task<SuggestedJokeDTO> SuggestJokeAsync(JokeCreateDTO jokeCreateDTO, string userId)
+    public async Task<SuggestedJokeDto> SuggestJokeAsync(JokeCreateDto? jokeCreateDto, string userId)
     {
-        var joke = await jokeRepository.CreateJokeAsync(jokeCreateDTO, userId);
+        var joke = await jokeRepository.CreateJokeAsync(jokeCreateDto, userId);
         await jokeCacheService.InvalidateJokeAsync(joke.JokeId);
-        return new SuggestedJokeDTO
+        return new SuggestedJokeDto
         {
             JokeId = joke.JokeId,
             Text = joke.Text,
@@ -111,9 +110,9 @@ public class JokeService(IJokeRepository jokeRepository, IJokeCacheService jokeC
         };
     }
 
-    public async Task<Joke> UpdateJokeAsync(int id, JokeUpdateDTO jokeUpdateDTO)
+    public async Task<Joke> UpdateJokeAsync(int id, JokeUpdateDto? jokeUpdateDto)
     {
-        var joke = await jokeRepository.UpdateJokeAsync(id, jokeUpdateDTO);
+        var joke = await jokeRepository.UpdateJokeAsync(id, jokeUpdateDto);
 
         await jokeCacheService.InvalidateJokeAsync(id);
 

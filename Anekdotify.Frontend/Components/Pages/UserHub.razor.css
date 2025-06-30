@@ -1,0 +1,17 @@
+﻿.joke-content {
+    max-width: 300px;
+    word-wrap: break-word;
+}
+
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: box-shadow 0.2s;
+}
+
+.card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.btn-group .btn {
+    margin: 0;
+}

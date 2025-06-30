@@ -1,9 +1,7 @@
 ﻿using Anekdotify.BL.Interfaces.Repositories;
 using Anekdotify.BL.Interfaces.Services;
-using Anekdotify.BL.Repositories;
 using Anekdotify.Common;
 using Anekdotify.Models.DTOs.Jokes;
-using Anekdotify.Models.Entities;
 using Newtonsoft.Json;
 
 namespace Anekdotify.BL.Services
@@ -17,32 +15,28 @@ namespace Anekdotify.BL.Services
             return await userViewedJokesRepository.AddViewedJokeAsync(userId, jokeId);
         }
 
-        public async Task<OperationResult<JokeDTO>> GetLastViewedJokeAsync(string userId)
+        public async Task<OperationResult<JokeDto>> GetLastViewedJokeAsync(string userId)
         {
             var cacheValue = await jokeCacheService.GetStringAsync($"last_viewed_joke_{userId}");
             if (cacheValue != null)
             {
-                var jokeDTOCahce = JsonConvert.DeserializeObject<JokeDTO>(cacheValue);
-                if (jokeDTOCahce != null)
+                var jokeDtoCahce = JsonConvert.DeserializeObject<JokeDto>(cacheValue);
+                if (jokeDtoCahce != null)
                 {
-                    return OperationResult<JokeDTO>.Success(jokeDTOCahce);
+                    return OperationResult<JokeDto>.Success(jokeDtoCahce);
                 }
             }
             var lastJokeId = await userViewedJokesRepository.GetLastViewedJokeIdAsync(userId);
-            if (lastJokeId == null)
-            {
-                return OperationResult<JokeDTO>.Fail(new JokeDTO(), "No jokes viewed.");
-            }
             var jokeDto = await jokeService.GetJokeByIdAsync(lastJokeId.Value);
             
             if(jokeDto == null)
             {
-               return OperationResult<JokeDTO>.Fail(new JokeDTO(), "Joke no longer exists.");
+               return OperationResult<JokeDto>.Fail(new JokeDto(), "Joke no longer exists.");
             }
 
             await jokeCacheService.SetStringAsync($"last_viewed_joke_{userId}", JsonConvert.SerializeObject(jokeDto));
 
-            return OperationResult<JokeDTO>.Success(jokeDto);
+            return OperationResult<JokeDto>.Success(jokeDto);
         }
 
         public async Task<OperationResult<List<int>>> GetViewedJokesAsync(string userId)

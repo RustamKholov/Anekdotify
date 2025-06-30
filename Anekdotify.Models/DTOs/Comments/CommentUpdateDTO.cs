@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Anekdotify.Models.DTOs.Comments
 {
-    public class CommentUpdateDTO
+    public class CommentUpdateDto
     {
 
         [MaxLength(280, ErrorMessage = "Content cannot be over 280 characters")]
