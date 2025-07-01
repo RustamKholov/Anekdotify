@@ -1,0 +1,49 @@
+﻿@page "/joke/{jokeId:int}"
+@inject  ApiClient ApiClient
+@inject IToastService ToastService
+
+
+@if (JokeDto == null)
+{
+    <div class="text-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <JokeCard Joke="@JokeDto" IsFlipped="@true" />
+}
+
+
+@code {
+    
+    private JokeDto? JokeDto { get; set; }
+    
+    [Parameter] public int JokeId { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var jokeRes = await ApiClient.GetAsync<JokeDto>($"api/joke/{JokeId}");
+            
+            if (jokeRes is { IsSuccess: true, Data: not null })
+            {
+                JokeDto = jokeRes.Data;
+            }
+            else
+            {
+                ToastService.ShowError("Failed to load joke");
+            }
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error loading joke: {ex.Message}");
+        }
+
+    }
+
+}

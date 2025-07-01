@@ -17,15 +17,7 @@ else
 {
     <div class="d-flex justify-content-center align-items-center w-100 h-100" style="min-height: 60vh;">
     <div style="max-width: 420px; width: 100%;" class="position-relative">
-
-        @if (_showingPreviousJoke)
-        {
-            <button class="btn btn-outline-secondary position-absolute top-0 start-0 mb-3" 
-                    style="z-index: 100;" 
-                    @onclick="ReturnToTimer">
-                <i class="bi bi-arrow-left"></i> Back
-            </button>
-        }
+        
         
         @if (_isJokeAvailable || _showingPreviousJoke)
         {
@@ -67,7 +59,7 @@ else
                         @if (_previousJokeAvailable)
                         {
                             <button class="btn btn-outline-secondary mt-4" @onclick="ShowPreviousJoke">
-                                <i class="bi bi-arrow-left"></i> See Yesterday's Joke
+                                <i class="bi bi-arrow-left"></i> See Previous Joke
                             </button>
                         }
                     </div>
@@ -76,8 +68,6 @@ else
     </div>
 </div>
 }
-
-
 
 @code {
     private bool IsFlipped { get; set; }
@@ -117,6 +107,10 @@ else
         }
         catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized || ex.StatusCode == HttpStatusCode.Forbidden)
         {
+            if (AuthenticationStateProvider is CustomAuthStateProvider customAuthStateProvider)
+            {
+                await customAuthStateProvider.MarkUserAsLoggedOut();
+            }
             NavigationManager?.NavigateTo("/login", forceLoad: true);
         }
         finally
@@ -166,13 +160,6 @@ else
             StateHasChanged();
         }
 
-    }
-    private void ReturnToTimer()
-    {
-        _showingPreviousJoke = false;
-        _currentJoke = null;
-        IsFlipped = false;
-        StateHasChanged();
     }
     
 }

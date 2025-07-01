@@ -1,7 +1,7 @@
 ﻿<div class="border rounded-3 p-3 mb-3 bg-light" style="font-size:0.95em;">
     <div class="d-flex justify-content-between align-items-center mb-1">
         <span class="badge bg-secondary">@Joke.ClassificationName</span>
-        <span class="@GetStatusColor(Joke.Status) small">@Joke.Status</span>
+        <span class="@GetStatusColor() small">@GetStatusName()</span>
     </div>
     <div class="text-dark mb-1" style="font-weight:500;">@Joke.Text</div>
     <div class="text-muted small">ID: @Joke.JokeId</div>
@@ -9,13 +9,22 @@
 
 @code {
     [Parameter]
-    public SuggestedJokeDto Joke { get; set; } = default!;
+    public SuggestedJokeDto Joke { get; set; } = null!;
 
-    private string GetStatusColor(string status) => status switch
+
+
+    private string GetStatusColor() => Joke.IsApproved switch
     {
-        "Pending" => "text-warning",
-        "Approved" => "text-success",
-        "Rejected" => "text-danger",
-        _ => "text-secondary"
+        null => "text-warning",
+        true => "text-success",
+        false => "text-danger"
     };
+
+    private string GetStatusName() => Joke.IsApproved switch
+    {
+        null => "Pending",
+        true => "Approved!",
+        false => "Rejected.."
+    };
+
 }

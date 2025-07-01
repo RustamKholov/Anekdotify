@@ -13,8 +13,10 @@ public interface IJokeService
     Task<SuggestedJokeDto> SuggestJokeAsync(JokeCreateDto? jokeCreateDto, string userId);
     Task<List<JokePreviewDto>> GetSuggestedByMeJokes(string userId);
     Task<Joke> UpdateJokeAsync(int id, JokeUpdateDto? jokeUpdateDto);
+    Task<Joke> UpdateJokeByUserAsync(int id, JokeUpdateDto? jokeUpdateDto);
     Task<Joke> DeleteJokeAsync(int id);
     Task<List<Comment>> GetCommentsByJokeIdAsync(int jokeId);
     Task<bool> JokeExistsAsync(int id);
+    Task<bool> IsJokeOwnerAsync(int id, string userId);
     Task<JokeDto> GetRandomJokeAsync(List<int> viewedJokes);
 }
