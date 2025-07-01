@@ -19,6 +19,8 @@ public class JokeService(IJokeRepository jokeRepository, IJokeCacheService jokeC
 
     }
 
+    
+
     public async Task<Joke> DeleteJokeAsync(int id)
     {
         var joke =  await jokeRepository.DeleteJokeAsync(id);
@@ -82,6 +84,11 @@ public class JokeService(IJokeRepository jokeRepository, IJokeCacheService jokeC
         return await jokeRepository.GetJokesByIdsAsync(ids);
     }
 
+    public async Task<bool> IsJokeOwnerAsync(int id, string userId)
+    {
+        return await jokeRepository.IsJokeOwnerAsync(id, userId);
+    }
+
     public async Task<JokeDto> GetRandomJokeAsync(List<int> viewedJokes)
     {
         return await jokeRepository.GetRandomJokeAsync(viewedJokes);
@@ -106,11 +113,19 @@ public class JokeService(IJokeRepository jokeRepository, IJokeCacheService jokeC
             JokeId = joke.JokeId,
             Text = joke.Text,
             ClassificationName = joke.Classification?.Name ?? "Unknown",
-            Status = "Pending" 
+            IsApproved = joke.IsApproved
         };
     }
 
     public async Task<Joke> UpdateJokeAsync(int id, JokeUpdateDto? jokeUpdateDto)
+    {
+        var joke = await jokeRepository.UpdateJokeAsync(id, jokeUpdateDto);
+
+        await jokeCacheService.InvalidateJokeAsync(id);
+
+        return joke;
+    }
+    public async Task<Joke> UpdateJokeByUserAsync(int id, JokeUpdateDto? jokeUpdateDto)
     {
         var joke = await jokeRepository.UpdateJokeAsync(id, jokeUpdateDto);
 

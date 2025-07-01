@@ -1,6 +1,7 @@
 using Anekdotify.Frontend.Authentication;
 using Anekdotify.Frontend.Clients;
 using Anekdotify.Frontend.Components;
+using Anekdotify.Frontend.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Blazored.Toast;
 using Blazored.LocalStorage;
@@ -25,6 +26,7 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddHttpClient<ApiClient>(client => client.BaseAddress = new Uri(jokeStoreApiUrl));
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient(builder.Configuration["JokeStoreApiUrl"]!));
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+builder.Services.AddScoped<INavigationHistoryService, NavigationHistoryService>();
 
 var app = builder.Build();
 

@@ -1,7 +1,6 @@
 ﻿@page "/profile"
 
 @inject ApiClient ApiClient
-
 @attribute [Authorize]
 
 <PageTitle>Profile - Anekdotify</PageTitle>
@@ -87,7 +86,7 @@
                                 <div class="stat-card bg-light p-3 rounded text-center">
                                     <i class="fas fa-thumbs-up text-secondary fs-2 mb-2"></i>
                                     <h3 class="text-secondary mb-1">@_statistics.TotalUpvotes</h3>
-                                    <p class="text-muted mb-0">Upvotes Received</p>
+                                    <p class="text-muted mb-0">Likes Received</p>
                                 </div>
                             </div>
                             
@@ -130,7 +129,7 @@
                                             </div>
                                             <p class="mb-1 text-truncate">@joke.Text</p>
                                             <small class="text-muted">
-                                                @joke.LikeCount upvotes • @joke.CommentCount comments
+                                                @joke.LikeCount likes • @joke.CommentCount comments
                                             </small>
                                         </div>
                                     }

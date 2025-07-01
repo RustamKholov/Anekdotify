@@ -1,5 +1,8 @@
-﻿@using Microsoft.IdentityModel.JsonWebTokens
+﻿@using Anekdotify.Frontend.Services
+@using Microsoft.IdentityModel.JsonWebTokens
 @inject NavigationManager NavigationManager
+@inject INavigationHistoryService NavigationHistory
+
 
 
 <nav class="navbar navbar-expand-lg navbar-light" style="background-color: transparent;">
@@ -8,6 +11,12 @@
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
+        @if (_showBackButton)
+        {
+            <button class="btn btn-outline-light me-2 text-dark" @onclick="GoBack" title="Go Back">
+                <i class="bi bi-arrow-left"></i>  Back
+            </button>
+        }
 
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div class="navbar-nav ms-auto d-flex align-items-center gap-2">
@@ -36,9 +45,34 @@
 </nav>
 
 @code {
-
+    
+    private bool _showBackButton = false;
+    
     private void Logout()
     {
         NavigationManager.NavigateTo("/logout", forceLoad: true);
     }
+
+    protected override void OnInitialized()
+    {
+        NavigationHistory.OnNavigationChanged += OnNavigationChanged;
+        _showBackButton = NavigationHistory.CanGoBack;
+    }
+
+    private void OnNavigationChanged(bool canGoBack)
+    {
+        _showBackButton = canGoBack;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void GoBack()
+    {
+        NavigationHistory.GoBack();
+    }
+
+    public void Dispose()
+    {
+        NavigationHistory.OnNavigationChanged -= OnNavigationChanged;
+    }
+
 }

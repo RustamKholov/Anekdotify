@@ -22,7 +22,7 @@ namespace Anekdotify.BL.Repositories
 
             var baseJokes = await _context.Jokes
                 .AsNoTracking()
-                .Where(j => j.SourceId != -4)
+                .Where(j => j.IsApproved == true)
                 .OrderByDescending(j => j.SubbmissionDate)
                 .Skip(skip)
                 .Take(query.PageSize)
@@ -205,6 +205,25 @@ namespace Anekdotify.BL.Repositories
             await _context.SaveChangesAsync();
             return joke;
         }
+
+        public async Task<Joke> UpdateJokeByUserAsync(int id, JokeUpdateDto? jokeUpdateDto)
+        {
+            var joke = await _context.Jokes.FindAsync(id);
+            if (joke == null)
+            {
+                throw new KeyNotFoundException($"Joke with ID {id} not found.");
+            }
+            if (jokeUpdateDto == null)
+            {
+                throw new ArgumentException("Joke update cannot be empty.");
+            }
+            joke.IsApproved = false;
+            joke = joke.UpdateJokeFromJokeDto(jokeUpdateDto);
+            _context.Jokes.Update(joke);
+            await _context.SaveChangesAsync();
+            return joke;
+        }
+
         public async Task<Joke> DeleteJokeAsync(int id)
         {
             var joke = await _context.Jokes.FindAsync(id);
@@ -228,6 +247,11 @@ namespace Anekdotify.BL.Repositories
         public async Task<bool> JokeExistsAsync(int jokeId)
         {
             return await _context.Jokes.AnyAsync(j => j.JokeId == jokeId);
+        }
+
+        public async Task<bool> IsJokeOwnerAsync(int id, string userId)
+        {
+            return await _context.Jokes.AnyAsync(j => j.JokeId == id && j.SubbmitedByUserId == userId);
         }
 
         public async Task<JokeDto> GetRandomJokeAsync(List<int> viewedJokes)
