@@ -60,24 +60,7 @@
     overflow-y: auto;
 }
 
-.form-check-input:checked {
-    background-color: #696969;
-    border-color: #333333;
-}
 
-.form-check-input:checked[type="checkbox"] {
-    background-color: #696969;
-    border-color: #333333;
-    box-shadow: 0 0 0 0.2rem rgba(24, 27, 25, 0.25);
-}
-
-.form-check-sm .form-check-input {
-    margin-top: 0.1rem;
-}
-
-.form-check-sm .form-check-label {
-    font-size: 0.875rem;
-}
 
 .alert-sm {
     padding: 0.5rem;
@@ -87,6 +70,16 @@
 .badge.small {
     font-size: 0.75rem;
 }
+
+
+.form-check-sm .form-check-input {
+    margin-top: 0.1rem;
+}
+
+.form-check-sm .form-check-label {
+    font-size: 0.875rem;
+}
+
 
 /* Mobile Responsiveness */
 @media (max-width: 576px) {

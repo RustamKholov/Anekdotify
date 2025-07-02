@@ -3,7 +3,6 @@ using Anekdotify.Frontend.Authentication;
 using Anekdotify.Models.DTOs.Jokes;
 using Anekdotify.Models.DTOs.Comments;
 using Anekdotify.Models.DTOs.Classification;
-using Anekdotify.Models.DTOs.Source;
 using Blazored.Toast.Services;
 using Microsoft.AspNetCore.Components;
 using Timer = System.Timers.Timer;
@@ -27,9 +26,7 @@ public partial class JokeDisplayPage : IDisposable
     private Timer? _timer;
 
     private List<ClassificationDetailedDto> _classifications = new();
-    private List<SourceDto> _sources = new();
     private readonly List<int> _selectedClassifications = new();
-    private readonly List<int> _selectedSources = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -72,21 +69,12 @@ public partial class JokeDisplayPage : IDisposable
     private async Task LoadFiltersDataAsync()
     {
         var classificationsTask = ApiClient.GetAsync<List<ClassificationDetailedDto>>("api/classification");
-        var sourcesTask = ApiClient.GetAsync<List<SourceDto>>("api/source");
-
-        await Task.WhenAll(classificationsTask, sourcesTask);
 
         var classificationsResult = await classificationsTask;
-        var sourcesResult = await sourcesTask;
 
         if (classificationsResult.IsSuccess && classificationsResult.Data != null)
         {
-            _classifications = classificationsResult.Data.Where(c => c.ClassificationId > 0).ToList();
-        }
-
-        if (sourcesResult.IsSuccess && sourcesResult.Data != null)
-        {
-            _sources = sourcesResult.Data.Where(s => s.Id > 0).ToList();
+            _classifications = classificationsResult.Data.ToList();
         }
     }
 
@@ -116,7 +104,13 @@ public partial class JokeDisplayPage : IDisposable
         if (_isCompletelyRandom)
         {
             _selectedClassifications.Clear();
-            _selectedSources.Clear();
+        }
+        else
+        {
+            foreach (var classification in _classifications)
+            {
+                _selectedClassifications.Add(classification.ClassificationId);
+            }
         }
         StateHasChanged();
     }
@@ -136,29 +130,9 @@ public partial class JokeDisplayPage : IDisposable
         StateHasChanged();
     }
 
-    private void ToggleSource(int sourceId)
-    {
-        if (_selectedSources.Contains(sourceId))
-        {
-            _selectedSources.Remove(sourceId);
-        }
-        else
-        {
-            _selectedSources.Add(sourceId);
-        }
-        _currentJoke = null;
-        IsFlipped = false;
-        StateHasChanged();
-    }
-
     private bool IsClassificationSelected(int classificationId)
     {
         return _selectedClassifications.Contains(classificationId);
-    }
-
-    private bool IsSourceSelected(int sourceId)
-    {
-        return _selectedSources.Contains(sourceId);
     }
 
     private async Task OnFlipAsync()
@@ -188,15 +162,10 @@ public partial class JokeDisplayPage : IDisposable
         }
         else
         {
-            // Second flip - flip back to front
+            // Flip back to front
             IsFlipped = false;
             StateHasChanged();
         }
-    }
-
-    private Task OnJokeFlip()
-    {
-        return Task.CompletedTask;
     }
 
     private async Task LoadJokeAsync()
@@ -204,7 +173,7 @@ public partial class JokeDisplayPage : IDisposable
         try
         {
             string endpoint;
-            if (_isCompletelyRandom || (!_selectedClassifications.Any() && !_selectedSources.Any()))
+            if (_isCompletelyRandom || !_selectedClassifications.Any())
             {
                 endpoint = "api/joke/random";
             }
@@ -215,11 +184,6 @@ public partial class JokeDisplayPage : IDisposable
                 {
                     foreach (var id in _selectedClassifications)
                         queryParams.Add($"ClassificationIds={id}");
-                }
-                if (_selectedSources.Any())
-                {
-                    foreach (var id in _selectedSources)
-                        queryParams.Add($"SourceIds={id}");
                 }
 
                 var query = queryParams.Any() ? "?" + string.Join("&", queryParams) : "";
@@ -250,7 +214,7 @@ public partial class JokeDisplayPage : IDisposable
         {
             _currentJoke = result.Data;
             _showingPreviousJoke = true;
-            IsFlipped = false;
+            IsFlipped = false; // Show text on front for previous jokes
             StateHasChanged();
         }
     }

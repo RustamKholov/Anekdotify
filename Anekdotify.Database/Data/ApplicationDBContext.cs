@@ -64,41 +64,12 @@ public partial class ApplicationDBContext : IdentityDbContext<User>
                 ConcurrencyStamp = Guid.NewGuid().ToString()
             }
         };
-        List<Source> sources = new List<Source>
-        {
-            new Source
-            {
-                SourceId = -1,
-                SourceName = "From User"
-            },
-            new Source
-            {
-                SourceId = -2,
-                SourceName = "System"
-            },
-            new Source
-            {
-                SourceId = -3,
-                SourceName = "Generated"
-            },
-            new Source
-            {
-                SourceId = 1,
-                SourceName = "JokeAPI"
-            },
-            new Source
-            {
-                SourceId = -4,
-                SourceName = "Suggested"
-            }
-        };
+
         modelBuilder.Entity<Source>(entity =>
         {
             entity.HasKey(e => e.SourceId);
             entity.Property(e => e.SourceName).HasMaxLength(50);
         });
-
-        modelBuilder.Entity<Source>().HasData(sources);
 
         modelBuilder.Entity<IdentityRole>().HasData(roles);
 
