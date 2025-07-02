@@ -3,6 +3,7 @@ using Anekdotify.BL.Mappers;
 using Anekdotify.Common;
 using Anekdotify.Database.Data;
 using Anekdotify.Models.DTOs.Classification;
+using Anekdotify.Models.DTOs.Source;
 using Anekdotify.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -40,6 +41,12 @@ namespace Anekdotify.BL.Repositories
         {
             var classifications = await _context.Classifications.Select(cl => cl.ToDetailedDto()).ToListAsync();
             return OperationResult<List<ClassificationDetailedDto>>.Success(classifications);
+        }
+
+        public async Task<OperationResult<List<SourceDto>>> GetAllSourcesAsync()
+        {
+            var sources = await _context.Sources.Select(s => new SourceDto() {Id = s.SourceId, Name = s.SourceName}).ToListAsync();
+            return OperationResult<List<SourceDto>>.Success(sources);
         }
 
         public async Task<OperationResult<ClassificationDto>> GetClassificationByIdAsync(int classificationId)
