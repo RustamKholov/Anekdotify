@@ -94,6 +94,11 @@ public class JokeService(IJokeRepository jokeRepository, IJokeCacheService jokeC
         return await jokeRepository.GetRandomJokeAsync(viewedJokes);
     }
 
+    public async Task<JokeDto> GetRandomJokeAsync(List<int> viewedJokes, RandomJokeQueryObject query)
+    {
+        return await jokeRepository.GetRandomJokeAsync(viewedJokes, query);
+    }
+
     public async Task<List<JokePreviewDto>> GetSuggestedByMeJokes(string userId)
     {
         return await jokeRepository.GetSuggestedByMeJokes(userId);

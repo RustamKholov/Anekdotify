@@ -62,7 +62,7 @@ namespace Anekdotify.Api.Controllers
 
         [HttpGet]
         [Route("random")]
-        public async Task<IActionResult> GetRandomJokeAsync()
+        public async Task<IActionResult> GetRandomJokeAsync([FromQuery] RandomJokeQueryObject? query = null)
         {
             if (!ModelState.IsValid)
             {
@@ -91,9 +91,16 @@ namespace Anekdotify.Api.Controllers
             }
 
             var viewedJokes = await _userViewedJokesService.GetViewedJokesAsync(userId);
-
-            var joke = await _jokeService.GetRandomJokeAsync(viewedJokes.Value ?? []);
-
+            JokeDto joke;
+            if (query != null && (query.ClassificationIds.Count != 0 || query.ClassificationIds.Count != 0))
+            {
+                joke = await _jokeService.GetRandomJokeAsync(viewedJokes.Value ?? [], query);
+            }
+            else
+            {
+                joke = await _jokeService.GetRandomJokeAsync(viewedJokes.Value ?? []);
+            }
+            
             if (!User.IsInRole("Admin") || !User.IsInRole("Moderator"))
             {
                 await _userViewedJokesService.AddViewedJokeAsync(userId, joke.JokeId);

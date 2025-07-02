@@ -2,9 +2,11 @@ using Anekdotify.BL.Interfaces.Repositories;
 using Anekdotify.BL.Interfaces.Services;
 using Anekdotify.Common;
 using Anekdotify.Models.DTOs.Classification;
+using Anekdotify.Models.DTOs.Source;
 using Anekdotify.Models.Entities;
 
 namespace Anekdotify.BL.Services;
+
 
 public class ClassifficationService(IClassificationRepository classificationRepository) : IClassifficationService
 {
@@ -21,6 +23,11 @@ public class ClassifficationService(IClassificationRepository classificationRepo
     public async Task<OperationResult<List<ClassificationDetailedDto>>> GetAllClassificationsAsync()
     {
         return await classificationRepository.GetAllClassificationsAsync();
+    }
+
+    public async Task<OperationResult<List<SourceDto>>> GetAllSourcesAsync()
+    {
+        return await classificationRepository.GetAllSourcesAsync();
     }
 
     public async Task<OperationResult<ClassificationDto>> GetClassificationByIdAsync(int classificationId)

@@ -282,6 +282,45 @@ namespace Anekdotify.BL.Repositories
             return await GetJokeByIdAsync(randomJokeId) ?? throw new KeyNotFoundException($"Joke with ID {randomJokeId} not found.");
         }
 
+        public async Task<JokeDto> GetRandomJokeAsync(List<int> viewedJokes, RandomJokeQueryObject query)
+        {
+            var jokeIds = await _context.Jokes
+                .Where(j =>
+                    j.IsApproved == true &&
+                    (
+                        (!query.SourceIds.Any() && !query.ClassificationIds.Any()) || 
+                        (query.SourceIds.Any() && query.SourceIds.Contains(j.SourceId)) || 
+                        (query.ClassificationIds.Any() && j.ClassificationId.HasValue && query.ClassificationIds.Contains(j.ClassificationId.Value)) 
+                    )
+                )
+                .Select(j => j.JokeId)
+                .ToListAsync();
+
+
+        
+            if (jokeIds == null || jokeIds.Count == 0)
+            {
+                throw new InvalidOperationException("No jokes available to select from.");
+            }
+        
+            var random = new Random();
+            var randomIndex = random.Next(0, jokeIds.Count);
+        
+            if (viewedJokes is { Count: > 0 })
+            {
+                jokeIds = jokeIds.Where(id => !viewedJokes.Contains(id)).ToList();
+                if (jokeIds.Count == 0)
+                {
+                    throw new InvalidOperationException("No unviewed jokes available to select from.");
+                }
+                randomIndex = random.Next(0, jokeIds.Count);
+            }
+        
+            var randomJokeId = jokeIds[randomIndex];
+        
+            return await GetJokeByIdAsync(randomJokeId) ?? throw new KeyNotFoundException($"Joke not found.");
+        }
+
         public async Task<List<JokeDto>> GetJokesByIdsAsync(List<int> ids)
         {
             var ids1 = ids;

@@ -18,5 +18,6 @@ namespace Anekdotify.BL.Interfaces.Repositories
         Task<bool> JokeExistsAsync(int id);
         Task<bool> IsJokeOwnerAsync(int id, string userId);
         Task<JokeDto> GetRandomJokeAsync(List<int> viewedJokes);
+        Task<JokeDto> GetRandomJokeAsync(List<int> viewedJokes, RandomJokeQueryObject query);
     }
 }
