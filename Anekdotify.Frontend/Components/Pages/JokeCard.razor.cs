@@ -1,4 +1,5 @@
-﻿using Anekdotify.Frontend.Components.BaseComponents;
+﻿
+using Anekdotify.Frontend.Components.BaseComponents;
 using Anekdotify.Models.DTOs.Comments;
 using Anekdotify.Models.DTOs.JokeRating;
 using Anekdotify.Models.DTOs.Jokes;
@@ -9,7 +10,7 @@ namespace Anekdotify.Frontend.Components.Pages
     public partial class JokeCard
     {
         [Parameter] public required JokeDto Joke { get; set; }
-        [Parameter] public EventCallback OnFirstFlip { get; set; }
+        [Parameter] public EventCallback? OnFlip { get; set; }
         [Parameter] public bool IsFlipped { get; set; }
         private AppModal? Modal { get; set; }
 
@@ -21,11 +22,12 @@ namespace Anekdotify.Frontend.Components.Pages
 
         private async Task HandleFlip()
         {
-            if (!IsFlipped && OnFirstFlip.HasDelegate)
+            if (OnFlip.HasValue && OnFlip.Value.HasDelegate)
             {
-                await OnFirstFlip.InvokeAsync();
+                await OnFlip.Value.InvokeAsync();
             }
             IsFlipped = !IsFlipped;
+            StateHasChanged();
         }
 
         private static string JokeUrl(int id) => $"/editJoke/{id}";
@@ -49,6 +51,7 @@ namespace Anekdotify.Frontend.Components.Pages
 
             await base.OnInitializedAsync();
         }
+
         private async Task OnSaveClick()
         {
             if (_isSaved == true)
@@ -162,6 +165,5 @@ namespace Anekdotify.Frontend.Components.Pages
             }
             return count;
         }
-
     }
 }
