@@ -12,10 +12,6 @@ a, .btn-link {
     border-color: #1861ac;
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
 .content {
     padding-top: 1.1rem;
 }
@@ -26,6 +22,28 @@ h1:focus {
 
 .valid.modified:not([type=checkbox]) {
     outline: 1px solid #26b050;
+}
+.form-check-input:checked[type="checkbox"]{
+    border-color: #202020;
+    background-color: #707070;
+}
+.form-check-input[type="checkbox"] {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+}
+.form-check-input:checked[type="checkbox"] {
+    box-shadow: 0 0 0 0.2rem rgba(99, 102, 100, 0.25);
+}
+.form-check-input[type="checkbox"] {
+    box-shadow: 0 0 0 0.2rem rgba(83, 87, 84, 0.25);
+}
+.form-check-input:focus[type="checkbox"] {
+    box-shadow: 0 0 0 0.2rem rgba(99, 102, 100, 0.25);
+}
+
+.form-check-input:focus[type="checkbox"] {
+    border-color: #3d3f41;
+    box-shadow: 0 0 0 0.2rem rgba(66, 67, 68, 0.25);
 }
 
 .invalid {

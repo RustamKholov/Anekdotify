@@ -106,7 +106,7 @@ namespace Anekdotify.Api.Controllers
             var comment = commentCreateDto.ToCommentFromCreateDto(jokeId, userId);
             var createdComment = await _commentService.CreateCommentAsync(comment);
 
-            return Created(nameof(_commentService.CreateCommentAsync), createdComment.ToCommentDto());
+            return Created(nameof(_commentService.CreateCommentAsync), createdComment);
         }
 
         [HttpPut]

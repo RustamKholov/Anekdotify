@@ -28,9 +28,9 @@ namespace Anekdotify.BL.Repositories
 
         public async Task<Comment> CreateCommentAsync(Comment comment)
         {
-            await _context.Comments.AddAsync(comment);
+            var res = await _context.Comments.AddAsync(comment);
             await _context.SaveChangesAsync();
-            return comment;
+            return res.Entity;
         }
 
         public async Task<Comment?> DeleteCommentAsync(int id)
