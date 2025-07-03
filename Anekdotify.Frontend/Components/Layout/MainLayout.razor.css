@@ -5,7 +5,16 @@
 }
 
 main {
-    flex: 1;
+    flex: 1 1 auto;
+    width: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+
 }
 
 .sidebar {
@@ -16,7 +25,6 @@ main {
     background-color: #f7f7f7;
     border-bottom: 1px solid #d6d5d5;
     justify-content: flex-end;
-    height: 3.5rem;
     display: flex;
     align-items: center;
 }
@@ -53,7 +61,6 @@ main {
 
     .sidebar {
         width: 250px;
-        height: 100vh;
         position: sticky;
         top: 0;
     }
@@ -98,8 +105,6 @@ main {
 html, body {
     margin: 0;
     padding: 0;
-    height: 100%;
-    overflow: hidden;
     background-color: #fff !important;
     color: #212529 !important;
 }

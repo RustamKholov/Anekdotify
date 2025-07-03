@@ -52,7 +52,7 @@
     <Authorized>
         <div class="card-header bg-transparent border-bottom-0 d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center">
-                <a class="btn btn-outline-secondary btn-sm me-2" href="@JokeUrl(Joke.JokeId)" title="Edit">
+                <a class="btn btn-outline-secondary btn-sm me-2" href="@($"/edit-joke/{Joke.JokeId}")" title="Edit">
                     <i class="bi bi-pencil"></i>
                 </a>
                 <button class="btn btn-outline-danger" @onclick="() => { DeleteId = Joke.JokeId; Modal?.Show(); }">

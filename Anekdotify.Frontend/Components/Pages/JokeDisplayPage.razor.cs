@@ -6,21 +6,20 @@ using Anekdotify.Models.DTOs.Classification;
 using Blazored.Toast.Services;
 using Microsoft.AspNetCore.Components;
 using Timer = System.Timers.Timer;
+using Anekdotify.Models.Models;
 
 namespace Anekdotify.Frontend.Components.Pages;
 
 public partial class JokeDisplayPage : IDisposable
 {
     [Inject] IToastService ToastService { get; set; } = null!;
-
-    private bool IsFlipped { get; set; }
     private bool _isJokeAvailable;
     private bool _previousJokeAvailable;
     private bool _showingPreviousJoke;
     private bool _isLoading = true;
     private bool _isCompletelyRandom = true;
     private bool _isLoadingJoke = false;
-
+    private bool _isCardFlipped = false;
     private JokeDto? _currentJoke;
     private string _timeUntilNextJoke = "";
     private Timer? _timer;
@@ -96,11 +95,13 @@ public partial class JokeDisplayPage : IDisposable
         var timeSpan = tomorrow - now;
         _timeUntilNextJoke = $"{timeSpan.Hours}h {timeSpan.Minutes}m";
     }
-
+    private void OnCardFlip()
+    {
+        _isCardFlipped = !_isCardFlipped;
+    }
     private void OnRandomModeChanged()
     {
         _currentJoke = null;
-        IsFlipped = false;
         if (_isCompletelyRandom)
         {
             _selectedClassifications.Clear();
@@ -126,7 +127,6 @@ public partial class JokeDisplayPage : IDisposable
             _selectedClassifications.Add(classificationId);
         }
         _currentJoke = null;
-        IsFlipped = false;
         StateHasChanged();
     }
 
@@ -135,36 +135,18 @@ public partial class JokeDisplayPage : IDisposable
         return _selectedClassifications.Contains(classificationId);
     }
 
-    private async Task OnFlipAsync()
+    private async Task OnFetch()
     {
         if (_isLoadingJoke)
             return;
-
-        if (!IsFlipped)
+        if (_currentJoke == null)
         {
-            // First flip - load joke if not already loaded
-            if (_currentJoke == null)
-            {
-                _isLoadingJoke = true;
-                StateHasChanged();
-
-                await LoadJokeAsync();
-
-                _isLoadingJoke = false;
-            }
-
-            // Only flip if we successfully loaded a joke
-            if (_currentJoke != null)
-            {
-                IsFlipped = true;
-                StateHasChanged();
-            }
-        }
-        else
-        {
-            // Flip back to front
-            IsFlipped = false;
+            _isLoadingJoke = true;
             StateHasChanged();
+
+            await LoadJokeAsync();
+
+            _isLoadingJoke = false;
         }
     }
 
@@ -214,7 +196,6 @@ public partial class JokeDisplayPage : IDisposable
         {
             _currentJoke = result.Data;
             _showingPreviousJoke = true;
-            IsFlipped = false; // Show text on front for previous jokes
             StateHasChanged();
         }
     }
@@ -240,10 +221,5 @@ public partial class JokeDisplayPage : IDisposable
     public void Dispose()
     {
         _timer?.Dispose();
-    }
-
-    public class IsActiveRandomResponse
-    {
-        public bool IsActive { get; set; }
     }
 }

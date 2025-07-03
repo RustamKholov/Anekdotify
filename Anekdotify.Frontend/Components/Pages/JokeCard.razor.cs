@@ -10,7 +10,7 @@ namespace Anekdotify.Frontend.Components.Pages
     public partial class JokeCard
     {
         [Parameter] public required JokeDto Joke { get; set; }
-        [Parameter] public EventCallback? OnFlip { get; set; }
+        [Parameter] public EventCallback OnFlip { get; set; }
         [Parameter] public bool IsFlipped { get; set; }
         private AppModal? Modal { get; set; }
 
@@ -22,15 +22,13 @@ namespace Anekdotify.Frontend.Components.Pages
 
         private async Task HandleFlip()
         {
-            if (OnFlip.HasValue && OnFlip.Value.HasDelegate)
+            if ( OnFlip.HasDelegate)
             {
-                await OnFlip.Value.InvokeAsync();
+                await OnFlip.InvokeAsync();
             }
             IsFlipped = !IsFlipped;
             StateHasChanged();
         }
-
-        private static string JokeUrl(int id) => $"/editJoke/{id}";
 
         protected override async Task OnInitializedAsync()
         {
