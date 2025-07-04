@@ -24,8 +24,15 @@
                 </div>
                 <div class="mb-3">
                     <label for="password" class="form-label">Password</label>
-                    <InputText id="password" class="form-control" type="password" @bind-Value="registerModel.Password" />
+                    <InputText id="password" class="form-control" type="password"
+                        @bind-Value="registerModel.Password" />
                     <ValidationMessage For="@(() => registerModel.Password)" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                    <InputText id="confirmPassword" class="form-control" type="password"
+                        @bind-Value="registerModel.ConfirmPassword" />
+                    <ValidationMessage For="@(() => registerModel.ConfirmPassword)" class="text-danger" />
                 </div>
                 <div class="d-grid mt-4">
                     <button type="submit" class="btn btn-dark">
@@ -52,9 +59,20 @@
 
 @code {
     private RegisterDto registerModel = new RegisterDto();
-    [Inject] 
+    [Inject]
     private IToastService? ToastService { get; set; }
     private bool isLoading = false;
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthenticationStateProvider is CustomAuthStateProvider customAuthStateProvider)
+        {
+            var state = await customAuthStateProvider.GetAuthenticationStateAsync();
+            if (state.User.Identity?.IsAuthenticated == true)
+            {
+                NavigationManager.NavigateTo("/");
+            }
+        }
+    }
 
     private async Task HandleRegister()
     {
@@ -74,11 +92,11 @@
                 return;
             }
             var loginModel = new LoginResponseModel
-                {
-                    Token = response.Data.Token,
-                    RefreshToken = response.Data.RefreshToken,
-                    ExpiresIn = response.Data.ExpiresIn
-                };
+            {
+                Token = response.Data.Token,
+                RefreshToken = response.Data.RefreshToken,
+                ExpiresIn = response.Data.ExpiresIn
+            };
 
             if (response.IsSuccess)
             {

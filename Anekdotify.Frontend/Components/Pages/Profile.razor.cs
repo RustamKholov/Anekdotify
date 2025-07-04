@@ -9,7 +9,7 @@ public partial class Profile : ComponentBase
 {
     private UserDto? _userProfile;
     private UserStatisticsDto? _statistics;
-    private List<JokePreviewDto>? _recentJokes;
+    private List<SuggestedJokeDto>? _recentJokes;
 
     protected override async Task OnInitializedAsync()
     {
@@ -35,22 +35,35 @@ public partial class Profile : ComponentBase
     {
         try
         {
-            
+
             var userJokesRes = await ApiClient.GetAsync<List<JokePreviewDto>>("api/joke/suggested-by-me");
-            
+
             if (userJokesRes?.Data != null)
             {
                 var userJokes = userJokesRes.Data;
-                
-                _recentJokes = userJokes;
-                
+
+                _recentJokes = new List<SuggestedJokeDto>();
+
+                foreach (var userJoke in userJokes)
+                {
+                    var suggested = new SuggestedJokeDto
+                    {
+                        ClassificationName = userJoke.ClassificationName,
+                        IsApproved = userJoke.IsApproved,
+                        JokeId = userJoke.JokeId,
+                        Text = userJoke.Text
+                    };
+
+                    _recentJokes.Add(suggested);
+                }
+
                 var userCommentsRes = await ApiClient.GetAsync<List<CommentDto>>("api/comments/created-by-me");
                 var comments = userCommentsRes?.Data;
-                
+
                 _statistics = new UserStatisticsDto
                 {
                     TotalJokes = userJokes.Count,
-                    TotalUpvotes = userJokes.Sum(j => j.LikeCount),
+                    TotalLikes = userJokesRes.Data.Sum(c => c.LikeCount),
                     TotalComments = comments?.Count ?? 0
                 };
             }
@@ -66,20 +79,20 @@ public partial class Profile : ComponentBase
     {
         if (string.IsNullOrEmpty(username))
             return "U";
-            
+
         var parts = username.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length >= 2)
             return $"{parts[0][0]}{parts[1][0]}".ToUpper();
-        
+
         return username.Length >= 2 ? username.Substring(0, 2).ToUpper() : username.ToUpper();
     }
 
     private string GetUserRank()
     {
         if (_statistics == null) return "Newbie";
-        
-        var totalActivity = _statistics.TotalJokes + (_statistics.TotalUpvotes / 5) + (_statistics.TotalComments / 3);
-        
+
+        var totalActivity = _statistics.TotalJokes + (_statistics.TotalLikes / 5) + (_statistics.TotalComments / 3);
+
         return totalActivity switch
         {
             >= 100 => "Comedy Legend",

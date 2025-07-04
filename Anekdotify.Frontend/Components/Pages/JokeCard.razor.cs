@@ -12,6 +12,7 @@ namespace Anekdotify.Frontend.Components.Pages
         [Parameter] public required JokeDto Joke { get; set; }
         [Parameter] public EventCallback OnFlip { get; set; }
         [Parameter] public bool IsFlipped { get; set; }
+        [Parameter] public bool ShowTextOnFront { get; set; } = false;
         private AppModal? Modal { get; set; }
 
         public int? SelectedJokeId;
@@ -22,13 +23,15 @@ namespace Anekdotify.Frontend.Components.Pages
 
         private async Task HandleFlip()
         {
-            if ( OnFlip.HasDelegate)
+            if (OnFlip.HasDelegate)
             {
                 await OnFlip.InvokeAsync();
             }
             IsFlipped = !IsFlipped;
             StateHasChanged();
         }
+
+        private static string JokeUrl(int id) => $"/editJoke/{id}";
 
         protected override async Task OnInitializedAsync()
         {
@@ -49,7 +52,7 @@ namespace Anekdotify.Frontend.Components.Pages
 
             await base.OnInitializedAsync();
         }
-
+        
         private async Task OnSaveClick()
         {
             if (_isSaved == true)
