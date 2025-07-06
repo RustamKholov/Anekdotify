@@ -49,10 +49,6 @@ namespace Anekdotify.Api.Controllers
             {
                 return BadRequest(ModelState);
             }
-            if (isLike == null)
-            {
-                return BadRequest("Rating value (IsLike) is required.");
-            }
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
