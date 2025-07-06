@@ -20,6 +20,7 @@ public partial class JokeDisplayPage : IDisposable
     private bool _isCompletelyRandom = true;
     private bool _isLoadingJoke = false;
     private bool _isCardFlipped = false;
+    private bool _areCommentsOpen = false;
     private JokeDto? _currentJoke;
     private string _timeUntilNextJoke = "";
     private Timer? _timer;
@@ -95,9 +96,15 @@ public partial class JokeDisplayPage : IDisposable
         var timeSpan = tomorrow - now;
         _timeUntilNextJoke = $"{timeSpan.Hours}h {timeSpan.Minutes}m";
     }
-    private void OnCardFlip()
+    private void OnCardFlip(bool areCommentsOpen)
     {
         _isCardFlipped = !_isCardFlipped;
+        if (_areCommentsOpen != areCommentsOpen)
+        {
+            _areCommentsOpen = areCommentsOpen;
+            StateHasChanged();
+        }
+
     }
     private void OnRandomModeChanged()
     {

@@ -124,7 +124,7 @@
     
     private string GetTimeAgo(DateTime dateTime)
     {
-        var timeSpan = DateTime.Now - dateTime;
+        var timeSpan = DateTime.UtcNow - dateTime;
         if (timeSpan.TotalMinutes < 1) return "Just now";
         if (timeSpan.TotalHours < 1) return $"{(int)timeSpan.TotalMinutes} minutes ago";
         if (timeSpan.TotalDays < 1) return $"{(int)timeSpan.TotalHours} hours ago";

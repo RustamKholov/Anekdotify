@@ -1,37 +1,81 @@
 ﻿@rendermode RenderMode.InteractiveServer
 @page "/saved"
-<PageTitle>Saved - Anekdotify</PageTitle>
-@if (_isLoading)
-{
-    <div class="text-center">
-        <div class="spinner-border" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-    </div>
-}
-else if (_errorMessage != null)
-{
-    <p class="text-danger">Error: @_errorMessage</p>
-    <button class="btn btn-primary" @onclick="LoadJokes">Try Again</button>
-}
-else if (_jokes.Any())
-{
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 w-100" style="height: 95%">
-        @foreach (var joke in _jokes)
-        {
-            <div class="col">
-                <JokeCard Joke="@joke" IsFlipped="@true" />
-                <div class="joke-card-comments">
-                    <CommentsModal JokeId="@joke.JokeId" />
-                </div>
-            </div>
-        }
-    </div>
-}
-else
-{
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 w-100">
 
-        <p class="text-muted">Here you'll see your saved jokes. (Coming soon)</p>
+<PageTitle>Saved - Anekdotify</PageTitle>
+
+<div class="container-fluid px-0 " style="height: 95%;">
+    <div class="jokes-toolbar d-flex flex-wrap justify-content-between align-items-center mb-4 px-2 py-3">
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            <span class="fw-semibold me-2">Filter by Categories:</span>
+            @foreach (var classification in _classifications)
+            {
+                <div class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox" id="cat_@classification.ClassificationId"
+                        checked="@_selectedClassifications.Contains(classification.ClassificationId)"
+                        @onchange="() => ToggleClassification(classification.ClassificationId)" />
+                    <label class="form-check-label ms-1" for="cat_@classification.ClassificationId">
+                        @classification.Name
+                    </label>
+                </div>
+            }
+
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            <span class="fw-semibold">Sort by:</span>
+            <select class="form-select form-select-sm w-auto" @bind="_sortBy">
+                <option value="date">Date</option>
+                <option value="likes">Likes</option>
+                <option value="comments">Comments</option>
+            </select>
+            <button class="btn btn-outline-secondary btn-sm" @onclick="@(() => _sortDesc = !_sortDesc)">
+                @(_sortDesc ? "▼" : "▲")
+            </button>
+        </div>
+
     </div>
-}
+
+    @if (_isLoading)
+    {
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (_errorMessage != null)
+    {
+        <p class="text-danger">Error: @_errorMessage</p>
+        <button class="btn btn-primary" @onclick="LoadJokes">Try Again</button>
+    }
+    else if (FilteredJokes.Any())
+    {
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 w-100 jokes-list-container"
+            style="overflow:y-scroll;">
+            @foreach (var joke in FilteredJokes)
+            {
+                <div class="col">
+                    <JokeCard Joke="@joke" IsFlipped="@true" />
+                    <div class="joke-card-comments">
+                        <CommentsModal JokeId="@joke.JokeId" />
+                    </div>
+                </div>
+            }
+            @if (_visibleCount < _jokes.Count)
+            {
+                <div class="view-more-bar w-100 text-center my-0 py-3"
+                    style="position:sticky; bottom:0; left:0; background:rgba(255,255,255,0.95); z-index:10;">
+                    <button class="btn btn-link text-decoration-none fw-semibold px-0" style="font-size:1.1rem; color:inherit;"
+                        @onclick="ShowMore">
+                        View More <span class="ms-1">▼</span>
+                    </button>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 w-100">
+            <p class="text-muted">No jokes found.</p>
+        </div>
+    }
+</div>

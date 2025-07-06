@@ -51,7 +51,8 @@ else
                             {
                                 <JokeCard Joke="@_currentJoke" IsFlipped="@_isCardFlipped" OnFlip="OnCardFlip" />
                                 <div class="joke-card-comments">
-                                    <CommentsModal JokeId="@_currentJoke.JokeId" OnCommentsChanged="UpdateComments" />
+                                    <CommentsModal JokeId="@_currentJoke.JokeId" OnCommentsChanged="UpdateComments"
+                                        IsOpen="@_areCommentsOpen" />
                                 </div>
                             }
                         </div>

@@ -1,6 +1,8 @@
 ﻿using System.Net;
 using Anekdotify.Frontend.Authentication;
 using Anekdotify.Frontend.Clients;
+using Anekdotify.Models.DTOs.Classification;
+using Anekdotify.Models.DTOs.Comments;
 using Anekdotify.Models.DTOs.Jokes;
 using Blazored.Toast.Services;
 using Microsoft.AspNetCore.Components;
@@ -10,17 +12,41 @@ namespace Anekdotify.Frontend.Components.Pages
 {
     public partial class JokesTable
     {
-        private List<JokeDto> _jokes = new List<JokeDto>();
-        private bool _isLoading = true;
-        private string? _errorMessage;
-
         [Inject] public ApiClient? ApiClient { get; set; }
         [Inject] public AuthenticationStateProvider? AuthenticationStateProvider { get; set; }
         [Inject] public NavigationManager? NavigationManager { get; set; }
         [Inject] public IToastService? ToastService { get; set; }
+        private List<JokeDto> _jokes = new List<JokeDto>();
+        private List<ClassificationDetailedDto> _classifications = new();
+        private List<int> _selectedClassifications = new();
+        private bool _isLoading = true;
+        private string? _errorMessage;
+        private string _sortBy = "comments";
+        private bool _sortDesc = true;
+        private int _visibleCount = 8;
+        private const int PageSize = 8;
+        private IEnumerable<JokeDto> FilteredJokes
+        {
+            get
+            {
+                var filtered = _jokes
+                    .Where(j => !_selectedClassifications.Any() ||
+                                (j.ClassificationId.HasValue && _selectedClassifications.Contains(j.ClassificationId.Value)));
+                IEnumerable<JokeDto> sorted = _sortBy switch
+                {
+                    "likes" => _sortDesc ? filtered.OrderByDescending(j => j.TotalLikes) : filtered.OrderBy(j => j.TotalLikes),
+                    "comments" => _sortDesc ? filtered.OrderByDescending(j => CountCommentsRecursive(j.Comments)) : filtered.OrderBy(j => CountCommentsRecursive(j.Comments)),
+                    _ => _sortDesc ? filtered.OrderByDescending(j => j.SubmissionDate) : filtered.OrderBy(j => j.SubmissionDate)
+                };
+                return sorted.Take(_visibleCount);
+            }
+        }
+
+
         protected override async Task OnInitializedAsync()
         {
             await LoadJokes();
+            await LoadClassifications();
         }
         private async Task LoadJokes()
         {
@@ -81,6 +107,41 @@ namespace Anekdotify.Frontend.Components.Pages
 
             }
         }
+        private async Task LoadClassifications()
+        {
+            if (ApiClient != null)
+            {
+                var result = await ApiClient.GetAsync<List<ClassificationDetailedDto>>("api/classification");
+                if (result.IsSuccess && result.Data != null)
+                    _classifications = result.Data;
+            }
+        }
+        private void ToggleClassification(int classificationId)
+        {
+            if (_selectedClassifications.Contains(classificationId))
+                _selectedClassifications.Remove(classificationId);
+            else
+                _selectedClassifications.Add(classificationId);
+        }
+        private void ShowMore()
+        {
+            _visibleCount += PageSize;
+        }
+        private static int CountCommentsRecursive(List<CommentDto> comments)
+        {
+            var count = 0;
+            foreach (var comment in comments)
+            {
+                count++;
+                bool? any = comment.Replies.Count != 0;
+
+                if (any == true)
+                {
+                    count += CountCommentsRecursive(comment.Replies);
+                }
+            }
+            return count;
+        }
     }
-    
+
 }

@@ -1,5 +1,6 @@
 ﻿
 using Anekdotify.Frontend.Components.BaseComponents;
+using Anekdotify.Models.DTOs.Classification;
 using Anekdotify.Models.DTOs.Comments;
 using Anekdotify.Models.DTOs.JokeRating;
 using Anekdotify.Models.DTOs.Jokes;
@@ -10,28 +11,30 @@ namespace Anekdotify.Frontend.Components.Pages
     public partial class JokeCard
     {
         [Parameter] public required JokeDto Joke { get; set; }
-        [Parameter] public EventCallback OnFlip { get; set; }
+        [Parameter] public EventCallback<bool> OnFlip { get; set; }
         [Parameter] public bool IsFlipped { get; set; }
         [Parameter] public bool ShowTextOnFront { get; set; } = false;
-        private AppModal? Modal { get; set; }
+        private AppModal? DeleteModal { get; set; }
+
+        private EditJokeModal EditModal = new();
 
         public int? SelectedJokeId;
 
         private int DeleteId { get; set; }
         private bool? _isLiked;
         private bool? _isSaved;
-
+        private bool _isRatingBusy = false;
+        private bool areCommentsOpen = false;
         private async Task HandleFlip()
         {
+            CloseCommentsIfOpen();
             if (OnFlip.HasDelegate)
             {
-                await OnFlip.InvokeAsync();
+                await OnFlip.InvokeAsync(areCommentsOpen);
             }
             IsFlipped = !IsFlipped;
             StateHasChanged();
         }
-
-        private static string JokeUrl(int id) => $"/editJoke/{id}";
 
         protected override async Task OnInitializedAsync()
         {
@@ -52,7 +55,7 @@ namespace Anekdotify.Frontend.Components.Pages
 
             await base.OnInitializedAsync();
         }
-        
+
         private async Task OnSaveClick()
         {
             if (_isSaved == true)
@@ -85,53 +88,61 @@ namespace Anekdotify.Frontend.Components.Pages
 
         private async Task OnRateClick(bool newValue)
         {
-            if (_isLiked == newValue)
+            if (_isRatingBusy) return;
+            _isRatingBusy = true;
+            try
             {
-                var res = await ApiClient.DeleteAsync($"api/joke/{Joke.JokeId}/rating/delete");
-                if (res.IsSuccess)
+                if (_isLiked == newValue)
                 {
-                    if (newValue) Joke.TotalLikes--;
-                    else Joke.TotalDislikes--;
-
-                    _isLiked = null;
+                    var res = await ApiClient.PutAsync<RatingDto, bool?>($"api/joke/{Joke.JokeId}/rating", null);
+                    if (res.IsSuccess)
+                    {
+                        if (newValue) Joke.TotalLikes--;
+                        else Joke.TotalDislikes--;
+                        _isLiked = null;
+                    }
+                    else
+                    {
+                        ToastService.ShowError("Failed to remove rating");
+                    }
                     StateHasChanged();
+                    return;
+                }
+
+                var updateRes = await ApiClient.PutAsync<RatingDto, bool>($"api/joke/{Joke.JokeId}/rating", newValue);
+                if (updateRes.IsSuccess)
+                {
+                    if (newValue)
+                    {
+                        if (_isLiked == false) Joke.TotalDislikes--;
+                        if (_isLiked != true) Joke.TotalLikes++;
+                    }
+                    else
+                    {
+                        if (_isLiked == true) Joke.TotalLikes--;
+                        if (_isLiked != false) Joke.TotalDislikes++;
+                    }
+                    _isLiked = newValue;
                 }
                 else
                 {
-                    ToastService.ShowError("Failed to remove rating");
+                    ToastService.ShowError("Failed to rate joke");
                 }
-                return;
-            }
-
-            var updateRes = await ApiClient.PutAsync<RatingDto, bool>($"api/joke/{Joke.JokeId}/rating", newValue);
-            if (updateRes.IsSuccess)
-            {
-                if (newValue)
-                {
-                    if (_isLiked == false)
-                    {
-                        Joke.TotalDislikes--;
-                        Joke.TotalLikes++;
-                    }
-                    else if (_isLiked == null) Joke.TotalLikes++;
-                }
-                else
-                {
-                    if (_isLiked == true)
-                    {
-                        Joke.TotalLikes--;
-                        Joke.TotalDislikes++;
-                    }
-                    else if (_isLiked == null) Joke.TotalDislikes++;
-                }
-
-                _isLiked = newValue;
                 StateHasChanged();
             }
-            else
+            finally
             {
-                ToastService.ShowError("Failed to rate joke");
+                _isRatingBusy = false;
             }
+        }
+        private void ToggleComments()
+        {
+            areCommentsOpen = !areCommentsOpen;
+        }
+        private void CloseCommentsIfOpen()
+        {
+            if (areCommentsOpen)
+                areCommentsOpen = false;
         }
 
         private async Task HandleDelete()
@@ -140,12 +151,11 @@ namespace Anekdotify.Frontend.Components.Pages
             if (res.IsSuccess)
             {
                 ToastService.ShowSuccess("Joke deleted");
-                Modal?.Close();
+                DeleteModal?.Close();
                 NavigationManager.NavigateTo("/", true);
             }
             else ToastService.ShowError("Failed to delete");
         }
-
         private int CommentsCount()
         {
             return CountCommentsRecursive(Joke.Comments);
@@ -165,6 +175,19 @@ namespace Anekdotify.Frontend.Components.Pages
                 }
             }
             return count;
+        }
+        private async Task OnEditSave()
+        {
+            var jokeRes = await ApiClient.GetAsync<JokeDto>($"api/joke/{Joke.JokeId}");
+            if (jokeRes.IsSuccess && jokeRes.Data != null)
+            {
+                Joke = jokeRes.Data;
+                StateHasChanged();
+            }
+            else
+            {
+                ToastService.ShowError("Fail to load joke");
+            }
         }
     }
 }

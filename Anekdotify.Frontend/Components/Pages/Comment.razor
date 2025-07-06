@@ -25,13 +25,13 @@
             <button class="btn btn-link btn-sm p-0 text-dark text-decoration-none" title="Reply" @onclick="ReplyTo">
                 <i class="bi bi-reply"></i>
             </button>
-            <button class="btn btn-link btn-sm p-0 text-dark text-decoration-none" title="Like"
-                @onclick="() => RateComment(true)">
+            <button disabled="@_isRatingBusy" class="btn btn-link btn-sm p-0 text-dark text-decoration-none"
+                title="Like" @onclick="() => RateComment(true)">
                 <i class="bi @(IsLiked == true ? "bi-hand-thumbs-up-fill" : "bi-hand-thumbs-up")"></i>
                 <span class="ms-1">@CommentDto.TotalLikes</span>
             </button>
-            <button class="btn btn-link btn-sm p-0 text-dark text-decoration-none" title="Dislike"
-                @onclick="() => RateComment(false)">
+            <button disabled="@_isRatingBusy" class="btn btn-link btn-sm p-0 text-dark text-decoration-none"
+                title="Dislike" @onclick="() => RateComment(false)">
                 <i class="bi @(IsLiked == false ? "bi-hand-thumbs-down-fill" : "bi-hand-thumbs-down")"></i>
                 <span class="ms-1">@CommentDto.TotalDislikes</span>
             </button>
@@ -41,7 +41,7 @@
     <button class="btn btn-sm btn-link text-secondary px-0 ms-1" style="text-decoration: none;"
         @onclick="() => Toggle(CommentDto.CommentId)">
         <i class="bi @(ExpandedReplies.Contains(CommentDto.CommentId) ? "bi-chevron-up" : "bi-chevron-down")"></i>
-        <span class="small">Replies</span>
+        <span class="small">Replies(@CountCommentsRecursive(CommentDto.Replies))</span>
     </button>
 </div>
 
@@ -57,7 +57,7 @@
 
     [Parameter] public EventCallback<int> OnCommentDeleted { get; set; }
 
-
+    private bool _isRatingBusy = false;
     private bool? IsLiked { get; set; }
     private bool PostedByCurrentUser { get; set; }
 
@@ -107,59 +107,52 @@
     }
     private async Task RateComment(bool newValue)
     {
-        if (IsLiked == newValue)
-        {
-            var res = await ApiClient.DeleteAsync($"api/comment/rate/{CommentDto.CommentId}");
-            if (res.IsSuccess)
-            {
-                if (newValue) CommentDto.TotalLikes--;
-                else CommentDto.TotalDislikes--;
 
-                IsLiked = null;
+        if (_isRatingBusy) return;
+        _isRatingBusy = true;
+        try
+        {
+            if (IsLiked == newValue)
+            {
+                var res = await ApiClient.PutAsync<RatingDto, bool?>($"api/comment/rate/{CommentDto.CommentId}", null);
+                if (res.IsSuccess)
+                {
+                    if (newValue) CommentDto.TotalLikes--;
+                    else CommentDto.TotalDislikes--;
+                    IsLiked = null;
+                }
+                else
+                {
+                    ToastService.ShowError("Failed to remove rating.");
+                }
                 StateHasChanged();
+                return;
             }
-            else
-            {
-                ToastService.ShowError("Failed to remove rating.");
-            }
-            return;
-        }
 
-        var updateRes = await ApiClient.PutAsync<RatingDto, bool>($"api/comment/rate/{CommentDto.CommentId}", newValue);
-        if (updateRes.IsSuccess)
-        {
-            if (newValue)
+            var updateRes = await ApiClient.PutAsync<RatingDto, bool>($"api/comment/rate/{CommentDto.CommentId}", newValue);
+            if (updateRes.IsSuccess)
             {
-                switch (IsLiked)
+                if (newValue)
                 {
-                    case false:
-                        CommentDto.TotalDislikes--;
-                        CommentDto.TotalLikes++;
-                        break;
-                    case null:
-                        CommentDto.TotalLikes++;
-                        break;
+                    if (IsLiked == false) CommentDto.TotalDislikes--;
+                    if (IsLiked != true) CommentDto.TotalLikes++;
                 }
+                else
+                {
+                    if (IsLiked == true) CommentDto.TotalLikes--;
+                    if (IsLiked != false) CommentDto.TotalDislikes++;
+                }
+                IsLiked = newValue;
             }
             else
             {
-                switch (IsLiked)
-                {
-                    case true:
-                        CommentDto.TotalLikes--;
-                        CommentDto.TotalDislikes++;
-                        break;
-                    case null:
-                        CommentDto.TotalDislikes++;
-                        break;
-                }
+                ToastService.ShowError("Failed to update rating.");
             }
-            IsLiked = newValue;
             StateHasChanged();
         }
-        else
+        finally
         {
-            ToastService.ShowError("Failed to update rating.");
+            _isRatingBusy = false;
         }
 
     }
@@ -171,9 +164,25 @@
 
     private string GetTimeAgo(DateTime dateTime)
     {
-        var timeSpan = DateTime.Now - dateTime;
+        var timeSpan = DateTime.UtcNow - dateTime;
         if (timeSpan.TotalMinutes < 1) return "Just now";
         if (timeSpan.TotalHours < 1) return $"{(int)timeSpan.TotalMinutes} minutes ago";
         return timeSpan.TotalDays < 1 ? $"{(int)timeSpan.TotalHours} hours ago" : $"{(int)timeSpan.TotalDays} days ago";
+    }
+
+    private static int CountCommentsRecursive(List<CommentDto> comments)
+    {
+        var count = 0;
+        foreach (var comment in comments)
+        {
+            count++;
+            bool? any = comment.Replies.Count != 0;
+
+            if (any == true)
+            {
+                count += CountCommentsRecursive(comment.Replies);
+            }
+        }
+        return count;
     }
 }

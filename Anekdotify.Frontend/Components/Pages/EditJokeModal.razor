@@ -1,0 +1,181 @@
+﻿@using Anekdotify.Frontend.Components.BaseComponents
+@using Anekdotify.Models.DTOs.Classification
+@using Anekdotify.Models.DTOs.Jokes
+@inject ApiClient ApiClient
+@inject IToastService ToastService
+
+<AppModal @ref="ModalRef">
+    <Title>Update Joke</Title>
+
+    <Body>
+        @if (!_isLoaded)
+        {
+            <div class="text-center py-4">
+                <div class="spinner-border"></div>
+            </div>
+        }
+        else if (_errorMessage != null)
+        {
+            <div class="alert alert-danger">@_errorMessage</div>
+        }
+        else
+        {
+            <EditForm Model="_editModel" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="text-danger" />
+
+                <div class="mb-3">
+                    <label class="form-label">Joke Text</label>
+                    <textarea class="form-control" rows="4" @bind="_editModel.Text"
+                        placeholder="Enter joke text..."></textarea>
+                    <ValidationMessage For="@(() => _editModel.Text)" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Classification</label>
+                    <select class="form-select" @bind="_editModel.ClassificationId">
+                        <option value="">Select Classification</option>
+                        @foreach (var c in _classifications)
+                        {
+                            <option value="@c.ClassificationId">@c.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <button type="submit" class="btn btn-primary" disabled="@_isSubmitting">
+                        @(_isSubmitting ? "Saving..." : "Save Changes")
+                    </button>
+                </div>
+            </EditForm>
+        }
+    </Body>
+    <Footer>
+        <button type="button" class="btn btn-secondary" @onclick="Close">Cancel</button>
+    </Footer>
+</AppModal>
+
+@code {
+    [Parameter] public int JokeId { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnSaved { get; set; }
+
+    private AppModal? ModalRef;
+    private JokeUpdateDto _editModel = new();
+    private List<ClassificationDetailedDto> _classifications = new();
+    private string? _errorMessage;
+    private bool _isSubmitting = false;
+    private bool _isLoaded = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (JokeId <= 0)
+        {
+            _errorMessage = "Invalid Joke ID.";
+            _isLoaded = true;
+            StateHasChanged();
+            return;
+        }
+
+        // Reset state
+        _editModel = new JokeUpdateDto();
+        _errorMessage = null;
+        _isSubmitting = false;
+        _isLoaded = false;
+        await LoadJoke();
+    }
+    public async Task Show()
+    {
+        ModalRef?.Show();
+        try
+        {
+            _isLoaded = false;
+            _errorMessage = null;
+            _isSubmitting = false;
+            
+            await LoadClassifications();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = "Failed to initialize modal: " + ex.Message;
+        }
+        finally
+        {
+            _isLoaded = true;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadJoke()
+    {
+        try
+        {
+            var response = await ApiClient.GetAsync<JokeDto>($"api/joke/{JokeId}");
+            if (response.IsSuccess && response.Data != null)
+            {
+                _editModel = new JokeUpdateDto
+                {
+                    Text = response.Data.Text,
+                    ClassificationId = response.Data.ClassificationId,
+
+                };
+            }
+            else
+            {
+                _errorMessage = "Joke not found.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = "Failed to load joke." + ex.Message;
+        }
+    }
+
+    private async Task LoadClassifications()
+    {
+        try
+        {
+            var response = await ApiClient.GetAsync<List<ClassificationDetailedDto>>("api/classification");
+            if (response.IsSuccess)
+            {
+                _classifications = response.Data ?? new();
+            }
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError(ex.Message);
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        _isSubmitting = true;
+        _errorMessage = null;
+        try
+        {
+            var response = await ApiClient.PutAsync<JokeDto, JokeUpdateDto>($"api/joke/{JokeId}", _editModel);
+            if (response.IsSuccess)
+            {
+                ToastService.ShowSuccess("Joke updated!");
+                if (OnSaved.HasDelegate)
+                    await OnSaved.InvokeAsync();
+                Close();
+            }
+            else
+            {
+                _errorMessage = "Failed to update joke.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        _isSubmitting = false;
+        StateHasChanged();
+    }
+
+    private async void Close()
+    {
+        ModalRef?.Close();
+        if (OnClose.HasDelegate)
+            await OnClose.InvokeAsync();
+    }
+}
