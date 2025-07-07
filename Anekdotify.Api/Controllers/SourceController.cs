@@ -2,6 +2,7 @@
 using Anekdotify.BL.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Anekdotify.Api.Controllers;
 
@@ -11,10 +12,12 @@ namespace Anekdotify.Api.Controllers;
 public class SourceController : ControllerBase
 {
     private readonly IClassifficationService _classificationService;
+    private readonly ILogger<SourceController> _logger;
 
-    public SourceController(IClassifficationService classificationService)
+    public SourceController(IClassifficationService classificationService, ILogger<SourceController> logger)
     {
-        _classificationService = classificationService;   
+        _classificationService = classificationService;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -22,10 +25,12 @@ public class SourceController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning("Invalid model state in GetAllSources.");
             return BadRequest(ModelState);
         }
 
         var sources = await _classificationService.GetAllSourcesAsync();
+        _logger.LogInformation("Fetched all sources (Count: {Count})", sources.Value?.Count ?? 0);
         return Ok(sources.Value);
     }
 }
