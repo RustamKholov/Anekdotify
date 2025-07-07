@@ -4,7 +4,7 @@
 @inject IToastService ToastService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-<div class="collapse @(IsOpen ? "show" : "")" id="collapse_comments_@JokeId">
+<div class="collapse" id="collapse_comments_@JokeId">
     <div class="comments-modal-container card card-body w-100 comments-modal-container" style="max-height:30vh;">
 
         <!-- Reply to info -->
@@ -68,7 +68,6 @@
 @code {
     [Parameter] public int JokeId { get; set; }
     [Parameter] public EventCallback<List<CommentDto>> OnCommentsChanged { get; set; }
-    [Parameter] public bool IsOpen { get; set; }
     private List<CommentDto>? Comments { get; set; }
     private CommentCreateDto Create { get; set; } = new CommentCreateDto();
 
