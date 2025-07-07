@@ -49,7 +49,7 @@ namespace Anekdotify.BL.Repositories
         {
             var baseQuery = _context.Comments
                 .AsNoTracking()
-                .Where(c => (query.JokeId == null || c.JokeId == query.JokeId) && 
+                .Where(c => (query.JokeId == null || c.JokeId == query.JokeId) &&
                             (query.UserId == null || c.UserId == query.UserId));
 
             baseQuery = query.ByDescending
@@ -77,9 +77,28 @@ namespace Anekdotify.BL.Repositories
             return rootComments;
         }
 
-        public async Task<Comment?> GetCommentByIdAsync(int id)
+        public async Task<CommentDto?> GetCommentByIdAsync(int id)
         {
-            return await _context.Comments.FirstOrDefaultAsync(c => c.CommentId == id);
+            var comment = await _context.Comments
+                .AsNoTracking()
+                .Include(c => c.User)
+                .Include(c => c.CommentRatings)
+                .FirstOrDefaultAsync(c => c.CommentId == id);
+
+            if (comment == null)
+                return null;
+
+            return new CommentDto
+            {
+                JokeId = comment.JokeId,
+                CommentId = comment.CommentId,
+                CommentText = comment.CommentText,
+                CommentDate = comment.CommentDate,
+                Username = comment.User?.UserName ?? "Unknown",
+                TotalLikes = comment.CommentRatings.Count(r => r.Rating),
+                TotalDislikes = comment.CommentRatings.Count(r => !r.Rating),
+                ParentCommentId = comment.ParentCommentId
+            };
         }
 
         public async Task<Comment?> UpdateCommentAsync(int id, CommentUpdateDto commentUpdateDto)

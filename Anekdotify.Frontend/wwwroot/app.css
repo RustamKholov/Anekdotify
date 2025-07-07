@@ -3,13 +3,13 @@ html, body {
 }
 
 a, .btn-link {
-    color: #006bb7;
+    color: #2a343b;
 }
 
 .btn-primary {
     color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    background-color: #373d44;
+    border-color: #2f343a;
 }
 
 .content {
@@ -60,9 +60,9 @@ h1:focus {
     color: white;
 }
 
-    .blazor-error-boundary::after {
-        content: "An error has occurred."
-    }
+.blazor-error-boundary::after {
+    content: "An error has occurred."
+}
 
 .darker-border-checkbox.form-check-input {
     border-color: #929292;

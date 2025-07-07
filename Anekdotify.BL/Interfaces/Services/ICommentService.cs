@@ -7,7 +7,7 @@ namespace Anekdotify.BL.Interfaces.Services;
 public interface ICommentService
 {
     Task<List<CommentDto>> GetAllCommentsAsync(CommentsQueryObject query);
-    Task<Comment?> GetCommentByIdAsync(int id);
+    Task<CommentDto?> GetCommentByIdAsync(int id);
     Task<Comment> CreateCommentAsync(Comment comment);
     Task<Comment?> UpdateCommentAsync(int id, CommentUpdateDto comment);
     Task<Comment?> DeleteCommentAsync(int id);

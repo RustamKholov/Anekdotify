@@ -92,14 +92,13 @@ namespace Anekdotify.Frontend.Components.Pages
             _isRatingBusy = true;
             try
             {
+
                 if (_isLiked == newValue)
                 {
                     var res = await ApiClient.PutAsync<RatingDto, bool?>($"api/joke/{Joke.JokeId}/rating", null);
                     if (res.IsSuccess)
                     {
-                        if (newValue) Joke.TotalLikes--;
-                        else Joke.TotalDislikes--;
-                        _isLiked = null;
+                        await RefreshJokeRating();
                     }
                     else
                     {
@@ -109,20 +108,11 @@ namespace Anekdotify.Frontend.Components.Pages
                     return;
                 }
 
+
                 var updateRes = await ApiClient.PutAsync<RatingDto, bool>($"api/joke/{Joke.JokeId}/rating", newValue);
                 if (updateRes.IsSuccess)
                 {
-                    if (newValue)
-                    {
-                        if (_isLiked == false) Joke.TotalDislikes--;
-                        if (_isLiked != true) Joke.TotalLikes++;
-                    }
-                    else
-                    {
-                        if (_isLiked == true) Joke.TotalLikes--;
-                        if (_isLiked != false) Joke.TotalDislikes++;
-                    }
-                    _isLiked = newValue;
+                    await RefreshJokeRating();
                 }
                 else
                 {
@@ -144,7 +134,21 @@ namespace Anekdotify.Frontend.Components.Pages
             if (areCommentsOpen)
                 areCommentsOpen = false;
         }
+        private async Task RefreshJokeRating()
+        {
+            var res = await ApiClient.GetAsync<RatingDto>($"api/joke/{Joke.JokeId}/rating");
+            if (res.IsSuccess && res.Data != null)
+            {
+                _isLiked = res.Data.IsLike;
 
+                var jokeRes = await ApiClient.GetAsync<JokeDto>($"api/joke/{Joke.JokeId}");
+                if (jokeRes.IsSuccess && jokeRes.Data != null)
+                {
+                    Joke.TotalLikes = jokeRes.Data.TotalLikes;
+                    Joke.TotalDislikes = jokeRes.Data.TotalDislikes;
+                }
+            }
+        }
         private async Task HandleDelete()
         {
             var res = await ApiClient.DeleteAsync($"api/joke/{DeleteId}");
@@ -152,7 +156,7 @@ namespace Anekdotify.Frontend.Components.Pages
             {
                 ToastService.ShowSuccess("Joke deleted");
                 DeleteModal?.Close();
-                NavigationManager.NavigateTo("/", true);
+                StateHasChanged();
             }
             else ToastService.ShowError("Failed to delete");
         }
