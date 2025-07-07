@@ -15,3 +15,17 @@
 .btn-group .btn {
     margin: 0;
 }
+@media (max-width: 576px) {
+    .card-body {
+        padding: 0.75rem 0.25rem;
+    }
+    .card-body i {
+        font-size: 1.5rem !important;
+    }
+    .card-body h4 {
+        font-size: 1.1rem;
+    }
+    .card-body p {
+        font-size: 0.85rem;
+    }
+}

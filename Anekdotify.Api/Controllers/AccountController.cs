@@ -16,14 +16,20 @@ namespace Anekdotify.Api.Controllers
         private readonly ITokenService _tokenService;
         private readonly SignInManager<User> _signInManager;
         private readonly IAccountService _accountService;
+        private readonly ILogger<AccountController> _logger;
 
-        public AccountController(UserManager<User> userManager, ITokenService tokenService,
-            SignInManager<User> signInManager, IAccountService accountService)
+        public AccountController(
+            UserManager<User> userManager,
+            ITokenService tokenService,
+            SignInManager<User> signInManager,
+            IAccountService accountService,
+            ILogger<AccountController> logger)
         {
             _userManager = userManager;
             _tokenService = tokenService;
             _signInManager = signInManager;
             _accountService = accountService;
+            _logger = logger;
         }
 
         [HttpPost("login")]
@@ -31,18 +37,28 @@ namespace Anekdotify.Api.Controllers
         {
             if (!ModelState.IsValid)
             {
+                _logger.LogWarning("Invalid login attempt: {@LoginDto}", loginDto);
                 return BadRequest(loginDto);
             }
 
-            // Accept camelCase by normalizing property names
             User? user = await _userManager.Users.FirstOrDefaultAsync(u =>
                 u.UserName == loginDto.Username || u.Email == loginDto.Username);
 
-            if (user == null) return Unauthorized("Username not found and/or wrong password");
+            if (user == null)
+            {
+                _logger.LogWarning("Login failed: user not found for {Username}", loginDto.Username);
+                return Unauthorized("Username not found and/or wrong password");
+            }
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
 
-            if (!result.Succeeded) return Unauthorized("Username not found and/or wrong password");
+            if (!result.Succeeded)
+            {
+                _logger.LogWarning("Login failed: invalid password for {Username}", loginDto.Username);
+                return Unauthorized("Username not found and/or wrong password");
+            }
+
+            _logger.LogInformation("User {Username} logged in successfully.", loginDto.Username);
 
             var token = _tokenService.CreateToken(user, isRefreshToken: false);
             var refreshToken = _tokenService.CreateToken(user, isRefreshToken: true);
@@ -57,7 +73,7 @@ namespace Anekdotify.Api.Controllers
             {
                 Token = token,
                 RefreshToken = refreshToken,
-                ExpiresIn = DateTimeOffset.UtcNow.AddMinutes(30).ToUnixTimeSeconds() // 30minutes expiration
+                ExpiresIn = DateTimeOffset.UtcNow.AddMinutes(30).ToUnixTimeSeconds()
             };
 
             user.LastLoginDate = DateTime.UtcNow;
@@ -72,8 +88,11 @@ namespace Anekdotify.Api.Controllers
             var refreshTokenEntity = await _accountService.GetRefreshTokenByToken(refreshToken);
             if (refreshTokenEntity == null)
             {
+                _logger.LogWarning("Invalid or expired refresh token used: {RefreshToken}", refreshToken);
                 return Unauthorized("Invalid or expired refresh token.");
             }
+
+            _logger.LogInformation("Refresh token used for user {UserId}", refreshTokenEntity.UserId);
 
             var token = _tokenService.CreateToken(refreshTokenEntity.User, isRefreshToken: false);
             var newRefreshToken = _tokenService.CreateToken(refreshTokenEntity.User, isRefreshToken: true);
@@ -91,10 +110,9 @@ namespace Anekdotify.Api.Controllers
             {
                 Token = token,
                 RefreshToken = newRefreshToken,
-                ExpiresIn = DateTimeOffset.UtcNow.AddMinutes(30).ToUnixTimeSeconds() // 30minutes expiration
+                ExpiresIn = DateTimeOffset.UtcNow.AddMinutes(30).ToUnixTimeSeconds()
             });
         }
-
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
@@ -103,6 +121,7 @@ namespace Anekdotify.Api.Controllers
             {
                 if (!ModelState.IsValid)
                 {
+                    _logger.LogWarning("Invalid registration attempt: {@RegisterDto}", registerDto);
                     return BadRequest(ModelState);
                 }
 
@@ -114,14 +133,17 @@ namespace Anekdotify.Api.Controllers
 
                 if (string.IsNullOrEmpty(registerDto.Password))
                 {
+                    _logger.LogWarning("Registration failed: Password is empty for user {Email}", user.Email);
                     ModelState.AddModelError("Password", "Password is required.");
                     return BadRequest(ModelState);
                 }
 
                 var existing = await _userManager.FindByEmailAsync(user.Email ?? string.Empty);
                 if (existing != null)
+                {
+                    _logger.LogWarning("Registration failed: User already exists with email {Email}", user.Email);
                     return BadRequest("User already exists");
-
+                }
 
                 var createUser = await _userManager.CreateAsync(user, registerDto.Password);
                 if (createUser.Succeeded)
@@ -130,7 +152,7 @@ namespace Anekdotify.Api.Controllers
 
                     if (roleResult.Succeeded)
                     {
-
+                        _logger.LogInformation("User registered successfully: {Email}", user.Email);
                         return Ok(
                             new RegisterResponseModel
                             {
@@ -138,22 +160,25 @@ namespace Anekdotify.Api.Controllers
                                 Email = user.Email!,
                                 Token = _tokenService.CreateToken(user, isRefreshToken: false),
                                 RefreshToken = _tokenService.CreateToken(user, isRefreshToken: true),
-                                ExpiresIn = DateTimeOffset.UtcNow.AddHours(1).ToUnixTimeSeconds() // 1 hour expiration
+                                ExpiresIn = DateTimeOffset.UtcNow.AddHours(1).ToUnixTimeSeconds()
                             }
                         );
                     }
                     else
                     {
+                        _logger.LogError("Failed to assign role to user {Email}: {@Errors}", user.Email, roleResult.Errors);
                         return StatusCode(500, roleResult.Errors);
                     }
                 }
                 else
                 {
+                    _logger.LogError("Failed to create user {Email}: {@Errors}", user.Email, createUser.Errors);
                     return StatusCode(500, createUser.Errors);
                 }
             }
             catch (Exception e)
             {
+                _logger.LogError(e, "Exception during registration for {Email}", registerDto.Email);
                 return StatusCode(500, e);
             }
         }
@@ -165,14 +190,18 @@ namespace Anekdotify.Api.Controllers
         {
             if (!ModelState.IsValid)
             {
+                _logger.LogWarning("Invalid profile request. Model state invalid.");
                 return BadRequest(ModelState);
             }
 
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
+                _logger.LogWarning("Profile request failed: user not found for current identity.");
                 return Unauthorized("User not found.");
             }
+
+            _logger.LogInformation("Profile requested for user {Username}", user.UserName);
 
             return Ok(new UserDto
             {

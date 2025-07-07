@@ -59,7 +59,7 @@
     padding: 1rem 0;
     line-height: 1.4;
     overflow: hidden;
-    font-size: clamp(0.9rem, 1.1vw + 0.9rem, 1.35rem);
+    font-size: clamp(1.05rem, 1.3vw + 0.95rem, 1.2rem);
     word-break: break-word;
 }
 
@@ -131,6 +131,11 @@
 
     .joke-card-text {
         font-size: clamp(0.75rem, 1vw + 0.75rem, 1.1rem);
+    }
+}
+@media (max-width: 576px) {
+    .joke-card-text {
+        font-size: clamp(1rem, 3vw + 0.8rem, 1.1rem);
     }
 }
 @media (max-width: 320px) {

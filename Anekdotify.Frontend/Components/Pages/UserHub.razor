@@ -13,7 +13,7 @@
                 <i class="fas fa-user-cog me-2"></i>
                 User Hub
             </h2>
-            <nav aria-label="User Hub Navigation">
+            <nav aria-label="User Hub Navigation" class="w-100 w-md-auto d-flex justify-content-center">
                 <div class="btn-group flex-wrap" role="group">
                     <a href="/profile" class="btn btn-outline-secondary mb-2 mb-md-0">
                         <i class="fas fa-user me-2"></i>
@@ -23,7 +23,7 @@
                         <i class="fa-solid fa-bookmark"></i>
                         Saved
                     </a>
-                    <a href="/suggest" class="btn btn-outline-secondary">
+                    <a href="/suggest" class="btn btn-outline-secondary mb-2 mb-md-0">
                         <i class="fas fa-plus-circle me-2"></i>
                         Submit Joke
                     </a>
@@ -33,35 +33,35 @@
     </div>
 
     <!-- Quick Stats Cards -->
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-md-4 col-lg-3">
-            <div class="card border-secondary text-center h-100">
-                <div class="card-body">
-                    <i class="fas fa-laugh-beam text-secondary fs-2 mb-2"></i>
-                    <h4 class="text-secondary">@(_userJokes?.Count() ?? 0)</h4>
-                    <p class="text-muted mb-0">Your Jokes</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-lg-3">
-            <div class="card border-secondary text-center h-100">
-                <div class="card-body">
-                    <i class="fas fa-thumbs-up text-secondary fs-2 mb-2"></i>
-                    <h4 class="text-secondary">@(_userJokes?.Sum(j => j.LikeCount) ?? 0)</h4>
-                    <p class="text-muted mb-0">Total Likes</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-lg-3">
-            <div class="card border-secondary text-center h-100">
-                <div class="card-body">
-                    <i class="fas fa-comments text-secondary fs-2 mb-2"></i>
-                    <h4 class="text-secondary">@(_userJokes?.Sum(j => j.CommentCount) ?? 0)</h4>
-                    <p class="text-muted mb-0">Total Comments</p>
-                </div>
+    <div class="row row-cols-3 g-2 g-md-3 mb-4">
+    <div class="col">
+        <div class="card border-secondary text-center h-100">
+            <div class="card-body">
+                <i class="fas fa-laugh-beam text-secondary fs-2 mb-2"></i>
+                <h4 class="text-secondary">@(_userJokes?.Count() ?? 0)</h4>
+                <p class="text-muted mb-0">Your Jokes</p>
             </div>
         </div>
     </div>
+    <div class="col">
+        <div class="card border-secondary text-center h-100">
+            <div class="card-body">
+                <i class="fas fa-thumbs-up text-secondary fs-2 mb-2"></i>
+                <h4 class="text-secondary">@(_userJokes?.Sum(j => j.LikeCount) ?? 0)</h4>
+                <p class="text-muted mb-0">Total Likes</p>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card border-secondary text-center h-100">
+            <div class="card-body">
+                <i class="fas fa-comments text-secondary fs-2 mb-2"></i>
+                <h4 class="text-secondary">@(_userJokes?.Sum(j => j.CommentCount) ?? 0)</h4>
+                <p class="text-muted mb-0">Total Comments</p>
+            </div>
+        </div>
+    </div>
+</div>
 
     <!-- User's Jokes Management -->
     <div class="row">
@@ -85,7 +85,7 @@
                     }
                     else if (_userJokes != null && _userJokes.Any())
                     {
-                        <div class="list-group list-group-flush">
+                        <div class="list-group list-group-flush" >
                             @foreach (var joke in _userJokes.Take(_visibleCount))
                             {
                                 <div class="list-group-item px-2 py-3">
@@ -146,6 +146,7 @@
             </div>
         </div>
     </div>
+    <div style="height: 2rem;"></div>
 </div>
 
 <EditJokeModal @ref="editJokeModal" JokeId="@selectedJokeId" OnSaved="ReloadJokes" />
