@@ -84,7 +84,6 @@ public partial class JokeDisplayPage : IDisposable
         _timer.Elapsed += (_, _) => InvokeAsync(() =>
         {
             UpdateTimeUntilNextJoke();
-            StateHasChanged();
         });
         _timer.Start();
     }
