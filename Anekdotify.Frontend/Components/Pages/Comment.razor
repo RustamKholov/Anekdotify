@@ -1,5 +1,5 @@
 ﻿@using Anekdotify.Models.DTOs.JokeRating
-@rendermode @(new InteractiveServerRenderMode(prerender:false))
+@rendermode RenderMode.InteractiveServer
 @inject ApiClient ApiClient
 @inject IToastService ToastService
 
@@ -107,19 +107,17 @@
     }
     private async Task RateComment(bool newValue)
     {
-
         if (_isRatingBusy) return;
         _isRatingBusy = true;
         try
         {
+
             if (IsLiked == newValue)
             {
                 var res = await ApiClient.PutAsync<RatingDto, bool?>($"api/comment/rate/{CommentDto.CommentId}", null);
                 if (res.IsSuccess)
                 {
-                    if (newValue) CommentDto.TotalLikes--;
-                    else CommentDto.TotalDislikes--;
-                    IsLiked = null;
+                    await RefreshCommentRating();
                 }
                 else
                 {
@@ -129,20 +127,11 @@
                 return;
             }
 
+
             var updateRes = await ApiClient.PutAsync<RatingDto, bool>($"api/comment/rate/{CommentDto.CommentId}", newValue);
             if (updateRes.IsSuccess)
             {
-                if (newValue)
-                {
-                    if (IsLiked == false) CommentDto.TotalDislikes--;
-                    if (IsLiked != true) CommentDto.TotalLikes++;
-                }
-                else
-                {
-                    if (IsLiked == true) CommentDto.TotalLikes--;
-                    if (IsLiked != false) CommentDto.TotalDislikes++;
-                }
-                IsLiked = newValue;
+                await RefreshCommentRating();
             }
             else
             {
@@ -154,7 +143,21 @@
         {
             _isRatingBusy = false;
         }
+    }
+    private async Task RefreshCommentRating()
+    {
+        var res = await ApiClient.GetAsync<RatingDto>($"api/comment/rate/{CommentDto.CommentId}");
+        if (res.IsSuccess && res.Data != null)
+        {
+            IsLiked = res.Data.IsLike;
 
+            var commentRes = await ApiClient.GetAsync<CommentDto>($"api/comments/{CommentDto.CommentId}");
+            if (commentRes.IsSuccess && commentRes.Data != null)
+            {
+                CommentDto.TotalLikes = commentRes.Data.TotalLikes;
+                CommentDto.TotalDislikes = commentRes.Data.TotalDislikes;
+            }
+        }
     }
 
     private async Task ReplyTo()

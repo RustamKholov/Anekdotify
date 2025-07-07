@@ -6,57 +6,55 @@
 
 <PageTitle>User Hub - Anekdotify</PageTitle>
 
-<div class="container mt-4" style="height: 95%;">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="text-secondary">
-                    <i class="fas fa-user-cog me-2"></i>
-                    User Hub
-                </h2>
-                <nav aria-label="User Hub Navigation">
-                    <div class="btn-group" role="group">
-                        <a href="/profile" class="btn btn-outline-secondary">
-                            <i class="fas fa-user me-2"></i>
-                            Profile
-                        </a>
-                        <a href="/saved" class="btn btn-outline-secondary">
-                            <i class="fas fa-user me-2"></i>
-                            Saved
-                        </a>
-                        <a href="/suggest" class="btn btn-outline-secondary">
-                            <i class="fas fa-plus-circle me-2"></i>
-                            Submit Joke
-                        </a>
-                    </div>
-                </nav>
-            </div>
+<div class="container py-4" style="height: 95%;">
+    <div class="row mb-4">
+        <div class="col-12 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+            <h2 class="text-secondary mb-3 mb-md-0">
+                <i class="fas fa-user-cog me-2"></i>
+                User Hub
+            </h2>
+            <nav aria-label="User Hub Navigation">
+                <div class="btn-group flex-wrap" role="group">
+                    <a href="/profile" class="btn btn-outline-secondary mb-2 mb-md-0">
+                        <i class="fas fa-user me-2"></i>
+                        Profile
+                    </a>
+                    <a href="/saved" class="btn btn-outline-secondary mb-2 mb-md-0">
+                        <i class="fa-solid fa-bookmark"></i>
+                        Saved
+                    </a>
+                    <a href="/suggest" class="btn btn-outline-secondary">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        Submit Joke
+                    </a>
+                </div>
+            </nav>
         </div>
     </div>
 
     <!-- Quick Stats Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3 col-sm-6 mb-3">
-            <div class="card border-secondary">
-                <div class="card-body text-center">
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="card border-secondary text-center h-100">
+                <div class="card-body">
                     <i class="fas fa-laugh-beam text-secondary fs-2 mb-2"></i>
                     <h4 class="text-secondary">@(_userJokes?.Count() ?? 0)</h4>
                     <p class="text-muted mb-0">Your Jokes</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6 mb-3">
-            <div class="card border-secondary">
-                <div class="card-body text-center">
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="card border-secondary text-center h-100">
+                <div class="card-body">
                     <i class="fas fa-thumbs-up text-secondary fs-2 mb-2"></i>
                     <h4 class="text-secondary">@(_userJokes?.Sum(j => j.LikeCount) ?? 0)</h4>
                     <p class="text-muted mb-0">Total Likes</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6 mb-3">
-            <div class="card border-secondary">
-                <div class="card-body text-center">
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="card border-secondary text-center h-100">
+                <div class="card-body">
                     <i class="fas fa-comments text-secondary fs-2 mb-2"></i>
                     <h4 class="text-secondary">@(_userJokes?.Sum(j => j.CommentCount) ?? 0)</h4>
                     <p class="text-muted mb-0">Total Comments</p>
@@ -91,12 +89,12 @@
                             @foreach (var joke in _userJokes.Take(_visibleCount))
                             {
                                 <div class="list-group-item px-2 py-3">
-                                    <div class="d-flex justify-content-between align-items-start">
+                                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start">
                                         <div class="flex-grow-1">
-                                            <div class="d-flex align-items-center mb-1">
+                                            <div class="d-flex align-items-center mb-1 flex-wrap">
                                                 <span class="badge bg-secondary me-2">@joke.ClassificationName</span>
                                                 <span class="@GetStatusColor(joke.IsApproved) small me-2">@GetStatusName(joke.IsApproved)</span>
-                                                <small class="text-muted ms-auto">@joke.SubmissionDate.ToString("MMM dd, yyyy")</small>
+                                                <small class="text-muted ms-sm-auto">@joke.SubmissionDate.ToString("MMM dd, yyyy")</small>
                                             </div>
                                             <div class="fw-semibold text-dark mb-1" style="word-break:break-word;">@joke.Text</div>
                                             <div class="text-muted small">
@@ -104,8 +102,7 @@
                                                 <i class="bi bi-chat-right-dots me-1"></i>@joke.CommentCount
                                             </div>
                                         </div>
-                                        <!-- Three dots menu -->
-                                        <div class="dropdown ms-2">
+                                        <div class="dropdown ms-0 ms-sm-2 mt-2 mt-sm-0">
                                             <button class="btn btn-link text-secondary p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                                 <i class="bi bi-three-dots-vertical"></i>
                                             </button>

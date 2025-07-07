@@ -109,6 +109,8 @@ public partial class JokeDisplayPage : IDisposable
     private void OnRandomModeChanged()
     {
         _currentJoke = null;
+        _isCardFlipped = false;
+
         if (_isCompletelyRandom)
         {
             _selectedClassifications.Clear();

@@ -42,8 +42,6 @@
     z-index: 2;
     justify-content: space-between;
     transform: rotateY(0deg);
-    
-
 }
 .joke-card-back {
     background: #f8f9fa;
@@ -59,14 +57,16 @@
     justify-content: center;
     text-align: center;
     padding: 1rem 0;
-    font-size: 1rem; 
     line-height: 1.4;
     overflow: hidden;
+    font-size: clamp(0.9rem, 1.1vw + 0.9rem, 1.35rem);
+    word-break: break-word;
+}
 
-}
 .joke-card-text:not(:empty) {
-    font-size: clamp(0.875rem, calc(1rem + 0.5vw), 1.25rem);
+    font-size: clamp(0.875rem, 1.2vw + 0.85rem, 1.35rem);
 }
+
 .joke-card-actions {
     width: 100%;
     padding: 0.5rem;
@@ -109,8 +109,6 @@
     max-width: 100%;
 }
 
-
-
 @media (max-width: 768px) {
     .joke-card-flip-container {
         max-width: 280px;
@@ -130,10 +128,14 @@
         padding: 0.25rem;
         font-size: 0.75rem;
     }
+
+    .joke-card-text {
+        font-size: clamp(0.75rem, 1vw + 0.75rem, 1.1rem);
+    }
 }
 @media (max-width: 320px) {
     .joke-card-text {
-        font-size: clamp(0.75rem, calc(0.875rem + 0.5vw), 1rem);
+        font-size: clamp(0.65rem, 0.9vw + 0.7rem, 1rem);
     }
 }
 

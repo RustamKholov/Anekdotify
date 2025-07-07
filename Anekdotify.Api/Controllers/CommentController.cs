@@ -43,7 +43,7 @@ namespace Anekdotify.Api.Controllers
             {
                 return NotFound($"Commnet with id {id} not found");
             }
-            return Ok(comment.ToCommentDto());
+            return Ok(comment);
         }
 
         [HttpGet]
@@ -156,7 +156,7 @@ namespace Anekdotify.Api.Controllers
             {
                 return Unauthorized("User ID not found in token claims.");
             }
-            
+
             if (query.UserId == null || query.UserId != userId)
             {
                 return BadRequest("Incorrect user ID");

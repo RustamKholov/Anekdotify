@@ -1,7 +1,5 @@
 ﻿@page "/profile"
-
 @inject ApiClient ApiClient
-@attribute [Authorize]
 
 <PageTitle>Profile - Anekdotify</PageTitle>
 
@@ -92,8 +90,8 @@
 
                             <div class="col-md-6 col-lg-3 mb-3">
                                 <div class="stat-card bg-light p-3 rounded text-center">
-                                    <i class="fas fa-comments text-info fs-2 mb-2"></i>
-                                    <h3 class="text-info mb-1">@_statistics.TotalComments</h3>
+                                    <i class="fas fa-comments text-secondary fs-2 mb-2"></i>
+                                    <h3 class="text-secondary mb-1">@_statistics.TotalComments</h3>
                                     <p class="text-muted mb-0">Comments Made</p>
                                 </div>
                             </div>

@@ -22,7 +22,7 @@ public partial class Profile : ComponentBase
     {
         try
         {
-            var userRes = await ApiClient.GetAsync<UserDto>("api/account/profile"); //info about a user
+            var userRes = await ApiClient.GetAsync<UserDto>("api/account/profile");
             if (userRes?.Data != null) _userProfile = userRes?.Data;
         }
         catch (Exception ex)
