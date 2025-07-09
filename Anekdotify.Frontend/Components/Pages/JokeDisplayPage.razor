@@ -1,12 +1,12 @@
 ﻿@inject ApiClient ApiClient
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
-@using System.Timers
+
 @rendermode RenderMode.InteractiveServer
 
 @if (_isLoading)
 {
-    <div class="text-center">
+    <div class="text-center" style="min-height: 60vh;">
         <div class="spinner-border" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
@@ -14,180 +14,163 @@
 }
 else
 {
-    <div class="container px-2" style="height: 95%;">
-        <div class="row justify-content-center">
-            <div class="col-12 col-sm-10 col-md-8 col-lg-6">
-                @if (_isJokeAvailable || _showingPreviousJoke)
-                {
-                    <!-- Joke Display Area -->
-                    <div class="d-flex justify-content-center align-items-center mb-4">
-                        <div class="joke-display-container">
-                            <div class="invitation-container" @onclick="OnFetch">
-                                <div class="text-center p-3">
-                                    <i class="bi bi-emoji-smile fs-1 mb-3"></i>
-                                    <h4>@(_showingPreviousJoke ? "Previous Joke" : "Your Daily Joke is Ready!")</h4>
-                                    <p class="text-muted mt-3">Tap to reveal joke</p>
-                                    @if (!_showingPreviousJoke)
-                                    {
-                                        <div class="mt-3">
-                                            <span class="badge bg-success">New</span>
-                                        </div>
-                                    }
-
-                                    @if (!_showingPreviousJoke && !_isCompletelyRandom &&
-                                                                _selectedClassifications.Any())
-                                    {
-                                        <div class="mt-3">
-                                            <small class="text-secondary">
-                                                <i class="bi bi-info-circle me-1"></i>
-                                                Filtered by your preferences
-                                            </small>
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-                            @if (_currentJoke != null)
-                            {
-                                <JokeCard Joke="@_currentJoke" IsFlipped="@_isCardFlipped" OnFlip="OnCardFlip" />
-                                <div class="joke-card-comments">
-                                    <CommentsModal JokeId="@_currentJoke.JokeId" OnCommentsChanged="UpdateComments"
-                                         />
-                                </div>
-                            }
-                        </div>
-                    </div>
-
-                    <!-- Filter Controls Section -->
-                    @if (!_showingPreviousJoke)
+    <div class="joke-main-outer d-flex justify-content-center align-items-center">
+        <div class="joke-main-inner" >
+            @if (_showingPreviousJoke)
+            {
+                <!-- Only show previous joke card, no controls -->
+                <div class="joke-card-area fade-in">
+                    @if (_currentJoke != null)
                     {
-                        <div class="filter-section">
-                            <!-- Random Mode Toggle -->
-                            <div class="container mb-3">
-                                <div class="container-body py-3">
-                                    <div class="d-flex justify-content-center align-items-center">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input me-2" type="checkbox" id="randomModeSwitch"
-                                                @bind="_isCompletelyRandom" @bind:after="OnRandomModeChanged"
-                                                style="transform: scale(1.2);">
-                                            <label class="form-check-label fw-semibold" for="randomModeSwitch">
-                                                @if (_isCompletelyRandom)
-                                                {
-                                                    <i class="bi bi-shuffle text-secondary me-1"></i>
-                                                    <span class="text-dark">Fully Random</span>
-                                                }
-                                                else
-                                                {
-                                                    <i class="bi bi-sliders text-secondary me-1"></i>
-                                                    <span class="text-secondary text-decoration-line-through">Fully Random</span>
-                                                }
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Collapsible Filter Options -->
-                            @if (!_isCompletelyRandom)
-                            {
-                                <div class="container mb-3">
-                                    <div class="card-header bg-light">
-                                        <button
-                                            class="btn btn-sm btn-outline-none w-100 d-flex justify-content-between align-items-center"
-                                            type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse"
-                                            aria-expanded="true" aria-controls="filterCollapse">
-                                            <span>
-                                                <i class="bi bi-funnel me-2"></i>
-                                                Filter Options
-                                            </span>
-                                            <i class="bi bi-chevron-down"></i>
-                                        </button>
-                                    </div>
-
-                                    <div class="collapse show" id="filterCollapse">
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <!-- Filter Summary -->
-                                                @if (_selectedClassifications.Any())
-                                                {
-                                                    <div class="alert alert-light alert-sm mt-3 mb-0">
-                                                        <small>
-                                                            <strong>Active Filters:</strong>
-                                                            @if (_selectedClassifications.Any())
-                                                            {
-                                                                <div class="mt-1">
-                                                                    @foreach (var catId in _selectedClassifications)
-                                                                    {
-                                                                        var catName = _classifications.FirstOrDefault(c => c.ClassificationId ==
-                                                                        catId)?.Name ?? "Unknown";
-                                                                        <span class="badge bg-secondary me-1 small">@catName</span>
-                                                                    }
-                                                                </div>
-                                                            }
-                                                        </small>
-                                                    </div>
-                                                }
-                                                <!-- Categories Section -->
-                                                <div class="col-12 col-md-6 mb-3">
-                                                    <h6 class="text-muted mb-2">
-                                                        <i class="bi bi-tags me-1"></i>
-                                                        Categories
-                                                    </h6>
-                                                    @if (_classifications.Any())
-                                                    {
-                                                        <div class="filter-options">
-                                                            @foreach (var classification in _classifications)
-                                                            {
-                                                                <div class="form-check form-switch mb-1">
-                                                                    <input class="form-check-input" type="checkbox"
-                                                                        id="category_@classification.ClassificationId"
-                                                                        checked="@IsClassificationSelected(classification.ClassificationId)"
-                                                                        @onchange="@(e => ToggleClassification(classification.ClassificationId))">
-                                                                    <label class="form-check-label small"
-                                                                        for="category_@classification.ClassificationId">
-                                                                        @classification.Name
-                                                                    </label>
-                                                                </div>
-                                                            }
-                                                        </div>
-                                                    }
-                                                    else
-                                                    {
-                                                        <p class="text-muted small">No categories available</p>
-                                                    }
-                                                </div>
-
-                                            </div>
-
-
-                                        </div>
-                                    </div>
-                                </div>
-                            }
+                        <JokeCard Joke="@_currentJoke" IsFlipped="true" />
+                        <div class="joke-card-comments">
+                            <CommentsModal JokeId="@_currentJoke.JokeId" OnCommentsChanged="UpdateComments" />
                         </div>
                     }
-                }
-                else
+                </div>
+            }
+            else if (_isJokeAvailable)
+            {
+                @if (!_showJokeCard)
                 {
-                    <!-- No Joke Available -->
-                    <div class="d-flex justify-content-center align-items-center">
-                        <div class="invitation-container not-available">
-                            <div class="invitation-content text-center p-4">
-                                <i class="bi bi-clock-history fs-1 mb-3 text-secondary"></i>
-                                <h4>Next Joke in @_timeUntilNextJoke</h4>
-                                <p class="text-muted mt-3">Come back tomorrow for your daily dose of humor!</p>
-
-                                @if (_previousJokeAvailable)
-                                {
-                                    <button class="btn btn-outline-secondary mt-4" @onclick="ShowPreviousJoke">
-                                        <i class="bi bi-arrow-left me-2"></i>
-                                        See Previous Joke
-                                    </button>
-                                }
+                    <!-- Show controls until joke is fetched -->
+                    <div class="joke-controls-area fade-in">
+                        <div class="d-flex flex-column align-items-center gap-3">
+                            <button class="btn btn-lg btn-primary joke-get-btn" @onclick="OnFetch" disabled="@_isLoadingJoke">
+                                <i class="bi bi-emoji-smile me-2"></i>Get Daily Joke
+                            </button>
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" id="randomModeSwitch" @bind="_isCompletelyRandom"
+                                    @bind:after="OnRandomModeChanged" style="transform: scale(1.2);" />
+                                <label class="form-check-label fw-semibold" for="randomModeSwitch">
+                                    @if (_isCompletelyRandom)
+                                    {
+                                        <i class="bi bi-shuffle text-secondary me-1"></i>
+                                        <span class="text-dark">Fully Random</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-sliders text-secondary me-1"></i>
+                                        <span class="text-secondary text-decoration-line-through">Fully Random</span>
+                                    }
+                                </label>
                             </div>
                         </div>
+                        <!-- Filter Controls Section -->
+                        @if (!_isCompletelyRandom)
+                        {
+                            <div class="filter-section mt-4">
+                                @if (!_isCompletelyRandom)
+                                {
+                                    <div class="container mb-3">
+                                        <div class="card-header bg-light">
+                                            <button
+                                                class="btn btn-sm btn-outline-none w-100 d-flex justify-content-between align-items-center"
+                                                type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse"
+                                                aria-expanded="true" aria-controls="filterCollapse">
+                                                <span>
+                                                    <i class="bi bi-funnel me-2"></i>
+                                                    Filter Options
+                                                </span>
+                                                <i class="bi bi-chevron-down"></i>
+                                            </button>
+                                        </div>
+
+                                        <div class="collapse show" id="filterCollapse">
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <!-- Filter Summary -->
+                                                    @if (_selectedClassifications.Any())
+                                                    {
+                                                        <div class="alert alert-light alert-sm mt-3 mb-0">
+                                                            <small>
+                                                                <strong>Active Filters:</strong>
+                                                                @if (_selectedClassifications.Any())
+                                                                {
+                                                                    <div class="mt-1">
+                                                                        @foreach (var catId in _selectedClassifications)
+                                                                        {
+                                                                            var catName = _classifications.FirstOrDefault(c => c.ClassificationId ==
+                                                                            catId)?.Name ?? "Unknown";
+                                                                            <span class="badge bg-secondary me-1 small">@catName</span>
+                                                                        }
+                                                                    </div>
+                                                                }
+                                                            </small>
+                                                        </div>
+                                                    }
+                                                    <!-- Categories Section -->
+                                                    <div class="col-12 col-md-6 mb-3">
+                                                        <h6 class="text-muted mb-2">
+                                                            <i class="bi bi-tags me-1"></i>
+                                                            Categories
+                                                        </h6>
+                                                        @if (_classifications.Any())
+                                                        {
+                                                            <div class="filter-options">
+                                                                @foreach (var classification in _classifications)
+                                                                {
+                                                                    <div class="form-check form-switch mb-1">
+                                                                        <input class="form-check-input" type="checkbox"
+                                                                            id="category_@classification.ClassificationId"
+                                                                            checked="@IsClassificationSelected(classification.ClassificationId)"
+                                                                            @onchange="@(e => ToggleClassification(classification.ClassificationId))">
+                                                                        <label class="form-check-label small"
+                                                                            for="category_@classification.ClassificationId">
+                                                                            @classification.Name
+                                                                        </label>
+                                                                    </div>
+                                                                }
+                                                            </div>
+                                                        }
+                                                        else
+                                                        {
+                                                            <p class="text-muted small">No categories available</p>
+                                                        }
+                                                    </div>
+
+                                                </div>
+
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
                     </div>
                 }
-            </div>
+                <!-- Joke Card Area -->
+                <div class="joke-card-area @(_showJokeCard ? "fade-in" : "fade-out")">
+                    @if (_showJokeCard && _currentJoke != null)
+                    {
+                        <JokeCard Joke="@_currentJoke" IsFlipped="true" />
+                        <div class="joke-card-comments">
+                            <CommentsModal JokeId="@_currentJoke.JokeId" OnCommentsChanged="UpdateComments" />
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <!-- No Joke Available -->
+                <div class="d-flex justify-content-center align-items-center">
+                    <div class="invitation-container not-available">
+                        <div class="invitation-content text-center p-4">
+                            <i class="bi bi-clock-history fs-1 mb-3 text-secondary"></i>
+                            <h4>Next Joke in @_timeUntilNextJoke</h4>
+                            <p class="text-muted mt-3">Come back tomorrow for your daily dose of humor!</p>
+                            @if (_previousJokeAvailable)
+                            {
+                                <button class="btn btn-outline-secondary mt-4" @onclick="ShowPreviousJoke">
+                                    <i class="bi bi-arrow-left me-2"></i>
+                                    See Previous Joke
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
     </div>
 }

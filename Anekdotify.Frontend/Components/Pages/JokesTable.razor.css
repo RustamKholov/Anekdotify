@@ -26,16 +26,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-top: 1px solid #eee;
-    position: sticky;
+    position: absolute;
     left: 0;
     bottom: 0;
-    width: 100vw;
-    background: rgba(255,255,255,0.7);
-    z-index: 100;
-    backdrop-filter: blur(2px);
+    z-index: 20;
     min-height: 56px;
-    box-shadow: 0 -2px 8px rgba(0,0,0,0.04);
+
 }
 
 @media (max-width: 576px) {
