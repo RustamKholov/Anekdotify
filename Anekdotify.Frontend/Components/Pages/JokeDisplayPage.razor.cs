@@ -19,11 +19,10 @@ public partial class JokeDisplayPage : IDisposable
     private bool _isLoading = true;
     private bool _isCompletelyRandom = true;
     private bool _isLoadingJoke = false;
-    private bool _isCardFlipped = false;
-    private bool _areCommentsOpen = false;
     private JokeDto? _currentJoke;
     private string _timeUntilNextJoke = "";
     private Timer? _timer;
+    private bool _showJokeCard = false;
 
     private List<ClassificationDetailedDto> _classifications = new();
     private readonly List<int> _selectedClassifications = new();
@@ -95,20 +94,9 @@ public partial class JokeDisplayPage : IDisposable
         var timeSpan = tomorrow - now;
         _timeUntilNextJoke = $"{timeSpan.Hours}h {timeSpan.Minutes}m";
     }
-    private void OnCardFlip(bool areCommentsOpen)
-    {
-        _isCardFlipped = !_isCardFlipped;
-        if (_areCommentsOpen != areCommentsOpen)
-        {
-            _areCommentsOpen = areCommentsOpen;
-            StateHasChanged();
-        }
-
-    }
     private void OnRandomModeChanged()
     {
         _currentJoke = null;
-        _isCardFlipped = false;
 
         if (_isCompletelyRandom)
         {
@@ -147,15 +135,16 @@ public partial class JokeDisplayPage : IDisposable
     {
         if (_isLoadingJoke)
             return;
-        if (_currentJoke == null)
-        {
-            _isLoadingJoke = true;
-            StateHasChanged();
 
-            await LoadJokeAsync();
+        _isLoadingJoke = true;
+        _showJokeCard = true;
 
-            _isLoadingJoke = false;
-        }
+        StateHasChanged();
+
+        await LoadJokeAsync();
+
+        _isLoadingJoke = false;
+        StateHasChanged();
     }
 
     private async Task LoadJokeAsync()

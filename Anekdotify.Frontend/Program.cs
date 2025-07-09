@@ -1,6 +1,5 @@
 using Anekdotify.Frontend.Authentication;
 using Anekdotify.Frontend.Clients;
-using Anekdotify.Frontend.Components;
 using Anekdotify.Frontend.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Blazored.Toast;
@@ -44,7 +43,7 @@ app.UseAntiforgery();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapRazorComponents<App>()
+app.MapRazorComponents<Anekdotify.Frontend.Components.App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
