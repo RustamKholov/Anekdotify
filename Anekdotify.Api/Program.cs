@@ -70,7 +70,7 @@ public class Program
             });
 
             builder.Services.AddDataProtection()
-                .PersistKeysToFileSystem(new DirectoryInfo(@"C:\Users\roshf\Anekdotify\Anekdotify.Database\Data\"));
+                .PersistKeysToFileSystem(new DirectoryInfo("/app/keys")).SetApplicationName("AnekdotifyAPI");
 
             builder.Services.AddControllers().
                 AddNewtonsoftJson(options =>
