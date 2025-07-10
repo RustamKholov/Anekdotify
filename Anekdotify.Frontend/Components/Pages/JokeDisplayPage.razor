@@ -27,6 +27,12 @@ else
                             <CommentsModal JokeId="@_currentJoke.JokeId" OnCommentsChanged="UpdateComments" />
                         </div>
                     }
+                    <div class="mt-4 text-center w-100">
+                        <button class="btn btn-outline-secondary" @onclick="ReturnToHome">
+                            <i class="bi bi-arrow-left me-2"></i>
+                            Home
+                        </button>
+                    </div>
                 </div>
             }
             else if (_isJokeAvailable)

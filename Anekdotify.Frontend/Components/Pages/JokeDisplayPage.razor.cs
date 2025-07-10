@@ -130,6 +130,12 @@ public partial class JokeDisplayPage : IDisposable
     {
         return _selectedClassifications.Contains(classificationId);
     }
+    private void ReturnToHome()
+    {
+        _showingPreviousJoke = false;
+        _currentJoke = null;
+        StateHasChanged();
+    }
 
     private async Task OnFetch()
     {

@@ -17,5 +17,6 @@ namespace Anekdotify.Models.DTOs.Jokes
         public int? ClassificationId { get; set; }
         public string? ClassificationName { get; set; }
         public List<CommentDto> Comments { get; set; } = new List<CommentDto>();
+        public bool? IsApproved { get; set; }
     }
 }

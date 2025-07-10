@@ -29,3 +29,44 @@
         font-size: 0.85rem;
     }
 }
+
+/* Button positioning fixes */
+.list-group-item {
+    position: relative;
+    overflow: visible;
+}
+
+.dropdown.position-absolute {
+    z-index: 5;
+}
+
+.dropdown.position-absolute button {
+    padding: 0.5rem !important;
+    margin: -0.5rem;
+    border-radius: 50%;
+}
+
+.dropdown.position-absolute button:hover {
+    background-color: rgba(0,0,0,0.05);
+}
+
+@media (max-width: 576px) {
+    .dropdown.position-absolute {
+        top: 0.5rem !important;
+        right: 0.5rem !important;
+    }
+    
+    /* Existing mobile styles */
+    .card-body {
+        padding: 0.75rem 0.25rem;
+    }
+    .card-body i {
+        font-size: 1.5rem !important;
+    }
+    .card-body h4 {
+        font-size: 1.1rem;
+    }
+    .card-body p {
+        font-size: 0.85rem;
+    }
+}
