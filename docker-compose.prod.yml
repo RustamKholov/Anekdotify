@@ -71,7 +71,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      - ApiBaseUrl=http://api:8080
+      - JokeStoreApiUrl=http://api:8080
     ports:
       - "5001:8080"
     depends_on:
