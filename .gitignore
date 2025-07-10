@@ -494,3 +494,4 @@ Anekdotify.Api/Migrations/20250608150033_DeletionLogic.cs
 Anekdotify.Api/Migrations/20250608150033_DeletionLogic.Designer.cs
 .vscode/settings.json
 .vscode/
+.env.prod
