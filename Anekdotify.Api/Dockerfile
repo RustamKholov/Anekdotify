@@ -35,20 +35,6 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-# Install .NET SDK and EF Tools in production container
-RUN apt-get update && \
-    apt-get install -y wget && \
-    wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && \
-    dpkg -i packages-microsoft-prod.deb && \
-    rm packages-microsoft-prod.deb && \
-    apt-get update && \
-    apt-get install -y dotnet-sdk-8.0 && \
-    dotnet tool install --global dotnet-ef && \
-    rm -rf /var/lib/apt/lists/*
-
-# Add dotnet tools to PATH
-ENV PATH="$PATH:/root/.dotnet/tools"
-
 # Create non-root user and setup directories
 RUN adduser --disabled-password --gecos '' appuser && \
     mkdir -p /app/keys && \
