@@ -15,6 +15,7 @@ namespace Anekdotify.Api.Controllers
 {
     [Route("api/joke")]
     [ApiController]
+    [Authorize]
     public class JokeController : ControllerBase
     {
         private readonly IJokeService _jokeService;

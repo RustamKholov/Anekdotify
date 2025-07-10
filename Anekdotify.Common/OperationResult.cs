@@ -20,8 +20,6 @@ namespace Anekdotify.Common
     {
         public T? Value { get; private set; }
 
-        private OperationResult() { }
-
         public static OperationResult<T> Success(T value) => new OperationResult<T> { IsSuccess = true, Value = value };
         public static OperationResult<T> Fail(T value, string errorMessage) => new OperationResult<T> { IsSuccess = false, ErrorMessage = errorMessage, Value = value };
         public static OperationResult<T> AlreadyExists(T value, string errorMessage) => new OperationResult<T> { IsSuccess = false, IsAlreadyExists = true, ErrorMessage = errorMessage, Value = value };

@@ -4,7 +4,10 @@
 <PageTitle>Saved - Anekdotify</PageTitle>
 
 <div class="container-fluid px-0" style="height: 95%;">
-    <div class="jokes-toolbar d-flex flex-wrap justify-content-between align-items-center mb-4 px-2 py-3">
+    <!-- Desktop View (unchanged) -->
+    <div
+       
+        class="jokes-toolbar d-flex flex-wrap justify-content-between align-items-center mb-4 px-2 py-3 d-none d-md-flex">
         <div class="d-flex flex-wrap align-items-center gap-3">
             <span class="fw-semibold me-2">Filter by Categories:</span>
             @foreach (var classification in _classifications)
@@ -29,6 +32,59 @@
             <button class="btn btn-outline-secondary btn-sm" @onclick="@(() => _sortDesc = !_sortDesc)">
                 @(_sortDesc ? "▼" : "▲")
             </button>
+        </div>
+    </div>
+
+    <!-- Mobile View (compact) -->
+    <div class="jokes-toolbar-mobile d-md-none mb-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <!-- Filter Dropdown -->
+            <div class="dropdown">
+                   
+                <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                    <i class="bi bi-filter"></i> Categories
+                    @if (_selectedClassifications.Any())
+                    {
+                        <span class="badge bg-secondary ms-1">@_selectedClassifications.Count</span>
+                    }
+                </button>
+                <div class="dropdown-menu p-2" style="max-height: 300px; overflow-y: auto;">
+                    <div class="d-flex justify-content-between mb-2">
+                           
+                        <small class="text-muted fw-semibold">Filter by Categories</small>
+                        <button class="btn btn-link btn-sm p-0 text-decoration-none"
+                            @onclick="SelectAllClassifications">
+                            Select All
+                        </button>
+                    </div>
+                    @foreach (var classification in _classifications)
+                    {
+                        <div class="form-check mb-1">
+                            <input class="form-check-input" type="checkbox" id="mobile_cat_@classification.ClassificationId"
+                                checked="@_selectedClassifications.Contains(classification.ClassificationId)"
+                                @onchange="() => ToggleClassification(classification.ClassificationId)" />
+                            <label class="form-check-label small" for="mobile_cat_@classification.ClassificationId">
+                                @classification.Name
+                            </label>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Sort Controls -->
+            <div class="d-flex align-items-center">
+                <div class="input-group input-group-sm">
+                    <select class="form-select form-select-sm" style="max-width: 100px;" @bind="_sortBy">
+                        <option value="date">Date</option>
+                        <option value="likes">Likes</option>
+                        <option value="comments">Comments</option>
+                    </select>
+                    <button class="btn btn-sm btn-outline-secondary" @onclick="@(() => _sortDesc = !_sortDesc)">
+                        <i class="bi @(_sortDesc ? "bi-sort-down" : "bi-sort-up")"></i>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 

@@ -142,6 +142,17 @@ namespace Anekdotify.Frontend.Components.Pages
             }
             return count;
         }
+        private void SelectAllClassifications()
+        {
+            if (_selectedClassifications.Count == _classifications.Count)
+            {
+                _selectedClassifications.Clear();
+            }
+            else
+            {
+                _selectedClassifications = _classifications.Select(c => c.ClassificationId).ToList();
+            }
+        }
     }
 
 }

@@ -1,0 +1,19 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# Copy project files
+COPY ["Anekdotify.Api/Anekdotify.Api.csproj", "Anekdotify.Api/"]
+COPY ["Anekdotify.BL/Anekdotify.BL.csproj", "Anekdotify.BL/"]
+COPY ["Anekdotify.Common/Anekdotify.Common.csproj", "Anekdotify.Common/"]
+COPY ["Anekdotify.Database/Anekdotify.Database.csproj", "Anekdotify.Database/"]
+COPY ["Anekdotify.Models/Anekdotify.Models.csproj", "Anekdotify.Models/"]
+COPY ["Anekdotify.Api.Tests/Anekdotify.Api.Tests.csproj", "Anekdotify.Api.Tests/"]
+
+# Restore packages
+RUN dotnet restore "Anekdotify.Api.Tests/Anekdotify.Api.Tests.csproj"
+
+# Copy all files
+COPY . .
+
+# Run tests
+CMD ["dotnet", "test", "Anekdotify.Api.Tests/Anekdotify.Api.Tests.csproj", "--logger:trx"]
