@@ -10,6 +10,7 @@ using System.Text;
 using Anekdotify.Models.DTOs.Accounts;
 using Anekdotify.Models.Models;
 using Newtonsoft.Json;
+using Anekdotify.Api.Tests.TestBase;
 
 namespace Anekdotify.Api.Tests.TestBase
 {
@@ -70,10 +71,10 @@ namespace Anekdotify.Api.Tests.TestBase
             // Create roles if they don't exist
             if (!await roleManager.RoleExistsAsync("Admin"))
                 await roleManager.CreateAsync(new IdentityRole("Admin"));
-            
+
             if (!await roleManager.RoleExistsAsync("Moderator"))
                 await roleManager.CreateAsync(new IdentityRole("Moderator"));
-            
+
             if (!await roleManager.RoleExistsAsync("User"))
                 await roleManager.CreateAsync(new IdentityRole("User"));
 
@@ -107,75 +108,94 @@ namespace Anekdotify.Api.Tests.TestBase
                 await userManager.AddToRoleAsync(regularUser, "User");
             }
 
-            // Add some classifications
+            // Add classifications if they don't exist
             if (!context.Classifications.Any())
             {
                 context.Classifications.AddRange(
-                    new Classification { Name = "Funny" },
-                    new Classification { Name = "Dad Joke" },
-                    new Classification { Name = "Dark Humor" },
-                    new Classification { Name = "Pun" }
+                    new Classification { ClassificationId = 1, Name = "Funny" },
+                    new Classification { ClassificationId = 2, Name = "Dad Joke" },
+                    new Classification { ClassificationId = 3, Name = "Dark Humor" },
+                    new Classification { ClassificationId = 4, Name = "Pun" }
                 );
                 await context.SaveChangesAsync();
             }
 
-            // Add test jokes
+            // Add specific test jokes with expected IDs
             if (!context.Jokes.Any())
             {
-                var classification = context.Classifications.First();
+                var newRegularUser = await userManager.FindByEmailAsync("user@test.com");
+                if (newRegularUser == null)
+                {
+                    throw new InvalidOperationException("Test user 'user@test.com' was not found.");
+                }
+                var regularUserId = newRegularUser.Id;
+
                 context.Jokes.AddRange(
                     new Joke
                     {
+                        JokeId = 1, // Make sure this ID matches what your tests expect
                         Text = "Why don't scientists trust atoms? Because they make up everything!",
-                        ClassificationId = classification.ClassificationId,
+                        ClassificationId = 1,
                         IsApproved = true,
                         SubbmissionDate = DateTime.UtcNow.AddDays(-5),
-                        SubbmitedByUserId = adminUser.Id
+                        SubbmitedByUserId = regularUserId
                     },
                     new Joke
                     {
+                        JokeId = 2,
                         Text = "How do you organize a space party? You planet!",
-                        ClassificationId = classification.ClassificationId,
+                        ClassificationId = 1,
                         IsApproved = true,
                         SubbmissionDate = DateTime.UtcNow.AddDays(-3),
-                        SubbmitedByUserId = regularUser.Id
+                        SubbmitedByUserId = regularUserId
+                    },
+                    // Add any other specific jokes that your tests expect
+                    new Joke
+                    {
+                        JokeId = 100, // If a specific test is looking for ID 100
+                        Text = "Test joke with ID 100",
+                        ClassificationId = 2,
+                        IsApproved = true,
+                        SubbmissionDate = DateTime.UtcNow.AddDays(-1),
+                        SubbmitedByUserId = regularUserId
                     }
                 );
                 await context.SaveChangesAsync();
             }
+            await context.SaveChangesAsync();
         }
     }
+}
 
-    public abstract class IntegrationTestBase : IClassFixture<AnekdotifyApiFactory>
+public abstract class IntegrationTestBase : IClassFixture<AnekdotifyApiFactory>
+{
+    protected readonly HttpClient Client;
+    protected readonly AnekdotifyApiFactory Factory;
+
+    protected IntegrationTestBase(AnekdotifyApiFactory factory)
     {
-        protected readonly HttpClient Client;
-        protected readonly AnekdotifyApiFactory Factory;
+        Factory = factory;
+        Client = factory.CreateClient();
+    }
 
-        protected IntegrationTestBase(AnekdotifyApiFactory factory)
-        {
-            Factory = factory;
-            Client = factory.CreateClient();
-        }
+    protected async Task AuthenticateAsync(string username = "user@test.com", string password = "User123!")
+    {
+        Client.DefaultRequestHeaders.Authorization = null;
 
-        protected async Task AuthenticateAsync(string username = "user@test.com", string password = "User123!")
-        {
-            Client.DefaultRequestHeaders.Authorization = null;
+        var loginDto = new LoginDto { Username = username, Password = password };
+        var content = new StringContent(JsonConvert.SerializeObject(loginDto), Encoding.UTF8, "application/json");
 
-            var loginDto = new LoginDto { Username = username, Password = password };
-            var content = new StringContent(JsonConvert.SerializeObject(loginDto), Encoding.UTF8, "application/json");
+        var response = await Client.PostAsync("/api/account/login", content);
+        response.EnsureSuccessStatusCode();
 
-            var response = await Client.PostAsync("/api/account/login", content);
-            response.EnsureSuccessStatusCode();
+        var responseContent = await response.Content.ReadAsStringAsync();
+        var loginResponse = JsonConvert.DeserializeObject<LoginResponseModel>(responseContent);
 
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var loginResponse = JsonConvert.DeserializeObject<LoginResponseModel>(responseContent);
+        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResponse!.Token);
+    }
 
-            Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResponse.Token);
-        }
-
-        protected async Task AuthenticateAsAdminAsync()
-        {
-            await AuthenticateAsync("admin@test.com", "Admin123!");
-        }
+    protected async Task AuthenticateAsAdminAsync()
+    {
+        await AuthenticateAsync("admin@test.com", "Admin123!");
     }
 }
