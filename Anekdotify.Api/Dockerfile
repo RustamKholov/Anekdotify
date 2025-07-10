@@ -3,6 +3,9 @@ WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 
+# Add curl for health checks
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
@@ -32,8 +35,11 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-# Create non-root user
-RUN adduser --disabled-password --gecos '' appuser && chown -R appuser /app
+# Create non-root user and setup directories
+RUN adduser --disabled-password --gecos '' appuser && \
+    mkdir -p /app/keys && \
+    chown -R appuser:appuser /app
+
 USER appuser
 
 ENTRYPOINT ["dotnet", "Anekdotify.Api.dll"]
