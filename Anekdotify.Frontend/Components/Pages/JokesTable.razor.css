@@ -26,10 +26,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    position: absolute;
+    position: static;
     left: 0;
     bottom: 0;
-    z-index: 20;
     min-height: 56px;
 
 }
