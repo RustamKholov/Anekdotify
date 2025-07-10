@@ -2,12 +2,14 @@
 .joke-main-outer {
     width: 100%;
     background: #ffffff;
+    min-height: 100vh;
 }
 
 .joke-main-inner {
     width: 100%;
-    max-width: 540px;
     margin: 0 auto;
+    min-height: 100vh;
+    position: relative;
 }
 
 /* Controls & Card Areas */
@@ -26,9 +28,69 @@
     padding: 2rem 1rem;
 }
 
+/* Center controls vertically */
+.joke-controls-area {
+    justify-content: flex-start;
+    padding-top: calc(30vh - 60px); /* Position button at roughly 30% from top */
+}
+
+/* Button and toggle container - fixed position */
+.joke-controls-area > .d-flex {
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+/* Joke Card Area - Centered vertically */
 .joke-card-area {
-    z-index: 2;
     justify-content: center;
+    padding-top: 0;
+}
+
+/* Center the joke card comments */
+.joke-card-comments {
+    margin-top: 1.5rem;
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    justify-content: center;
+}
+
+/* No Joke Available - Center properly */
+.joke-main-inner > .d-flex.justify-content-center {
+    min-height: 100vh;
+    width: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    flex-direction: column;
+    padding: 2rem;
+}
+
+/* Animation classes */
+.fade-in {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.fade-out {
+    opacity: 0;
+    transform: translateY(30px);
+    pointer-events: none;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+/* Filter Section */
+.filter-section {
+    width: 100%;
+    max-width: 500px;
+    background: #ffffff;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border: 1px solid #dee2e6;
+    overflow: hidden;
+    margin-top: 1.5rem;
 }
 
 /* Get Joke Button */
@@ -59,229 +121,32 @@
     cursor: not-allowed;
 }
 
-/* Random Toggle */
-.form-check-input {
-    background-color: #e9ecef;
-    border-color: #adb5bd;
-    width: 2.5rem;
-    height: 1.25rem;
-}
-
-.form-check-input:checked {
-    background-color: #212529;
-    border-color: #212529;
-}
-
-.form-check-label {
-    color: #343a40;
-    font-weight: 500;
-}
-
-.text-decoration-line-through {
-    color: #adb5bd !important;
-}
-
-/* Filter Section - Fixed Width */
-.filter-section {
-    width: 100%;
-    max-width: 500px;
-    margin-top: 1.5rem;
-    background: #ffffff;
-    border-radius: 0.75rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    border: 1px solid #dee2e6;
-    overflow: hidden;
-}
-
-/* Card Header */
-.card-header {
-    background: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
-    padding: 1rem 1.25rem;
-}
-
-.card-header .btn {
-    color: #343a40;
-    font-weight: 600;
-    font-size: 0.95rem;
-    padding: 0.5rem;
-}
-
-.card-header .btn:hover {
-    color: #000000;
-}
-
-.card-header .btn i {
-    color: #6c757d;
-    transition: transform 0.3s;
-}
-
-.card-header .btn[aria-expanded="false"] i.bi-chevron-down {
-    transform: rotate(-90deg);
-}
-
-/* Card Body */
-.card-body {
-    background: #ffffff;
-    padding: 1.25rem;
-}
-
-/* Alert for active filters */
-.alert-sm {
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 0.5rem;
-    padding: 0.75rem;
-    margin-bottom: 1rem;
-}
-
-.alert-sm small {
-    color: #495057;
-    font-weight: 600;
-}
-
-/* Filter badges */
-.badge {
-    background-color: #343a40 !important;
-    color: #ffffff;
-    font-weight: 500;
-    font-size: 0.75rem;
-    padding: 0.35rem 0.65rem;
-    border-radius: 1rem;
-}
-
-/* Categories section */
-.col-12 h6 {
-    color: #6c757d;
-    font-weight: 600;
-    font-size: 0.875rem;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid #e9ecef;
-}
-
-/* Filter options */
-.filter-options {
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-/* Custom scrollbar */
-.filter-options::-webkit-scrollbar {
-    width: 4px;
-}
-
-.filter-options::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-
-.filter-options::-webkit-scrollbar-thumb {
-    background: #adb5bd;
-    border-radius: 2px;
-}
-
-.filter-options::-webkit-scrollbar-thumb:hover {
-    background: #6c757d;
-}
-
-/* Form switches */
-.form-switch .form-check-input {
-    height: 1.25rem;
-    width: 2.5rem;
-}
-
-.form-switch .form-check-input:checked {
-    background-color: #212529;
-    border-color: #212529;
-}
-
-.form-switch .form-check-label {
-    padding-left: 0.5rem;
-    font-size: 0.875rem;
-    color: #495057;
-}
-
-/* No categories text */
-.text-muted {
-    color: #6c757d !important;
-}
-
-/* Invitation container */
-.invitation-container {
-    width: 100%;
-    max-width: 450px;
-}
-
-.invitation-content {
-    background: #ffffff;
-    border-radius: 0.75rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    border: 1px solid #dee2e6;
-}
-
-/* Comments section */
-.joke-card-comments {
-    margin-top: 1.5rem;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-}
-
-/* Animation classes */
-.fade-in {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
-}
-
-.fade-out {
-    opacity: 0;
-    transform: translateY(30px);
-    pointer-events: none;
-}
-
-/* Loading spinner */
-.spinner-border {
-    color: #343a40;
-}
-
-/* Responsive styles */
+/* Responsive adjustments */
 @media (max-width: 768px) {
-    .joke-main-inner {
-        max-width: 100%;
+    .joke-card-area {
+        padding: 1.5rem 1rem;
     }
     
-    .filter-section {
-        max-width: 450px;
+    .joke-main-inner > .d-flex.justify-content-center {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .joke-controls-area {
+        padding-top: calc(25vh - 50px);
+    }
+    
+    .joke-card-area {
+        padding: 1rem;
+    }
+    
+    .joke-main-inner > .d-flex.justify-content-center {
+        padding: 1rem;
     }
     
     .joke-get-btn {
         font-size: 1.1rem;
         padding: 0.9rem 1.8rem;
-    }
-}
-
-@media (max-width: 576px) {
-    .joke-controls-area,
-    .joke-card-area {
-        padding: 1.5rem 0.75rem;
-    }
-    
-    .filter-section {
-        max-width: 100%;
-        margin-top: 1.25rem;
-    }
-    
-    .card-header {
-        padding: 0.75rem 1rem;
-    }
-    
-    .card-body {
-        padding: 1rem;
-    }
-    
-    .joke-get-btn {
-        font-size: 1rem;
-        padding: 0.8rem 1.6rem;
     }
 }
