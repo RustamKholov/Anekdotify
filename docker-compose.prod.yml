@@ -56,7 +56,6 @@ services:
         condition: service_healthy
     volumes:
       - ./logs:/app/Logs
-      - ./keys:/app/keys
       - api_keys:/app/keys
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
