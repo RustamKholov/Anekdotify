@@ -44,6 +44,7 @@ services:
       - JWT__Issuer=${JWT_ISSUER}
       - JWT__Audience=${JWT_AUDIENCE}
       - JWT__SigningKey=${JWT_SIGNING_KEY}
+      - JWT__RefreshSigningKey=${JWT_REFRESH_SIGNING_KEY}
     ports:
       - "5000:8080"
     depends_on:
