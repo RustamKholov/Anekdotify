@@ -55,6 +55,7 @@ Technology | Purpose
 **pgAdmin** | Database administration tool
 **Health Checks** | Service monitoring and reliability
 **Multi-stage Dockerfiles** | Optimized container builds
+**.NET Aspire** | Application orchestration and service discovery
 
 ---
 
@@ -149,8 +150,25 @@ dotnet restore
 3. **Set up environment variables**
 ```bash
 # Create .env file for Docker Compose
-cp .env.example .env
-# Edit .env with your configuration
+touch .env
+```
+
+Add the following environment variables to your `.env` file:
+```env
+# Database Configuration
+POSTGRES_PASSWORD=your_strong_password_here
+
+# Redis Configuration
+REDIS_PASSWORD=your_redis_password_here
+
+# JWT Configuration
+JWT_ISSUER=https://anekdotify.com
+JWT_AUDIENCE=https://anekdotify.com
+JWT_SIGNING_KEY=your_jwt_signing_key_here_minimum_32_characters
+JWT_REFRESH_SIGNING_KEY=your_jwt_refresh_signing_key_here_minimum_32_characters
+
+# pgAdmin Configuration
+PGADMIN_PASSWORD=your_pgadmin_password_here
 ```
 
 4. **Run with Docker Compose**
@@ -167,13 +185,46 @@ docker-compose -f docker-compose.prod.yml up -d
 
 For local development without Docker:
 
+1. **Prerequisites**
+   - PostgreSQL server running on localhost:5432
+   - Redis server running on localhost:6379
+
+2. **Database Setup**
 ```bash
-# Start the API
+# Create database
+createdb anekdotify
+
+# Run migrations
+dotnet ef database update --project Anekdotify.Database --startup-project Anekdotify.Api
+```
+
+> **Note**: The database will be automatically seeded with initial data including sample jokes and classifications.
+
+3. **Run the applications**
+```bash
+# Start the API (terminal 1)
 dotnet run --project Anekdotify.Api
 
-# Start the Frontend (in another terminal)
+# Start the Frontend (terminal 2)
 dotnet run --project Anekdotify.Frontend
+
+# Or use .NET Aspire for orchestration
+dotnet run --project Anekdotify.AppHost
 ```
+
+### Using .NET Aspire
+
+The project includes .NET Aspire for local development orchestration:
+
+```bash
+# Install .NET Aspire workload
+dotnet workload install aspire
+
+# Run with Aspire (recommended for development)
+dotnet run --project Anekdotify.AppHost
+```
+
+This will automatically start all services and provide a dashboard for monitoring.
 
 ---
 
@@ -297,15 +348,81 @@ This project represents a significant milestone in my development journey, build
 
 ## 🧪 Testing
 
-Run the test suite:
+The project includes comprehensive testing with unit tests and integration tests:
+
+### Run All Tests
 ```bash
 dotnet test
 ```
 
-Current test coverage includes:
-- Unit tests for API controllers
-- Service layer testing
-- Data access layer testing
+### Run Specific Test Projects
+```bash
+# Run only API tests
+dotnet test Anekdotify.Api.Tests
+
+# Run tests with coverage
+dotnet test --collect:"XPlat Code Coverage"
+```
+
+### Test Structure
+```plaintext
+/Anekdotify.Api.Tests
+├── Controllers/         // Unit tests for API controllers
+│   ├── JokeControllerTests.cs
+│   └── AccountControllerTests.cs
+├── Integration/         // Integration tests
+│   ├── JokeIntegrationTests.cs
+│   └── AuthIntegrationTests.cs
+├── ControllerTestBase.cs    // Base class for controller tests
+└── IntegrationTestBase.cs   // Base class for integration tests
+```
+
+### Test Coverage
+- **Controller Tests** - API endpoint testing with mocked dependencies
+- **Integration Tests** - End-to-end testing with test database
+- **Authentication Tests** - JWT token validation and user authentication
+- **Business Logic Tests** - Service layer validation
+- **Database Tests** - Entity Framework operations and migrations
+
+---
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**Docker containers not starting**
+```bash
+# Check logs
+docker-compose -f docker-compose.prod.yml logs
+
+# Restart services
+docker-compose -f docker-compose.prod.yml restart
+```
+
+**Database connection issues**
+```bash
+# Check PostgreSQL service
+docker-compose -f docker-compose.prod.yml exec postgres pg_isready -U anekdotify_user
+
+# Reset database
+docker-compose -f docker-compose.prod.yml down -v
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+**Build errors**
+```bash
+# Clean and restore
+dotnet clean
+dotnet restore
+dotnet build
+```
+
+### Performance Tips
+
+- Use Redis for caching in production
+- Enable response compression
+- Configure connection pooling
+- Monitor with Application Insights (optional)
 
 ---
 
