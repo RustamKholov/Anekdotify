@@ -40,7 +40,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=anekdotify;Username=anekdotify_user;Password=${POSTGRES_PASSWORD}
-      - ConnectionStrings__Redis=redis:6379,password=${REDIS_PASSWORD}
+      - ConnectionStrings__cache=redis:6379,password=${REDIS_PASSWORD}
       - JWT__Issuer=${JWT_ISSUER}
       - JWT__Audience=${JWT_AUDIENCE}
       - JWT__SigningKey=${JWT_SIGNING_KEY}
