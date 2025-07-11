@@ -80,7 +80,7 @@ public class Program
 
             builder.Services.AddDbContext<ApplicationDBContext>(options =>
                 {
-                    options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresConnection"));
+                    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
                 }
                 );
 
