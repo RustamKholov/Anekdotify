@@ -47,7 +47,7 @@
                 </Authorized>
             </AuthorizeView>
             <span class="badge bg-secondary mb-2">@Joke.ClassificationName</span>
-            <div class="joke-card-text">@Joke.Text</div>
+            <div class="joke-card-text" data-length="@GetTextLengthCategory()">@Joke.Text</div>
 
             <div class="joke-card-actions mt-auto d-flex justify-content-evenly align-items-center w-100">
                 <button disabled="@_isRatingBusy" class="btn btn-sm btn-light p-1" title="Like"

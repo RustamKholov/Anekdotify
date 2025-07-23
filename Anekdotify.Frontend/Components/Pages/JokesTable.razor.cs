@@ -25,6 +25,9 @@ namespace Anekdotify.Frontend.Components.Pages
         private bool _sortDesc = true;
         private int _visibleCount = 8;
         private const int PageSize = 8;
+        private string _renderKey = Guid.NewGuid().ToString();
+        private string _lastFilterState = "";
+        private string _lastSortState = "";
         private IEnumerable<JokeDto> FilteredJokes
         {
             get
@@ -38,6 +41,18 @@ namespace Anekdotify.Frontend.Components.Pages
                     "comments" => _sortDesc ? filtered.OrderByDescending(j => CountCommentsRecursive(j.Comments)) : filtered.OrderBy(j => CountCommentsRecursive(j.Comments)),
                     _ => _sortDesc ? filtered.OrderByDescending(j => j.SubmissionDate) : filtered.OrderBy(j => j.SubmissionDate)
                 };
+
+                // Check if filter/sort state changed
+                var currentFilterState = string.Join(",", _selectedClassifications.OrderBy(x => x));
+                var currentSortState = $"{_sortBy}_{_sortDesc}";
+
+                if (currentFilterState != _lastFilterState || currentSortState != _lastSortState)
+                {
+                    _renderKey = Guid.NewGuid().ToString();
+                    _lastFilterState = currentFilterState;
+                    _lastSortState = currentSortState;
+                }
+
                 return sorted.Take(_visibleCount);
             }
         }
@@ -122,6 +137,21 @@ namespace Anekdotify.Frontend.Components.Pages
                 _selectedClassifications.Remove(classificationId);
             else
                 _selectedClassifications.Add(classificationId);
+
+            _renderKey = Guid.NewGuid().ToString();
+            StateHasChanged();
+        }
+        private void UpdateSortBy(string sortBy)
+        {
+            _sortBy = sortBy;
+            _renderKey = Guid.NewGuid().ToString();
+            StateHasChanged();
+        }
+        private void ToggleSortDirection()
+        {
+            _sortDesc = !_sortDesc;
+            _renderKey = Guid.NewGuid().ToString();
+            StateHasChanged();
         }
         private void ShowMore()
         {
@@ -152,6 +182,9 @@ namespace Anekdotify.Frontend.Components.Pages
             {
                 _selectedClassifications = _classifications.Select(c => c.ClassificationId).ToList();
             }
+
+            _renderKey = Guid.NewGuid().ToString();
+            StateHasChanged();
         }
     }
 

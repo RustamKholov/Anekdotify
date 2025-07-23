@@ -152,7 +152,7 @@ public class Program
                 };
             });
 
-            builder.AddRedisDistributedCache("cache");
+            builder.AddRedisDistributedCache("redis");
 
             var app = builder.Build();
 

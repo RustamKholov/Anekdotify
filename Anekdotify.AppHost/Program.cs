@@ -1,6 +1,6 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-var cache = builder.AddRedis("cache", 6379);
+var cache = builder.AddRedis("redis", 6379);
 
 var apiService = builder.AddProject<Projects.Anekdotify_Api>("apiservice")
     .WithReference(cache);
