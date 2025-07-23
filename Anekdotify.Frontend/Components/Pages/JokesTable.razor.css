@@ -28,46 +28,39 @@
     position: relative;
 }
 
-
-.jokes-list-container .col {
+/* Single container for joke + comments */
+.joke-with-comments-container {
     position: relative;
-    margin-bottom: 2rem; 
-    min-height: 200px; 
+    margin-bottom: 1rem;
+    /* Ensure proper isolation for each joke+comments unit */
+    isolation: isolate;
 }
 
+.joke-card-wrapper {
+    position: relative;
+    z-index: 1;
+}
 
-.comments-modal-container {
-    position: static; 
+.comments-wrapper {
+    position: relative;
+    z-index: 2;
+    margin-top: 0.5rem;
+}
+
+/* Remove all the complex positioning and overlapping styles */
+.comments-wrapper .collapse,
+.comments-wrapper .collapsing {
+    position: relative;
     width: 100%;
-}
-
-
-.comments-modal-container .collapse,
-.comments-modal-container .collapsing {
-    position: absolute;
-    width: 100%; 
-    left: 0;
-    top: 100%; 
-    z-index: 50;
-}
-
-
-.comments-modal-container .collapse.show {
     background: white;
     border-radius: 0.5rem;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-    padding: 0.5rem;
-    max-width: 100%;
-    margin-top: 0.5rem;
     border: 1px solid rgba(0, 0, 0, 0.1);
-    z-index: 200; 
+    margin-top: 0.5rem;
 }
 
-
-.col:has(.collapse.show) {
-    z-index: 10; 
-    margin-bottom: 250px; 
-    transition: margin-bottom 0.3s ease;
+.comments-wrapper .collapse.show {
+    padding: 0.5rem;
 }
 
 /* Card styles */
@@ -97,13 +90,8 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    
-    .col:has(.collapse.show) {
-        margin-bottom: 280px; 
-    }
-    
     .jokes-list-container {
-        overflow-x: hidden; 
+        overflow-x: hidden;
     }
 }
 
@@ -121,16 +109,5 @@
     .jokes-toolbar > div:last-child {
         width: 100%;
         justify-content: space-between;
-    }
-    
-    .col:has(.collapse.show) {
-        margin-bottom: 300px;
-    }
-}
-
-@supports not (selector(:has(*))) {
-    .comments-modal-container .collapse.show {
-        position: relative;
-        z-index: 200;
     }
 }

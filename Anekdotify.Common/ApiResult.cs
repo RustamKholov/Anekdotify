@@ -9,17 +9,17 @@ namespace Anekdotify.Common
         public string? ErrorMessage { get; set; }
         public HttpStatusCode StatusCode { get; set; } 
 
-        public static ApiResult<TSuccessData> Success(TSuccessData data, System.Net.HttpStatusCode statusCode)
+        public static ApiResult<TSuccessData> Success(TSuccessData data, HttpStatusCode statusCode)
         {
             return new ApiResult<TSuccessData> { IsSuccess = true, Data = data, StatusCode = statusCode };
         }
 
-        public static ApiResult<TSuccessData> Failure(string errorMessage, System.Net.HttpStatusCode statusCode)
+        public static ApiResult<TSuccessData> Failure(string errorMessage, HttpStatusCode statusCode)
         {
             return new ApiResult<TSuccessData> { IsSuccess = false, ErrorMessage = errorMessage, StatusCode = statusCode };
         }
 
-        public static ApiResult<TSuccessData> Failure(System.Net.HttpStatusCode statusCode)
+        public static ApiResult<TSuccessData> Failure(HttpStatusCode statusCode)
         {
             return new ApiResult<TSuccessData> { IsSuccess = false, ErrorMessage = $"HTTP Error: {statusCode}", StatusCode = statusCode };
         }

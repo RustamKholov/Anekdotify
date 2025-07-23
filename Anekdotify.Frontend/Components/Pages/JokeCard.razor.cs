@@ -193,5 +193,16 @@ namespace Anekdotify.Frontend.Components.Pages
                 ToastService.ShowError("Fail to load joke");
             }
         }
+        private string GetTextLengthCategory()
+        {
+            var length = Joke?.Text?.Length ?? 0;
+            return length switch
+            {
+                <= 100 => "short",
+                <= 200 => "medium",
+                <= 350 => "long",
+                _ => "very-long"
+            };
+        }
     }
 }

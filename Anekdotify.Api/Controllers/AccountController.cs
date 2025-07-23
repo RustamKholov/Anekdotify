@@ -138,10 +138,16 @@ namespace Anekdotify.Api.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var existing = await _userManager.FindByEmailAsync(user.Email ?? string.Empty);
-                if (existing != null)
+                var existingEmail = await _userManager.FindByEmailAsync(user.Email ?? string.Empty);
+                if (existingEmail != null)
                 {
                     _logger.LogWarning("Registration failed: User already exists with email {Email}", user.Email);
+                    return BadRequest("User already exists");
+                }
+                var existingUser = await _userManager.FindByNameAsync(user.UserName ?? string.Empty);
+                if (existingUser != null)
+                {
+                    _logger.LogWarning("Registration failed: User already exists with username {Username}", user.UserName);
                     return BadRequest("User already exists");
                 }
 
@@ -167,13 +173,13 @@ namespace Anekdotify.Api.Controllers
                     else
                     {
                         _logger.LogError("Failed to assign role to user {Email}: {@Errors}", user.Email, roleResult.Errors);
-                        return StatusCode(500, roleResult.Errors);
+                        return StatusCode(500, roleResult.Errors.Select(e => e.Description));
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to create user {Email}: {@Errors}", user.Email, createUser.Errors);
-                    return StatusCode(500, createUser.Errors);
+                    return StatusCode(500, createUser.Errors.Select(e => e.Description));
                 }
             }
             catch (Exception e)

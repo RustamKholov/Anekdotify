@@ -83,7 +83,7 @@
 
             if (response == null || response.Data == null)
             {
-                ToastService?.ShowError("Registration failed. Please try again.");
+                ToastService?.ShowError($"Registration failed. {response!.ErrorMessage}. Please try again.");
                 return;
             }
             if (!response.IsSuccess)

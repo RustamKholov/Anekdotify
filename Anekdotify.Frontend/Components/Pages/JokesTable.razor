@@ -1,12 +1,11 @@
-﻿@rendermode RenderMode.InteractiveServer
-@page "/saved"
+﻿@page "/saved"
+@rendermode RenderMode.InteractiveServer
 
 <PageTitle>Saved - Anekdotify</PageTitle>
 
 <div class="container-fluid px-0" style="height: 95%;">
-    <!-- Desktop View (unchanged) -->
+    <!-- Desktop View -->
     <div
-       
         class="jokes-toolbar d-flex flex-wrap justify-content-between align-items-center mb-4 px-2 py-3 d-none d-md-flex">
         <div class="d-flex flex-wrap align-items-center gap-3">
             <span class="fw-semibold me-2">Filter by Categories:</span>
@@ -24,23 +23,22 @@
         </div>
         <div class="d-flex flex-wrap align-items-center gap-3">
             <span class="fw-semibold">Sort by:</span>
-            <select class="form-select form-select-sm w-auto" @bind="_sortBy">
+            <select class="form-select form-select-sm w-auto" @bind="_sortBy" @bind:after="() => UpdateSortBy(_sortBy)">
                 <option value="date">Date</option>
                 <option value="likes">Likes</option>
                 <option value="comments">Comments</option>
             </select>
-            <button class="btn btn-outline-secondary btn-sm" @onclick="@(() => _sortDesc = !_sortDesc)">
+            <button class="btn btn-outline-secondary btn-sm" @onclick="ToggleSortDirection">
                 @(_sortDesc ? "▼" : "▲")
             </button>
         </div>
     </div>
 
-    <!-- Mobile View (compact) -->
+    <!-- Mobile View -->
     <div class="jokes-toolbar-mobile d-md-none mb-3">
         <div class="d-flex justify-content-between align-items-center">
             <!-- Filter Dropdown -->
             <div class="dropdown">
-                   
                 <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown"
                     aria-expanded="false">
                     <i class="bi bi-filter"></i> Categories
@@ -51,7 +49,6 @@
                 </button>
                 <div class="dropdown-menu p-2" style="max-height: 300px; overflow-y: auto;">
                     <div class="d-flex justify-content-between mb-2">
-                           
                         <small class="text-muted fw-semibold">Filter by Categories</small>
                         <button class="btn btn-link btn-sm p-0 text-decoration-none"
                             @onclick="SelectAllClassifications">
@@ -75,12 +72,13 @@
             <!-- Sort Controls -->
             <div class="d-flex align-items-center">
                 <div class="input-group input-group-sm">
-                    <select class="form-select form-select-sm" style="max-width: 100px;" @bind="_sortBy">
+                    <select class="form-select form-select-sm" style="max-width: 100px;" @bind="_sortBy"
+                        @bind:after="() => UpdateSortBy(_sortBy)">
                         <option value="date">Date</option>
                         <option value="likes">Likes</option>
                         <option value="comments">Comments</option>
                     </select>
-                    <button class="btn btn-sm btn-outline-secondary" @onclick="@(() => _sortDesc = !_sortDesc)">
+                    <button class="btn btn-sm btn-outline-secondary" @onclick="ToggleSortDirection">
                         <i class="bi @(_sortDesc ? "bi-sort-down" : "bi-sort-up")"></i>
                     </button>
                 </div>
@@ -104,15 +102,16 @@
     else if (FilteredJokes.Any())
     {
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 w-100 jokes-list-container"
-            style="overflow-y:auto;">
+            style="overflow-y:auto;" @key="_renderKey">
             @foreach (var joke in FilteredJokes)
             {
-                <div class="col d-flex flex-column h-100">
-                    <div class="flex-grow-1 d-flex flex-column">
-                        <JokeCard Joke="@joke" IsFlipped="true" />
+                <!-- Single container for JokeCard + CommentsModal -->
+                <div class="col joke-with-comments-container" @key="@($"joke-container-{joke.JokeId}-{_renderKey}")">
+                    <div class="joke-card-wrapper">
+                        <JokeCard Joke="@joke" IsFlipped="true" @key="@($"joke-{joke.JokeId}-{_renderKey}")" />
                     </div>
-                    <div class="comments-modal-container mt-2">
-                        <CommentsModal JokeId="@joke.JokeId" />
+                    <div class="comments-wrapper">
+                        <CommentsModal JokeId="@joke.JokeId" @key="@($"comments-{joke.JokeId}-{_renderKey}")" />
                     </div>
                 </div>
             }
