@@ -45,6 +45,10 @@ services:
       - JWT__Audience=${JWT_AUDIENCE}
       - JWT__SigningKey=${JWT_SIGNING_KEY}
       - JWT__RefreshSigningKey=${JWT_REFRESH_SIGNING_KEY}
+      - OAuth__GitHub__ClientId=${GITHUB_CLIENT_ID}
+      - OAuth__GitHub__ClientSecret=${GITHUB_CLIENT_SECRET}
+      - OAuth__Google__ClientId=${GOOGLE_CLIENT_ID}
+      - OAuth__Google__ClientSecret=${GOOGLE_CLIENT_SECRET}
     ports:
       - "5000:8080"
     depends_on:

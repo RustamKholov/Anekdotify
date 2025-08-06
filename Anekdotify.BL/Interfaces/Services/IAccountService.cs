@@ -7,5 +7,6 @@ namespace Anekdotify.BL.Interfaces.Services
         Task AddRefreshToken(RefreshToken refreshToken);
 
         Task<RefreshToken?> GetRefreshTokenByToken(string token);
+        Task RemoveRefreshTokenByUserId(string userId);
     }
 }

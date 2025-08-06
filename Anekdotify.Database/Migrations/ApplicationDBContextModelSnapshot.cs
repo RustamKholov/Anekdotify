@@ -124,7 +124,7 @@ namespace Anekdotify.Database.Migrations
                     b.Property<int?>("ClassificationId")
                         .HasColumnType("integer");
 
-                    b.Property<bool>("IsApproved")
+                    b.Property<bool?>("IsApproved")
                         .HasColumnType("boolean");
 
                     b.Property<int>("SourceId")
@@ -250,6 +250,12 @@ namespace Anekdotify.Database.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("RefreshTokenId"));
 
+                    b.Property<DateTime>("ExpiryDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Token")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -282,33 +288,6 @@ namespace Anekdotify.Database.Migrations
                     b.HasKey("SourceId");
 
                     b.ToTable("Sources");
-
-                    b.HasData(
-                        new
-                        {
-                            SourceId = -1,
-                            SourceName = "From User"
-                        },
-                        new
-                        {
-                            SourceId = -2,
-                            SourceName = "System"
-                        },
-                        new
-                        {
-                            SourceId = -3,
-                            SourceName = "Generated"
-                        },
-                        new
-                        {
-                            SourceId = 1,
-                            SourceName = "JokeAPI"
-                        },
-                        new
-                        {
-                            SourceId = -4,
-                            SourceName = "Suggested"
-                        });
                 });
 
             modelBuilder.Entity("Anekdotify.Models.Entities.SourceFetchedJoke", b =>
@@ -343,6 +322,9 @@ namespace Anekdotify.Database.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Avatar")
+                        .HasColumnType("text");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("text");
@@ -353,6 +335,12 @@ namespace Anekdotify.Database.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("GitHubId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("GoogleId")
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("LastJokeRetrievalDate")
                         .HasColumnType("timestamp with time zone");
@@ -382,6 +370,9 @@ namespace Anekdotify.Database.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("Provider")
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("RegistrationDate")
                         .HasColumnType("timestamp with time zone");
@@ -493,21 +484,21 @@ namespace Anekdotify.Database.Migrations
                         new
                         {
                             Id = "1",
-                            ConcurrencyStamp = "3a2bd6c5-00b4-4809-b7c0-d77f785ed617",
+                            ConcurrencyStamp = "67afbec1-e1d2-47c1-8686-7d65c6fd61a4",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
                             Id = "2",
-                            ConcurrencyStamp = "837cc2c5-4857-435e-8920-703bbfe9a725",
+                            ConcurrencyStamp = "1b9eed1f-55f0-4301-84b6-e7deee6d4277",
                             Name = "Moderator",
                             NormalizedName = "MODERATOR"
                         },
                         new
                         {
                             Id = "3",
-                            ConcurrencyStamp = "7000c145-231d-43fe-8e9d-7d8d4915c1e5",
+                            ConcurrencyStamp = "89fb112e-a846-413b-864f-143194fb63db",
                             Name = "User",
                             NormalizedName = "USER"
                         });

@@ -125,17 +125,31 @@ public class Program
                     options.Password.RequiredLength = 12;
                 }
             ).AddEntityFrameworkStores<ApplicationDBContext>();
-
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", policy =>
+                {
+                    policy.WithOrigins(
+                            builder.Configuration["Frontend:BaseUrl"] ?? "https://anekdotify.at",
+                            "http://localhost:5173", // Vite dev server
+                            "https://localhost:5173"
+                        )
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
+                });
+            });
             builder.Services.AddAuthentication(options =>
             {
-                options.DefaultAuthenticateScheme =
-                options.DefaultChallengeScheme =
-                options.DefaultForbidScheme =
-                options.DefaultScheme =
-                options.DefaultSignInScheme =
-                options.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
 
-            }).AddJwtBearer(options =>
+                // Default schemes for API authentication
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+                // Sign-in scheme for OAuth flows
+                options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+
+            }).AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -146,9 +160,51 @@ public class Program
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(
                         System.Text.Encoding.UTF8.GetBytes(
-                            builder.Configuration["JWT:SigningKey"] ?? throw new InvalidOperationException("JWT:SigningKey is not configured.")
+                            builder.Configuration["JWT:SigningKey"] ??
+                            throw new InvalidOperationException("JWT:SigningKey is not configured.")
                         )
-                    )
+                    ),
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                };
+            })
+            .AddGitHub("GitHub", options =>
+            {
+                options.ClientId = builder.Configuration["OAuth:GitHub:ClientId"] ??
+                    throw new InvalidOperationException("GitHub ClientId not configured");
+                options.ClientSecret = builder.Configuration["OAuth:GitHub:ClientSecret"] ??
+                    throw new InvalidOperationException("GitHub ClientSecret not configured");
+
+                options.CallbackPath = "/api/auth/github/callback";
+                options.Scope.Add("user:email");
+                options.SignInScheme = IdentityConstants.ExternalScheme;
+                options.SaveTokens = false;
+
+                // Remove or simplify the event handler
+                options.Events.OnCreatingTicket = async context =>
+                {
+                    var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+                    logger.LogInformation("GitHub OnCreatingTicket event fired");
+                    await Task.CompletedTask;
+                };
+            })
+            .AddGoogle("Google", options =>
+            {
+                options.ClientId = builder.Configuration["OAuth:Google:ClientId"] ??
+                    throw new InvalidOperationException("Google ClientId not configured");
+                options.ClientSecret = builder.Configuration["OAuth:Google:ClientSecret"] ??
+                    throw new InvalidOperationException("Google ClientSecret not configured");
+
+                options.CallbackPath = "/api/auth/google/callback";
+                options.SignInScheme = IdentityConstants.ExternalScheme;
+                options.SaveTokens = false;
+
+                // Remove or simplify the event handler
+                options.Events.OnCreatingTicket = async context =>
+                {
+                    var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+                    logger.LogInformation("Google OnCreatingTicket event fired");
+                    await Task.CompletedTask;
                 };
             });
 
@@ -164,6 +220,8 @@ public class Program
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Anekdotify API v1");
                 });
             }
+
+            app.UseCors("AllowFrontend");
             app.UseAuthentication();
             app.UseAuthorization();
 
