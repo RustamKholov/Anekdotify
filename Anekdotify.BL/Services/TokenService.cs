@@ -2,8 +2,10 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Anekdotify.BL.Interfaces.Services;
+using Anekdotify.Database.Data;
 using Anekdotify.Models.Entities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -15,15 +17,18 @@ namespace Anekdotify.BL.Services
         private readonly IConfiguration _config;
         private readonly UserManager<User> _userManager;
         private readonly ILogger<TokenService> _logger;
+        private readonly ApplicationDBContext _context;
 
-        public TokenService(IConfiguration config, UserManager<User> userManager, ILogger<TokenService> logger)
+        public TokenService(IConfiguration config, UserManager<User> userManager, ILogger<TokenService> logger,
+            ApplicationDBContext context)
         {
             _config = config;
             _userManager = userManager;
             _logger = logger;
+            _context = context;
         }
 
-        public string CreateToken(User user, bool isRefreshToken)
+        public string CreateToken(User user, bool isRefreshToken = false)
         {
             if (user == null)
             {
@@ -73,6 +78,44 @@ namespace Anekdotify.BL.Services
                 isRefreshToken ? "refresh" : "access", user.Id, tokenDescriptor.Expires);
 
             return tokenHandler.WriteToken(token);
+        }
+        public async Task<string> CreateRefreshTokenAsync(User user)
+        {
+            var refreshToken = CreateToken(user, isRefreshToken: true);
+
+            // Store refresh token in database
+            var tokenEntity = new RefreshToken
+            {
+                UserId = user.Id,
+                Token = refreshToken,
+                ExpiryDate = DateTime.UtcNow.AddDays(7),
+                IsRevoked = false
+            };
+
+            _context.RefreshTokens.Add(tokenEntity);
+            await _context.SaveChangesAsync();
+
+            return refreshToken;
+        }
+
+        public async Task<bool> ValidateRefreshTokenAsync(string token, string userId)
+        {
+            var refreshToken = await _context.RefreshTokens
+                .FirstOrDefaultAsync(rt => rt.Token == token && rt.UserId == userId && !rt.IsRevoked);
+
+            return refreshToken != null && refreshToken.ExpiryDate > DateTime.UtcNow;
+        }
+
+        public async Task RevokeRefreshTokenAsync(string token)
+        {
+            var refreshToken = await _context.RefreshTokens
+                .FirstOrDefaultAsync(rt => rt.Token == token);
+
+            if (refreshToken != null)
+            {
+                refreshToken.IsRevoked = true;
+                await _context.SaveChangesAsync();
+            }
         }
 
     }

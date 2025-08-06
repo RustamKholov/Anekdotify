@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Anekdotify.Models.Entities;
 
 namespace Anekdotify.Database.Data;
-
+// dotnet ef database update --project Anekdotify.Database --startup-project Anekdotify.Api    
 public partial class ApplicationDBContext : IdentityDbContext<User>
 {
     public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options)
