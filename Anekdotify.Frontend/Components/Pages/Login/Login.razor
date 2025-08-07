@@ -35,7 +35,7 @@
         <div class="login-body">
 
 
-            <!-- Existing login form -->
+            <!-- Login form -->
             <EditForm Model="loginModel" OnValidSubmit="HandleLogin" FormName="LoginForm">
                 <DataAnnotationsValidator />
 
@@ -112,7 +112,6 @@
 
     protected override void OnInitialized()
     {
-        // Check for error message from OAuth callback
         var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
         var query = QueryHelpers.ParseQuery(uri.Query);
 
@@ -131,8 +130,17 @@
             _errorMessage = null;
             StateHasChanged();
 
-            var githubUrl = await OAuthService.GetGitHubLoginUrlAsync();
-            await JSRuntime.InvokeVoidAsync("open", githubUrl, "_self");
+            var oauthResponse = await OAuthService.GetGitHubLoginUrlAsync();
+            if (oauthResponse != null && !string.IsNullOrEmpty(oauthResponse.Url))
+            {
+                Logger.LogInformation("Redirecting to GitHub OAuth URL: {Url}", oauthResponse.Url);
+                NavigationManager.NavigateTo(oauthResponse.Url, forceLoad: true);
+            }
+            else
+            {
+                _errorMessage = "Failed to get GitHub OAuth URL. Please try again.";
+                Logger.LogError("Failed to get GitHub OAuth URL - response was null or URL was empty");
+            }
         }
         catch (Exception ex)
         {
@@ -156,8 +164,17 @@
             _errorMessage = null;
             StateHasChanged();
 
-            var googleUrl = await OAuthService.GetGoogleLoginUrlAsync();
-            await JSRuntime.InvokeVoidAsync("open", googleUrl, "_self");
+            var oauthResponse = await OAuthService.GetGoogleLoginUrlAsync();
+            if (oauthResponse != null && !string.IsNullOrEmpty(oauthResponse.Url))
+            {
+                Logger.LogInformation("Redirecting to Google OAuth URL: {Url}", oauthResponse.Url);
+                NavigationManager.NavigateTo(oauthResponse.Url, forceLoad: true);
+            }
+            else
+            {
+                _errorMessage = "Failed to get Google OAuth URL. Please try again.";
+                Logger.LogError("Failed to get Google OAuth URL - response was null or URL was empty");
+            }
         }
         catch (Exception ex)
         {

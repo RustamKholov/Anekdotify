@@ -19,7 +19,6 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Add services to the container.
 
         Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
@@ -78,6 +77,14 @@ public class Program
                     options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                 });
 
+            builder.Services.AddDistributedMemoryCache();
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+
             builder.Services.AddDbContext<ApplicationDBContext>(options =>
                 {
                     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
@@ -131,8 +138,9 @@ public class Program
                 {
                     policy.WithOrigins(
                             builder.Configuration["Frontend:BaseUrl"] ?? "https://anekdotify.at",
-                            "http://localhost:5173", // Vite dev server
-                            "https://localhost:5173"
+                            "http://localhost:5173",
+                            "https://localhost:5173",
+                            "http://localhost:7289"
                         )
                         .AllowAnyHeader()
                         .AllowAnyMethod()
@@ -141,14 +149,8 @@ public class Program
             });
             builder.Services.AddAuthentication(options =>
             {
-
-                // Default schemes for API authentication
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
-                // Sign-in scheme for OAuth flows
-                options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-
             }).AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters
@@ -167,45 +169,6 @@ public class Program
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
                 };
-            })
-            .AddGitHub("GitHub", options =>
-            {
-                options.ClientId = builder.Configuration["OAuth:GitHub:ClientId"] ??
-                    throw new InvalidOperationException("GitHub ClientId not configured");
-                options.ClientSecret = builder.Configuration["OAuth:GitHub:ClientSecret"] ??
-                    throw new InvalidOperationException("GitHub ClientSecret not configured");
-
-                options.CallbackPath = "/api/auth/github/callback";
-                options.Scope.Add("user:email");
-                options.SignInScheme = IdentityConstants.ExternalScheme;
-                options.SaveTokens = false;
-
-                // Remove or simplify the event handler
-                options.Events.OnCreatingTicket = async context =>
-                {
-                    var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-                    logger.LogInformation("GitHub OnCreatingTicket event fired");
-                    await Task.CompletedTask;
-                };
-            })
-            .AddGoogle("Google", options =>
-            {
-                options.ClientId = builder.Configuration["OAuth:Google:ClientId"] ??
-                    throw new InvalidOperationException("Google ClientId not configured");
-                options.ClientSecret = builder.Configuration["OAuth:Google:ClientSecret"] ??
-                    throw new InvalidOperationException("Google ClientSecret not configured");
-
-                options.CallbackPath = "/api/auth/google/callback";
-                options.SignInScheme = IdentityConstants.ExternalScheme;
-                options.SaveTokens = false;
-
-                // Remove or simplify the event handler
-                options.Events.OnCreatingTicket = async context =>
-                {
-                    var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-                    logger.LogInformation("Google OnCreatingTicket event fired");
-                    await Task.CompletedTask;
-                };
             });
 
             builder.AddRedisDistributedCache("redis");
@@ -222,6 +185,7 @@ public class Program
             }
 
             app.UseCors("AllowFrontend");
+            app.UseSession();
             app.UseAuthentication();
             app.UseAuthorization();
 
