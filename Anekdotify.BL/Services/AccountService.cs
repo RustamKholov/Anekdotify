@@ -50,5 +50,20 @@ namespace Anekdotify.BL.Services
                 throw;
             }
         }
+        public async Task RemoveRefreshTokenByUserId(string userId)
+        {
+            try
+            {
+                await _accountRepository.RemoveRefreshTokenByUserId(userId);
+
+                _logger.LogInformation("Refresh token removed for user {UserId}", userId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to remove refresh token for user {UserId}", userId);
+
+                throw;
+            }
+        }
     }
 }

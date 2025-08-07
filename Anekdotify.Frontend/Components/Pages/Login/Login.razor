@@ -1,66 +1,191 @@
 ﻿@page "/login"
+@using Anekdotify.Frontend.Services
+@using Anekdotify.Models.Models
+@using Microsoft.AspNetCore.WebUtilities
 @using Microsoft.AspNetCore.Mvc
-@layout MainLayout
-@inject ApiClient ApiClient
-@inject NavigationManager NavigationManager
-@inject AuthenticationStateProvider AuthenticationStateProvider
-@rendermode RenderMode.InteractiveServer
+@using Microsoft.JSInterop
 
-<div class="d-flex justify-content-center align-items-center h-100 w-100">
-    <div class=" card shadow-lg" style="width: 25rem;">
-        <div class="card-body p-4">
-            <h4 class="card-title text-center mb-4">Login</h4>
-            <EditForm Model="loginModel" FormName="login" OnValidSubmit="HandleLogin">
+@rendermode InteractiveServer
+@inject ApiClient ApiClient
+@inject IToastService ToastService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject IOAuthService OAuthService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+@inject ILogger<Login> Logger
+
+<PageTitle>Login - Anekdotify</PageTitle>
+
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h2>Welcome to Anekdotify</h2>
+            <p>Sign in to your account</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <div class="alert alert-danger" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                @_errorMessage
+            </div>
+        }
+
+        <div class="login-body">
+
+
+            <!-- Login form -->
+            <EditForm Model="loginModel" OnValidSubmit="HandleLogin" FormName="LoginForm">
                 <DataAnnotationsValidator />
-                <div class="mb-3">
-                    <label for="username" class="form-label">Username/Email</label>
-                    <InputText id="username" class="form-control" @bind-Value="loginModel.Username" />
-                    <ValidationMessage For="@(() => loginModel.Username)" class="text-danger" />
+
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="loginModel.Username" class="form-control" id="email"
+                        placeholder="name@example.com" />
+                    <label for="email">Email address</label>
+                    <ValidationMessage For="() => loginModel.Username" class="text-danger" />
                 </div>
-                <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
-                    <InputText id="password" class="form-control" type="password" @bind-Value="loginModel.Password" />
-                    <ValidationMessage For="@(() => loginModel.Password)" class="text-danger" />
+
+                <div class="form-floating mb-3">
+                    <InputText type="password" @bind-Value="loginModel.Password" class="form-control" id="password"
+                        placeholder="Password" />
+                    <label for="password">Password</label>
+                    <ValidationMessage For="() => loginModel.Password" class="text-danger" />
                 </div>
-                <div class="d-grid mt-4">
-                    <button type="submit" class="btn btn-dark">
-                        @if (isLoading)
-                        {
-                            <div class="text-center">
-                                <div class="spinner-border" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                            </div>
-                        }
-                        else
-                        {
-                            <a>Login</a>
-                        }
-                    </button>
-                </div>
-                <a href="/register" class="d-block text-center mt-3">Don't have an account? Register</a>
+
+                <button type="submit" class="btn btn-dark w-100 mb-3" disabled="@_isLoading">
+                    @if (_isLoading && _loadingProvider == "Local")
+                    {
+                        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                    }
+                    Sign In
+                </button>
             </EditForm>
+            <hr class="divider-line" />
+            <p class="text-center mb-3">Or continue with</p>
+            <!-- OAuth Login Buttons -->
+            <div class="oauth-section mb-4">
+                <button type="button" class="btn btn-secondary w-100 mb-2 oauth-btn" @onclick="LoginWithGitHub"
+                    disabled="@_isLoading">
+                    @if (_loadingProvider == "GitHub")
+                    {
+                        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                    }
+                    else
+                    {
+                        <i class="bi bi-github me-2"></i>
+                    }
+                    Continue with GitHub
+                </button>
+
+                <button type="button" class="btn btn-danger w-100 mb-3 oauth-btn" @onclick="LoginWithGoogle"
+                    disabled="@_isLoading">
+                    @if (_loadingProvider == "Google")
+                    {
+                        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                    }
+                    else
+                    {
+                        <i class="bi bi-google me-2"></i>
+                    }
+                    Continue with Google
+                </button>
+
+
+
+            </div>
+            <p class="text-center">
+                Don't have an account? <a href="/register">Sign up</a>
+            </p>
         </div>
     </div>
 </div>
 
-
 @code {
-    private LoginDto loginModel = new LoginDto();
-    [Inject]
-    private IToastService? ToastService { get; set; }
+    [SupplyParameterFromForm]
+    private LoginDto loginModel { get; set; } = new();
 
-    private bool isLoading = false;
 
-    protected override async Task OnInitializedAsync()
+    private string? _errorMessage;
+    private bool _isLoading = false;
+    private string? _loadingProvider;
+
+    protected override void OnInitialized()
     {
-        if (AuthenticationStateProvider is CustomAuthStateProvider customAuthStateProvider)
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        var query = QueryHelpers.ParseQuery(uri.Query);
+
+        if (query.TryGetValue("error", out var error))
         {
-            var state = await customAuthStateProvider.GetAuthenticationStateAsync();
-            if (state.User.Identity?.IsAuthenticated == true)
+            _errorMessage = error.ToString();
+        }
+    }
+
+    private async Task LoginWithGitHub()
+    {
+        try
+        {
+            _isLoading = true;
+            _loadingProvider = "GitHub";
+            _errorMessage = null;
+            StateHasChanged();
+
+            var oauthResponse = await OAuthService.GetGitHubLoginUrlAsync();
+            if (oauthResponse != null && !string.IsNullOrEmpty(oauthResponse.Url))
             {
-                NavigationManager.NavigateTo("/");
+                Logger.LogInformation("Redirecting to GitHub OAuth URL: {Url}", oauthResponse.Url);
+                NavigationManager.NavigateTo(oauthResponse.Url, forceLoad: true);
             }
+            else
+            {
+                _errorMessage = "Failed to get GitHub OAuth URL. Please try again.";
+                Logger.LogError("Failed to get GitHub OAuth URL - response was null or URL was empty");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to initiate GitHub login");
+            _errorMessage = "Failed to initiate GitHub login. Please try again.";
+        }
+        finally
+        {
+            _isLoading = false;
+            _loadingProvider = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoginWithGoogle()
+    {
+        try
+        {
+            _isLoading = true;
+            _loadingProvider = "Google";
+            _errorMessage = null;
+            StateHasChanged();
+
+            var oauthResponse = await OAuthService.GetGoogleLoginUrlAsync();
+            if (oauthResponse != null && !string.IsNullOrEmpty(oauthResponse.Url))
+            {
+                Logger.LogInformation("Redirecting to Google OAuth URL: {Url}", oauthResponse.Url);
+                NavigationManager.NavigateTo(oauthResponse.Url, forceLoad: true);
+            }
+            else
+            {
+                _errorMessage = "Failed to get Google OAuth URL. Please try again.";
+                Logger.LogError("Failed to get Google OAuth URL - response was null or URL was empty");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to initiate Google login");
+            _errorMessage = "Failed to initiate Google login. Please try again.";
+        }
+        finally
+        {
+            _isLoading = false;
+            _loadingProvider = null;
+            StateHasChanged();
         }
     }
 
@@ -68,7 +193,7 @@
     {
         try
         {
-            isLoading = true;
+            _isLoading = true;
             var response = await ApiClient.PostAsync<LoginResponseModel, LoginDto>("api/account/login", loginModel);
             if (response.IsSuccess && response.Data != null)
             {
@@ -87,7 +212,8 @@
         }
         finally
         {
-            isLoading = false;
+            _isLoading = false;
+            _loadingProvider = null;
         }
     }
 }

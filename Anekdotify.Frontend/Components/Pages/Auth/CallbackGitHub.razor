@@ -1,0 +1,95 @@
+@page "/auth/callback/github"
+@using Anekdotify.Frontend.Services
+@using Microsoft.AspNetCore.Components
+@inject IOAuthService OAuthService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<PageTitle>GitHub Authentication</PageTitle>
+
+<div class="d-flex justify-content-center align-items-center" style="height: 100vh;">
+    <div class="text-center">
+        @if (isProcessing)
+        {
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3">Processing GitHub authentication...</p>
+        }
+        else if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger">
+                <h4>Authentication Failed</h4>
+                <p>@errorMessage</p>
+                <button class="btn btn-primary" @onclick="BackToLogin">
+                    Back to Login
+                </button>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-success">
+                <h4>Authentication Successful</h4>
+                <p>Redirecting to home page...</p>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private bool isProcessing = true;
+    private string errorMessage = string.Empty;
+
+    private void BackToLogin()
+    {
+        NavigationManager.NavigateTo("/login");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+            var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+
+            var code = query.TryGetValue("code", out var codeValues) ? codeValues.FirstOrDefault() : null;
+            var state = query.TryGetValue("state", out var stateValues) ? stateValues.FirstOrDefault() : null;
+            var error = query.TryGetValue("error", out var errorValues) ? errorValues.FirstOrDefault() : null;
+
+            if (!string.IsNullOrEmpty(error))
+            {
+                errorMessage = $"OAuth error: {error}";
+                isProcessing = false;
+                return;
+            }
+
+            if (string.IsNullOrEmpty(code) || string.IsNullOrEmpty(state))
+            {
+                errorMessage = "Invalid callback parameters. Missing code or state.";
+                isProcessing = false;
+                return;
+            }
+
+            var loginResponse = await OAuthService.ExchangeGitHubCodeAsync(code, state);
+
+            if (loginResponse != null)
+            {
+                await OAuthService.HandleOAuthCallbackAsync(
+                loginResponse.Token ?? "",
+                loginResponse.RefreshToken ?? "",
+                loginResponse.ExpiresIn);
+
+            }
+            else
+            {
+                errorMessage = "Failed to exchange authorization code for tokens.";
+                isProcessing = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred during authentication: {ex.Message}";
+            isProcessing = false;
+        }
+    }
+}

@@ -36,6 +36,7 @@ builder.Services.AddScoped<HttpClient>(sp =>
 
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 builder.Services.AddScoped<INavigationHistoryService, NavigationHistoryService>();
+builder.Services.AddScoped<IOAuthService, OAuthService>();
 
 var app = builder.Build();
 

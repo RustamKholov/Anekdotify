@@ -10,6 +10,10 @@ namespace Anekdotify.Models.Entities
         public DateTime? LastLoginDate { get; set; }
 
         public DateTime? LastJokeRetrievalDate { get; set; }
+        public string? GitHubId { get; set; }
+        public string? GoogleId { get; set; }
+        public string? Avatar { get; set; }
+        public string? Provider { get; set; }
 
         public virtual ICollection<CommentRating> CommentRatings { get; set; } = new List<CommentRating>();
 

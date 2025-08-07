@@ -19,7 +19,6 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Add services to the container.
 
         Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
@@ -78,6 +77,14 @@ public class Program
                     options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                 });
 
+            builder.Services.AddDistributedMemoryCache();
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+
             builder.Services.AddDbContext<ApplicationDBContext>(options =>
                 {
                     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
@@ -125,17 +132,26 @@ public class Program
                     options.Password.RequiredLength = 12;
                 }
             ).AddEntityFrameworkStores<ApplicationDBContext>();
-
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", policy =>
+                {
+                    policy.WithOrigins(
+                            builder.Configuration["Frontend:BaseUrl"] ?? "https://anekdotify.at",
+                            "http://localhost:5173",
+                            "https://localhost:5173",
+                            "http://localhost:7289"
+                        )
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
+                });
+            });
             builder.Services.AddAuthentication(options =>
             {
-                options.DefaultAuthenticateScheme =
-                options.DefaultChallengeScheme =
-                options.DefaultForbidScheme =
-                options.DefaultScheme =
-                options.DefaultSignInScheme =
-                options.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
-
-            }).AddJwtBearer(options =>
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -146,9 +162,12 @@ public class Program
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(
                         System.Text.Encoding.UTF8.GetBytes(
-                            builder.Configuration["JWT:SigningKey"] ?? throw new InvalidOperationException("JWT:SigningKey is not configured.")
+                            builder.Configuration["JWT:SigningKey"] ??
+                            throw new InvalidOperationException("JWT:SigningKey is not configured.")
                         )
-                    )
+                    ),
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
                 };
             });
 
@@ -164,6 +183,9 @@ public class Program
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Anekdotify API v1");
                 });
             }
+
+            app.UseCors("AllowFrontend");
+            app.UseSession();
             app.UseAuthentication();
             app.UseAuthorization();
 

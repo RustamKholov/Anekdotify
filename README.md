@@ -13,7 +13,7 @@ Anekdotify is a social platform where users can share, discover, and rate jokes.
 
 ## ✨ Key Features
 
-+ 🔐 **User Authentication & Authorization** - Complete user registration, login, and profile management
++ 🔐 **User Authentication & Authorization** - Complete user registration, login, and profile management with OAuth support (GitHub & Google)
 + 📝 **Joke Management** - Submit, approve, and categorize jokes with administrative oversight
 + ⭐ **Rating System** - Like and rate jokes with comprehensive feedback mechanisms
 + 💬 **Interactive Comments** - Real-time commenting system with nested replies and ratings
@@ -36,6 +36,7 @@ Technology | Purpose
 **PostgreSQL** | Primary database
 **Redis** | Caching and session management
 **ASP.NET Core Identity** | Authentication and authorization
+**OAuth 2.0** | Third-party authentication (GitHub, Google)
 **JWT Tokens** | Secure API authentication
 **Serilog** | Structured logging
 
@@ -69,9 +70,10 @@ Technology | Purpose
 /Anekdotify.Frontend
     ├── Components/          // Blazor components
     │   ├── Pages/          // Main application pages
+    │   │   └── Auth/      // OAuth callback pages
     │   ├── Layout/         // UI layout components
     │   └── Shared/         // Reusable UI components
-    ├── Services/           // Frontend service layer
+    ├── Services/           // Frontend service layer (ApiClient, OAuthService)
     ├── Authentication/     // Client-side auth handling
     └── Program.cs         // Frontend startup configuration
 /Anekdotify.Models
@@ -134,6 +136,7 @@ This project represents a significant milestone in my development journey, build
 - **Blazor Server** - Interactive web UI with server-side rendering
 - **Entity Framework Core** - Advanced ORM usage with migrations
 - **ASP.NET Core Identity** - Full authentication and authorization
+- **OAuth 2.0 Integration** - Third-party authentication providers
 - **JWT Authentication** - Secure API access
 - **Health Checks** - Application monitoring and reliability
 
@@ -155,6 +158,7 @@ This project represents a significant milestone in my development journey, build
 
 ### User Authentication
 - Registration and login with email verification
+- OAuth 2.0 integration (GitHub & Google)
 - JWT-based API authentication
 - Role-based authorization
 - Password reset functionality
