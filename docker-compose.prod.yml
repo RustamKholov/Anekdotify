@@ -41,10 +41,11 @@ services:
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=anekdotify;Username=anekdotify_user;Password=${POSTGRES_PASSWORD}
       - ConnectionStrings__cache=redis:6379,password=${REDIS_PASSWORD}
-      - JWT__Issuer=${JWT_ISSUER}
-      - JWT__Audience=${JWT_AUDIENCE}
+      - JWT__Issuer=https://anekdotify.at
+      - JWT__Audience=https://anekdotify.at
       - JWT__SigningKey=${JWT_SIGNING_KEY}
       - JWT__RefreshSigningKey=${JWT_REFRESH_SIGNING_KEY}
+      - Frontend__BaseUrl=https://anekdotify.at
       - OAuth__GitHub__ClientId=${GITHUB_CLIENT_ID}
       - OAuth__GitHub__ClientSecret=${GITHUB_CLIENT_SECRET}
       - OAuth__Google__ClientId=${GOOGLE_CLIENT_ID}
@@ -73,7 +74,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      - JokeStoreApiUrl=https://anekdotify.at
+      - JokeStoreApiUrl=http://api:8080
     ports:
       - "5001:8080"
     depends_on:
