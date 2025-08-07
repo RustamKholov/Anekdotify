@@ -43,7 +43,7 @@ namespace Anekdotify.Frontend.Services
             try
             {
                 var apiUrl = _configuration["JokeStoreApiUrl"];
-                var response = await _httpClient.GetAsync($"{apiUrl}/api/account/oauth/github/url");
+                var response = await _httpClient.GetAsync($"{apiUrl}/account/oauth/github/url");
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -69,7 +69,7 @@ namespace Anekdotify.Frontend.Services
             try
             {
                 var apiUrl = _configuration["JokeStoreApiUrl"];
-                var response = await _httpClient.GetAsync($"{apiUrl}/api/account/oauth/google/url");
+                var response = await _httpClient.GetAsync($"{apiUrl}/account/oauth/google/url");
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -99,7 +99,7 @@ namespace Anekdotify.Frontend.Services
                 var json = JsonSerializer.Serialize(request);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PostAsync($"{apiUrl}/api/account/oauth/github/exchange", content);
+                var response = await _httpClient.PostAsync($"{apiUrl}/account/oauth/github/exchange", content);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -129,7 +129,7 @@ namespace Anekdotify.Frontend.Services
                 var json = JsonSerializer.Serialize(request);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PostAsync($"{apiUrl}/api/account/oauth/google/exchange", content);
+                var response = await _httpClient.PostAsync($"{apiUrl}/account/oauth/google/exchange", content);
 
                 if (response.IsSuccessStatusCode)
                 {
