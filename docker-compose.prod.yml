@@ -16,6 +16,8 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    networks:
+      - anekdotify_network
 
   redis:
     image: redis:7-alpine
@@ -30,6 +32,8 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    networks:
+      - anekdotify_network
 
   api:
     build:
@@ -40,12 +44,12 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=anekdotify;Username=anekdotify_user;Password=${POSTGRES_PASSWORD}
-      - ConnectionStrings__cache=redis:6379,password=${REDIS_PASSWORD}
-      - JWT__Issuer=https://anekdotify.at
-      - JWT__Audience=https://anekdotify.at
+      - ConnectionStrings__redis=redis:6379,password=${REDIS_PASSWORD}
+      - JWT__Issuer=http://95.216.155.253:8070
+      - JWT__Audience=http://95.216.155.253:8070
       - JWT__SigningKey=${JWT_SIGNING_KEY}
       - JWT__RefreshSigningKey=${JWT_REFRESH_SIGNING_KEY}
-      - Frontend__BaseUrl=https://anekdotify.at
+      - Frontend__BaseUrl=http://95.216.155.253:8070
       - OAuth__GitHub__ClientId=${GITHUB_CLIENT_ID}
       - OAuth__GitHub__ClientSecret=${GITHUB_CLIENT_SECRET}
       - OAuth__Google__ClientId=${GOOGLE_CLIENT_ID}
@@ -65,6 +69,8 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    networks:
+      - anekdotify_network
 
   frontend:
     build:
@@ -85,6 +91,22 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    networks:
+      - anekdotify_network
+
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "8070:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api
+      - frontend
+    networks:
+      - anekdotify_network
+
   pgadmin:
     image: dpage/pgadmin4:latest
     restart: always
@@ -101,10 +123,14 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - default
+      - anekdotify_network
 
 volumes:
   postgres_data:
   redis_data:
   api_keys:
   pgadmin_data:
+
+networks:
+  anekdotify_network:
+    driver: bridge

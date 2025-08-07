@@ -1,15 +1,21 @@
 ﻿@page "/register"
 @using Microsoft.AspNetCore.Mvc
+@using Anekdotify.Frontend.Services
+@using Anekdotify.Models.Models
 @layout MainLayout
 @inject ApiClient ApiClient
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IOAuthService OAuthService
+@inject ILogger<Register> Logger
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 
-<div class="d-flex justify-content-center align-items-center h-100 w-100">
-    <div class=" card shadow-lg" style="width: 25rem;">
+<div class="d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card shadow-lg" style="width: 28rem;">
         <div class="card-body p-4">
-            <h4 class="card-title text-center mb-4">Registration</h4>
+            <h4 class="card-title text-center mb-4">Create Account</h4>
+            <p class="text-center text-muted mb-4">Sign up for Anekdotify</p>
+
             <EditForm Model="registerModel" FormName="register" OnValidSubmit="HandleRegister">
                 <DataAnnotationsValidator />
                 <div class="mb-3">
@@ -34,24 +40,58 @@
                         @bind-Value="registerModel.ConfirmPassword" />
                     <ValidationMessage For="@(() => registerModel.ConfirmPassword)" class="text-danger" />
                 </div>
-                <div class="d-grid mt-4">
+                <div class="d-grid mb-3">
                     <button type="submit" class="btn btn-dark">
                         @if (isLoading)
                         {
                             <div class="text-center">
-                                <div class="spinner-border" role="status">
+                                <div class="spinner-border spinner-border-sm me-2" role="status">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
+                                Register
                             </div>
                         }
                         else
                         {
-                            <a>Register</a>
+                            <span>Register</span>
                         }
                     </button>
                 </div>
-                <a href="/login" class="d-block text-center mt-3">Have an account? Login</a>
             </EditForm>
+
+            <hr class="my-4" />
+            <p class="text-center mb-3">Or continue with</p>
+
+            <!-- OAuth Icon Buttons -->
+            <div class="d-flex justify-content-center gap-3 mb-4">
+                <button type="button" class="btn btn-outline-dark d-flex align-items-center justify-content-center"
+                    @onclick="RegisterWithGitHub" disabled="@isLoading" style="width: 50px; height: 50px;">
+                    @if (_loadingProvider == "GitHub")
+                    {
+                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                    }
+                    else
+                    {
+                        <i class="bi bi-github fs-5"></i>
+                    }
+                </button>
+
+                <button type="button" class="btn btn-outline-dark d-flex align-items-center justify-content-center"
+                    @onclick="RegisterWithGoogle" disabled="@isLoading" style="width: 50px; height: 50px;">
+                    @if (_loadingProvider == "Google")
+                    {
+                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                    }
+                    else
+                    {
+                        <i class="bi bi-google fs-5"></i>
+                    }
+                </button>
+            </div>
+
+            <p class="text-center">
+                Have an account? <a href="/login" class="text-decoration-none">Login</a>
+            </p>
         </div>
     </div>
 </div>
@@ -62,6 +102,8 @@
     [Inject]
     private IToastService? ToastService { get; set; }
     private bool isLoading = false;
+    private string? _loadingProvider;
+
     protected override async Task OnInitializedAsync()
     {
         if (AuthenticationStateProvider is CustomAuthStateProvider customAuthStateProvider)
@@ -71,6 +113,72 @@
             {
                 NavigationManager.NavigateTo("/");
             }
+        }
+    }
+
+    private async Task RegisterWithGitHub()
+    {
+        try
+        {
+            isLoading = true;
+            _loadingProvider = "GitHub";
+            StateHasChanged();
+
+            var oauthResponse = await OAuthService.GetGitHubLoginUrlAsync();
+            if (oauthResponse != null && !string.IsNullOrEmpty(oauthResponse.Url))
+            {
+                Logger.LogInformation("Redirecting to GitHub OAuth URL: {Url}", oauthResponse.Url);
+                NavigationManager.NavigateTo(oauthResponse.Url, forceLoad: true);
+            }
+            else
+            {
+                ToastService?.ShowError("Failed to get GitHub OAuth URL. Please try again.");
+                Logger.LogError("Failed to get GitHub OAuth URL - response was null or URL was empty");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to initiate GitHub registration");
+            ToastService?.ShowError("Failed to initiate GitHub registration. Please try again.");
+        }
+        finally
+        {
+            isLoading = false;
+            _loadingProvider = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task RegisterWithGoogle()
+    {
+        try
+        {
+            isLoading = true;
+            _loadingProvider = "Google";
+            StateHasChanged();
+
+            var oauthResponse = await OAuthService.GetGoogleLoginUrlAsync();
+            if (oauthResponse != null && !string.IsNullOrEmpty(oauthResponse.Url))
+            {
+                Logger.LogInformation("Redirecting to Google OAuth URL: {Url}", oauthResponse.Url);
+                NavigationManager.NavigateTo(oauthResponse.Url, forceLoad: true);
+            }
+            else
+            {
+                ToastService?.ShowError("Failed to get Google OAuth URL. Please try again.");
+                Logger.LogError("Failed to get Google OAuth URL - response was null or URL was empty");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to initiate Google registration");
+            ToastService?.ShowError("Failed to initiate Google registration. Please try again.");
+        }
+        finally
+        {
+            isLoading = false;
+            _loadingProvider = null;
+            StateHasChanged();
         }
     }
 
