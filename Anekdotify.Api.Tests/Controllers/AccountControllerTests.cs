@@ -6,6 +6,7 @@ using Anekdotify.Models.Entities;
 using Anekdotify.Models.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using System.Linq.Expressions;
 using Xunit;
@@ -18,6 +19,7 @@ namespace Anekdotify.Api.Tests.Controllers
         private readonly Mock<SignInManager<User>> _signInManagerMock;
         private readonly Mock<ITokenService> _tokenServiceMock;
         private readonly Mock<IAccountService> _accountServiceMock;
+        private readonly Mock<IConfiguration> _configurationMock;
 
         public AccountControllerTests()
         {
@@ -34,13 +36,18 @@ namespace Anekdotify.Api.Tests.Controllers
 
             _tokenServiceMock = new Mock<ITokenService>();
             _accountServiceMock = new Mock<IAccountService>();
+            _configurationMock = new Mock<IConfiguration>();
+
+            // Setup configuration mock
+            _configurationMock.Setup(x => x["Frontend:BaseUrl"]).Returns("http://localhost:5173");
 
             Controller = new AccountController(
                 _userManagerMock.Object,
                 _tokenServiceMock.Object,
                 _signInManagerMock.Object,
                 _accountServiceMock.Object,
-                LoggerMock.Object);
+                LoggerMock.Object,
+                _configurationMock.Object);
         }
 
         [Fact]
@@ -55,7 +62,7 @@ namespace Anekdotify.Api.Tests.Controllers
             };
 
             _userManagerMock.Setup(m => m.FindByEmailAsync(registerDto.Email))
-                .ReturnsAsync((User)null); // User doesn't exist yet
+                .ReturnsAsync((User?)null); // User doesn't exist yet
 
             _userManagerMock.Setup(m => m.CreateAsync(It.IsAny<User>(), registerDto.Password))
                 .ReturnsAsync(IdentityResult.Success);
